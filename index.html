@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Vape Shop</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a24;
+    --surface2: #22222f;
+    --accent: #7c3aed;
+    --accent2: #a855f7;
+    --text: #f0f0f5;
+    --text2: #9090a8;
+    --border: #2e2e40;
+    --success: #22c55e;
+    --radius: 14px;
+    --cart-h: 70px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 15px; overscroll-behavior: none; }
+  body { overflow: hidden; display: flex; flex-direction: column; }
+
+  /* SCREENS */
+  .screen { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+  .screen.active { display: flex; }
+
+  /* HEADER */
+  .header { padding: 16px 16px 12px; display: flex; align-items: center; gap: 10px; background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .back-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: none; color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .home-btn { height: 36px; padding: 0 12px; border-radius: 18px; background: var(--surface); border: none; color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; flex-shrink: 0; margin-left: auto; white-space: nowrap; }
+  .home-btn:active { background: var(--surface2); color: var(--text); }
+  .header-center { flex: 1; }
+  .header-title { font-size: 17px; font-weight: 700; }
+  .header-sub { font-size: 12px; color: var(--text2); }
+
+  /* SCROLL AREA */
+  .scroll { flex: 1; overflow-y: auto; padding: 14px 14px calc(var(--cart-h) + 20px); -webkit-overflow-scrolling: touch; }
+  .scroll.no-cart-pad { padding-bottom: 20px; }
+
+  /* CATEGORY GRID */
+  .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 14px; cursor: pointer; transition: all .18s; text-align: center; }
+  .cat-card:active { transform: scale(.96); background: var(--surface2); }
+  .cat-icon { font-size: 34px; margin-bottom: 8px; }
+  .cat-name { font-size: 14px; font-weight: 700; }
+  .cat-count { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  /* MODEL LIST */
+  .model-list { display: flex; flex-direction: column; gap: 10px; }
+  .model-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all .18s; }
+  .model-card:active { background: var(--surface2); }
+  .model-name { font-size: 15px; font-weight: 700; }
+  .model-count { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .arrow { color: var(--accent2); font-size: 18px; }
+
+  /* FLAVOUR LIST */
+  .flavor-list { display: flex; flex-direction: column; gap: 8px; }
+  .flavor-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: border-color .15s; }
+  .flavor-row.selected { border-color: var(--accent2); }
+  .flavor-name { font-size: 14px; flex: 1; }
+  .qty-ctrl { display: flex; align-items: center; gap: 0; }
+  .qty-btn { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--surface2); color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; flex-shrink: 0; }
+  .qty-btn:active { background: var(--accent); }
+  .qty-val { width: 32px; text-align: center; font-size: 15px; font-weight: 700; }
+
+  /* CART BAR */
+  .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; height: var(--cart-h); background: var(--surface); border-top: 1px solid var(--border); display: none; align-items: center; padding: 0 16px; gap: 12px; z-index: 100; }
+  .cart-bar.visible { display: flex; }
+  .cart-info { flex: 1; }
+  .cart-items-count { font-size: 13px; color: var(--text2); }
+  .cart-total { font-size: 17px; font-weight: 700; }
+  .cart-open-btn { background: var(--accent); border: none; color: #fff; border-radius: 12px; padding: 12px 20px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .cart-badge { background: #fff; color: var(--accent); border-radius: 50%; width: 20px; height: 20px; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+
+  /* CART SCREEN */
+  .cart-empty { text-align: center; padding: 60px 20px; color: var(--text2); }
+  .cart-empty-icon { font-size: 50px; margin-bottom: 12px; }
+  .cart-item-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; }
+  .cart-item-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
+  .cart-item-name { font-size: 14px; font-weight: 700; flex: 1; }
+  .cart-item-cat { font-size: 12px; color: var(--accent2); margin-top: 2px; }
+  .cart-item-del { background: none; border: none; color: #ef4444; font-size: 20px; cursor: pointer; padding: 0 0 0 8px; }
+  .cart-item-row .qty-ctrl { justify-content: flex-start; }
+  .cart-summary { background: var(--surface2); border-radius: var(--radius); padding: 16px; margin-top: 16px; }
+  .cart-summary-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; color: var(--text2); }
+  .cart-summary-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: 800; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .btn-primary { width: 100%; background: var(--accent); border: none; color: #fff; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 14px; transition: opacity .15s; }
+  .btn-primary:active { opacity: .85; }
+  .btn-primary:disabled { opacity: .5; cursor: default; }
+
+  /* ORDER FORM */
+  .form-group { margin-bottom: 14px; }
+  label { display: block; font-size: 13px; color: var(--text2); margin-bottom: 6px; }
+  input, textarea, select { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--text); font-size: 15px; outline: none; transition: border-color .15s; font-family: inherit; }
+  input:focus, textarea:focus { border-color: var(--accent2); }
+  textarea { resize: none; height: 70px; }
+  .order-summary { background: var(--surface2); border-radius: var(--radius); padding: 14px; margin-bottom: 18px; }
+  .order-summary-title { font-size: 13px; color: var(--text2); margin-bottom: 10px; }
+  .order-model-group { margin-bottom: 12px; }
+  .order-model-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .order-model-name { font-size: 14px; font-weight: 700; }
+  .order-model-meta { font-size: 13px; color: var(--accent2); font-weight: 600; white-space: nowrap; margin-left: 8px; }
+  .order-flavor-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text2); padding: 2px 0 2px 10px; }
+  .order-summary-total { font-size: 16px; font-weight: 800; display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+
+  /* SELECTOR BUTTONS (payment / delivery) */
+  .selector-group { display: flex; gap: 10px; margin-bottom: 20px; }
+  .selector-btn { flex: 1; padding: 14px 10px; border-radius: var(--radius); border: 1.5px solid var(--border); background: var(--surface); color: var(--text2); font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; transition: all .18s; line-height: 1.4; }
+  .selector-btn .sel-icon { font-size: 22px; display: block; margin-bottom: 5px; }
+  .selector-btn.selected { border-color: var(--accent2); background: var(--surface2); color: var(--text); }
+  .selector-btn:active { background: var(--surface2); }
+  .form-section-title { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin: 18px 0 12px; }
+  .hint { font-size: 12px; color: var(--text2); margin-top: 5px; }
+
+  /* SUCCESS */
+  .success-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 24px; height: 100%; }
+  .success-icon { font-size: 64px; margin-bottom: 20px; }
+  .success-title { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+  .success-sub { color: var(--text2); font-size: 15px; margin-bottom: 30px; line-height: 1.5; }
+  .btn-manager { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background: #229ED9; border: none; color: #fff; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; text-decoration: none; margin-bottom: 12px; }
+  .btn-secondary { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; }
+
+  .cart-total-label { font-size: 15px; font-weight: 800; color: var(--text); }
+
+  /* UPSELL BANNER */
+  .upsell-banner { background: linear-gradient(135deg,#1a2a1a,#0f2010); border: 1px solid #22c55e44; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 13px; display: none; color: #22c55e; line-height: 1.5; }
+  .upsell-banner b { color: #4ade80; }
+
+  /* SMART PRICE BADGE */
+  .smart-badge { background: linear-gradient(135deg,#7c3aed,#a855f7); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 13px; display: none; }
+  .smart-badge b { color: #fff; }
+  .smart-tiers { background: var(--surface2); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; }
+  .smart-tiers-title { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing:.05em; margin-bottom: 8px; }
+  .smart-tier-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border); color: var(--text2); }
+  .smart-tier-row:last-child { border-bottom: none; }
+  .smart-tier-row.active { color: var(--text); font-weight: 700; }
+  .smart-tier-row.active .tier-price { color: #a855f7; }
+  .section-title { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; margin-top: 18px; }
+  .section-title:first-child { margin-top: 0; }
+
+  /* TOGGLE TABS */
+  .tab-bar { display: flex; gap: 8px; padding: 12px 14px 0; flex-shrink: 0; }
+  .tab-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .18s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: CATEGORIES -->
+<div class="screen active" id="s-cats">
+  <div class="header">
+    <div>
+      <div class="header-title">🛒 Vape Shop</div>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-cats" onclick="switchTab('cats')">🗂 Категории</button>
+    <button class="tab-btn" id="tab-all" onclick="switchTab('all')">📦 Все товары</button>
+  </div>
+  <div class="scroll no-cart-pad" id="main-scroll">
+    <div class="cat-grid" id="cat-grid"></div>
+    <div id="all-models-list" style="display:none;flex-direction:column;gap:10px;"></div>
+  </div>
+</div>
+
+<!-- SCREEN 2: MODELS -->
+<div class="screen" id="s-models">
+  <div class="header">
+    <button class="back-btn" onclick="goTo('s-cats')">←</button>
+    <div class="header-center">
+      <div class="header-title" id="models-title"></div>
+      <div class="header-sub">Выберите модель</div>
+    </div>
+    <button class="home-btn" onclick="goTo('s-cats')">🏠 На главную</button>
+  </div>
+  <div class="scroll">
+    <div class="model-list" id="model-list"></div>
+  </div>
+</div>
+
+<!-- SCREEN 3: FLAVOURS -->
+<div class="screen" id="s-flavors">
+  <div class="header">
+    <button class="back-btn" id="flavor-back-btn">←</button>
+    <div class="header-center">
+      <div class="header-title" id="flavors-title"></div>
+      <div class="header-sub" id="flavors-sub"></div>
+    </div>
+    <button class="home-btn" onclick="goTo('s-cats')">🏠 На главную</button>
+  </div>
+  <div class="scroll">
+    <div class="flavor-list" id="flavor-list"></div>
+  </div>
+</div>
+
+<!-- SCREEN 4: CART -->
+<div class="screen" id="s-cart">
+  <div class="header">
+    <button class="back-btn" id="cart-back-btn">←</button>
+    <div class="header-center">
+      <div class="header-title">🛒 Корзина</div>
+    </div>
+    <button class="home-btn" onclick="goTo('s-cats')">🏠 На главную</button>
+  </div>
+  <div class="scroll no-cart-pad" id="cart-content"></div>
+</div>
+
+<!-- SCREEN 5: ORDER FORM -->
+<div class="screen" id="s-order">
+  <div class="header">
+    <button class="back-btn" onclick="goTo('s-cart')">←</button>
+    <div class="header-center">
+      <div class="header-title">📦 Оформление заказа</div>
+    </div>
+    <button class="home-btn" onclick="goTo('s-cats')">🏠 На главную</button>
+  </div>
+  <div class="scroll no-cart-pad" id="order-form-content"></div>
+</div>
+
+<!-- SCREEN 6: SUCCESS -->
+<div class="screen" id="s-success">
+  <div class="success-screen">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Заказ оформлен!</div>
+    <div class="success-sub" id="success-sub">Для подтверждения вашего заказа напишите менеджеру — он всё проверит и отправит посылку.</div>
+    <a class="btn-manager" id="manager-link" href="#" target="_blank">
+      <span>💬</span> Написать менеджеру
+    </a>
+    <button class="btn-secondary" onclick="newOrder()">Сделать новый заказ</button>
+  </div>
+</div>
+
+<!-- CART BAR -->
+<div class="cart-bar" id="cart-bar">
+  <div class="cart-info">
+    <div class="cart-items-count" id="cart-items-label"></div>
+    <div class="cart-total-label" id="cart-total-label"></div>
+  </div>
+  <button class="cart-open-btn" id="cart-open-btn">
+    🛒 Корзина <span class="cart-badge" id="cart-badge">0</span>
+  </button>
+</div>
+
+<script>
+// ============================================================
+// ДАННЫЕ ТОВАРОВ
+// ============================================================
+const MANAGER_USERNAME = 'Mangr_pl';
+
+// ============================================================
+// SMART PRICING
+// ============================================================
+// Тиры: [минимальное кол-во, цена за шт. в zł]
+const PRICING = {
+  disposable: { tiers: [[1,70],[3,65],[5,60],[10,55],[20,48],[50,45],[100,40]], base: 70 },
+  pods:        { tiers: [[1,80]], base: 80 },
+  cartridges:  { tiers: [[1,55]], base: 55 },
+  liquids:     { tiers: [[1,50],[3,45],[5,40],[10,35],[20,32],[50,26],[100,24]], base: 50 }
+};
+
+function getSmartPrice(catId, totalQty) {
+  const p = PRICING[catId];
+  if (!p) return 0;
+  let price = p.tiers[0][1];
+  for (const [minQty, unitPrice] of p.tiers) {
+    if (totalQty >= minQty) price = unitPrice;
+  }
+  return price;
+}
+
+function getBasePrice(catId) {
+  return PRICING[catId]?.base || 0;
+}
+
+// Сумма штук в категории
+function catQty(catId) {
+  return Object.values(cart)
+    .filter(i => i.catId === catId)
+    .reduce((s, i) => s + i.qty, 0);
+}
+
+// Итого по всей корзине с учётом смарт-цен
+function cartTotal() {
+  let total = 0;
+  for (const catId of Object.keys(PRICING)) {
+    const qty = catQty(catId);
+    if (qty === 0) continue;
+    total += qty * getSmartPrice(catId, qty);
+  }
+  return total;
+}
+
+// Сколько сэкономил клиент (vs базовая цена 1-2 шт.)
+function cartSavings() {
+  let saved = 0;
+  for (const catId of Object.keys(PRICING)) {
+    const qty = catQty(catId);
+    if (qty === 0) continue;
+    const base = getBasePrice(catId);
+    const smart = getSmartPrice(catId, qty);
+    saved += qty * (base - smart);
+  }
+  return saved;
+}
+
+function formatPrice(p) { return p.toLocaleString('pl-PL') + ' zł'; }
+
+const catalog = [
+  {
+    id: 'disposable',
+    name: 'Одноразки',
+    icon: '💨',
+    models: [
+      {
+        id: 'elfd3',
+        name: 'Elf Bar D3 25k',
+        flavors: ['Alpine mint','Apple peach','Blackberry cranberry','Blackberry pomegrn cherry','Blue razz ice','Blueberry ice','Blueberry raspberry','Double apple','Grape cherry','Grape ice','Grape mint','Kiwi passion fruit guava','Kiwi pineapple ice','Lemon lime','Peach berry','Peach ice','Pineapple mango ice','Strawb raspberry cherry','Strawberry grape','Strawberry ice','Strawberry watermelon','Vmt','Watermelon bubblegum','Watermelon ice','Watermelon lemon','Mango peach watermelon']
+      },
+      {
+        id: 'elfmoon',
+        name: 'Elf Bar Moon 40K',
+        flavors: ['Cherry Watermelon','Grape Ice','Grape Raspberry','Kiwi passion fruit guava','Lime Cola','Mango Peach Watermelon','Miami mint','Pomegranate Burst','Watermelon Ice','Blue razz ice','Lemon lime','Peach ice']
+      },
+      {
+        id: 'lushking',
+        name: 'Lush King 40k',
+        flavors: ['Black Currant Pineapple','Milky Oolong','Cucumber Lime','Starfruit Grape','Cactus Lime','Cherry Burst','Mountain Mint','Sour Pineapple Ice','Tropical Mango','Sour Strawberry Dragonfruit','Pomegranate Burst','Sour Apple ice','Black Grape Ice','Blue Razz Ice','Watermelon ice']
+      }
+    ]
+  },
+  {
+    id: 'pods',
+    name: 'Под системы',
+    icon: '🔋',
+    models: [
+      {
+        id: 'xrosmini',
+        name: 'XROS MINI 5',
+        flavors: ['Pastel Crystal','Rose Red','Carbon Black','Purple','Titanium silver','Black','Flowing Blue','Flowing Green','Flowing Pink','Sky Blue']
+      },
+      {
+        id: 'oxva',
+        name: 'OXVA XLIM GO 2',
+        flavors: ['Pink Ripple','Black Carbon','Metal Silver','Light Brown Shadow','Metal Blue','Black Shadow','Green Ripple','Blue Ripple']
+      }
+    ]
+  },
+  {
+    id: 'cartridges',
+    name: 'Картриджи',
+    icon: '🔌',
+    models: [
+      {
+        id: 'cart-xros',
+        name: 'CARTRIDGE XROS 3 ML',
+        flavors: ['0.4 Ω','0.6 Ω','0.8 Ω']
+      },
+      {
+        id: 'cart-oxva',
+        name: 'CARTRIDGE OXVA 3 ML',
+        flavors: ['0.4 Ω','0.6 Ω','0.8 Ω']
+      }
+    ]
+  },
+  {
+    id: 'liquids',
+    name: 'Жидкости',
+    icon: '💧',
+    models: [
+      {
+        id: 'puffy',
+        name: 'PUFFY',
+        flavors: ['Banana cherry','Berri kiwi','Black grape mint','Blueberry raspberry','Grape Raspberry Black Plum','Ice mojito mint','Lemon grapefruit','Pineapple coconut','Strawberry watermelon','Watermelon Bubble gum','Cherry Ice','Cranberry Grape','Energy Drink','Grape Melon','Gummy Bear','Raspberry Watermelon','Skittles Candy','Strawberry Lime','Tropical Fruits','Berry Cherry Cocktail']
+      },
+      {
+        id: 'vozol',
+        name: 'VOZOL PRIME',
+        flavors: ['Berry','Berry Peach','Blueberry Ice','Blueberry Razz Lemon','Blueberry watermelon','Cherry Cola','Dragon Fruit Banana Cherry','Grape Ice','Kiwi Passion Fruite Guava','LavaFire','Lemon Lime','Love 777','Mint ice','Mixed Berries','Peach Ice','Perfume Lemon','Pineapple Passion Fruit Lime','Pomegranate lemonade','Purple candy','Sour Apple Ice','Strawberry Ice cream','Strawberry Kiwi','Strawberry Watermelon','Watermelon Bubble Gum','Watermelon Ice','Blue raspberry','Peach Mango Watermelon','Strawberry Ice']
+      }
+    ]
+  }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentCat = null;
+let currentModel = null;
+let cart = {}; // key: `modelId::flavor` → { name, model, category, qty, price }
+let previousScreen = 's-cats';
+
+// ============================================================
+// TELEGRAM INIT
+// ============================================================
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  updateCartBar(screenId);
+}
+
+function updateCartBar(screenId) {
+  const bar = document.getElementById('cart-bar');
+  const hide = ['s-cart','s-order','s-success'].includes(screenId);
+  const total = cartTotal();
+  const count = cartCount();
+  if (!hide && count > 0) {
+    bar.classList.add('visible');
+    document.getElementById('cart-items-label').textContent = `${count} поз. в корзине`;
+    document.getElementById('cart-total-label').textContent = formatPrice(total);
+    document.getElementById('cart-badge').textContent = count;
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
+// ============================================================
+// RENDER CATEGORIES
+// ============================================================
+function renderCategories() {
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = catalog.map(cat => `
+    <div class="cat-card" onclick="openCategory('${cat.id}')">
+      <div class="cat-icon">${cat.icon}</div>
+      <div class="cat-name">${cat.name}</div>
+      <div class="cat-count">${cat.models.length} модел${cat.models.length === 1 ? 'ь' : 'и'}</div>
+    </div>
+  `).join('');
+}
+
+function openCategory(catId) {
+  currentCat = catalog.find(c => c.id === catId);
+  document.getElementById('models-title').textContent = currentCat.icon + ' ' + currentCat.name;
+  renderModels();
+  goTo('s-models');
+}
+
+// ============================================================
+// RENDER MODELS
+// ============================================================
+function renderModels() {
+  const list = document.getElementById('model-list');
+  list.innerHTML = currentCat.models.map(m => `
+    <div class="model-card" onclick="openModel('${m.id}')">
+      <div>
+        <div class="model-name">${m.name}</div>
+        <div class="model-count">${m.flavors.length} вкус${flavorWord(m.flavors.length)}</div>
+      </div>
+      <div class="arrow">›</div>
+    </div>
+  `).join('');
+}
+
+function flavorWord(n) {
+  if (n === 1) return '';
+  if (n >= 2 && n <= 4) return 'а';
+  return 'ов';
+}
+
+function openModel(modelId) {
+  currentModel = currentCat.models.find(m => m.id === modelId);
+  document.getElementById('flavors-title').textContent = currentModel.name;
+  document.getElementById('flavors-sub').textContent = currentCat.name;
+  document.getElementById('flavor-back-btn').onclick = () => goTo('s-models');
+  renderFlavors();
+  goTo('s-flavors');
+}
+
+// ============================================================
+// RENDER FLAVOURS
+// ============================================================
+function renderFlavors() {
+  const list = document.getElementById('flavor-list');
+  const tiers = PRICING[currentCat.id]?.tiers || [];
+  const hasTiers = tiers.length > 1;
+  const qtyInCat = catQty(currentCat.id);
+  const curPrice = getSmartPrice(currentCat.id, qtyInCat);
+
+  // Smart tiers table
+  let tiersHtml = '';
+  if (hasTiers) {
+    const rows = tiers.map((t, i) => {
+      const [minQty, price] = t;
+      const nextMin = tiers[i+1]?.[0];
+      const label = nextMin ? `${minQty}–${nextMin-1} шт.` : `${minQty}+ шт.`;
+      const isActive = qtyInCat >= minQty && (!nextMin || qtyInCat < nextMin);
+      return `<div class="smart-tier-row${isActive?' active':''}">
+        <span>${label}</span>
+        <span class="tier-price">${price} zł/шт.</span>
+      </div>`;
+    }).join('');
+    tiersHtml = `<div class="smart-tiers">
+      <div class="smart-tiers-title">⚡ Smart Cena</div>
+      ${rows}
+    </div>`;
+  } else {
+    tiersHtml = `<div class="smart-tiers">
+      <div class="smart-tiers-title">💰 Цена</div>
+      <div class="smart-tier-row active"><span>За штуку</span><span class="tier-price">${curPrice} zł</span></div>
+    </div>`;
+  }
+
+  // Smart badge (updates dynamically) + upsell
+  const badgeHtml = `<div class="smart-badge" id="smart-price-badge"></div>
+  <div class="upsell-banner" id="upsell-banner"></div>`;
+
+  list.innerHTML = badgeHtml + tiersHtml + currentModel.flavors.map(flavor => {
+    const key = `${currentModel.id}::${flavor}`;
+    const qty = cart[key]?.qty || 0;
+    return `
+      <div class="flavor-row ${qty > 0 ? 'selected' : ''}" id="row-${safeId(key)}">
+        <div class="flavor-name">${flavor}</div>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="changeQty('${escQ(key)}', -1)">−</button>
+          <div class="qty-val" id="qty-${safeId(key)}">${qty}</div>
+          <button class="qty-btn" onclick="changeQty('${escQ(key)}', 1)">+</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  updateFlavorSmartBadge();
+}
+
+function safeId(key) { return key.replace(/[^a-zA-Z0-9]/g, '_'); }
+function escQ(key) { return key.replace(/'/g, "\\'"); }
+
+function changeQty(key, delta) {
+  const flavor = key.split('::')[1];
+  const current = cart[key]?.qty || 0;
+  const newQty = Math.max(0, current + delta);
+
+  if (newQty === 0) {
+    delete cart[key];
+  } else {
+    cart[key] = {
+      key,
+      flavor,
+      model: currentModel.name,
+      category: currentCat.name,
+      catId: currentCat.id,
+      qty: newQty
+    };
+  }
+
+  const sid = safeId(key);
+  const qEl = document.getElementById('qty-' + sid);
+  const rEl = document.getElementById('row-' + sid);
+  if (qEl) qEl.textContent = newQty;
+  if (rEl) rEl.classList.toggle('selected', newQty > 0);
+
+  // Update smart price hint on flavor screen
+  updateFlavorSmartBadge();
+  updateCartBar('s-flavors');
+}
+
+function updateFlavorSmartBadge() {
+  const badge = document.getElementById('smart-price-badge');
+  const upsell = document.getElementById('upsell-banner');
+  if (!badge || !currentCat) return;
+
+  const qty = catQty(currentCat.id);
+  const price = getSmartPrice(currentCat.id, qty);
+  const tiers = PRICING[currentCat.id]?.tiers || [];
+  const hasTiers = tiers.length > 1;
+
+  // Smart badge
+  if (qty === 0) {
+    badge.style.display = 'none';
+  } else {
+    badge.style.display = 'block';
+    badge.innerHTML = hasTiers
+      ? `⚡ Smart Cena: <b>${price} zł/шт.</b> (${qty} шт. в корзине)`
+      : `💰 Цена: <b>${price} zł/шт.</b>`;
+  }
+
+  // Upsell: find next tier
+  if (!upsell || !hasTiers || qty === 0) {
+    if (upsell) upsell.style.display = 'none';
+    return;
+  }
+  const nextTier = tiers.find(([minQty]) => minQty > qty);
+  if (!nextTier) { upsell.style.display = 'none'; return; }
+
+  const [nextMin, nextPrice] = nextTier;
+  const need = nextMin - qty;
+  const savingsPerUnit = price - nextPrice;
+  const totalSavings = nextMin * savingsPerUnit; // savings on whole batch at new price
+
+  if (need <= 5) {
+    upsell.style.display = 'block';
+    upsell.innerHTML = `💡 Добавь ещё <b>${need} шт.</b> и цена упадёт до <b>${nextPrice} zł/шт.</b> — сэкономишь <b>${totalSavings} zł</b> на всём заказе!`;
+  } else {
+    upsell.style.display = 'none';
+  }
+}
+
+// ============================================================
+// CART
+// ============================================================
+function cartCount() { return Object.values(cart).reduce((s, i) => s + i.qty, 0); }
+
+document.getElementById('cart-open-btn').onclick = () => {
+  previousScreen = document.querySelector('.screen.active')?.id || 's-cats';
+  renderCart();
+  goTo('s-cart');
+};
+
+document.getElementById('cart-back-btn').onclick = () => goTo(previousScreen);
+
+function renderCart() {
+  const content = document.getElementById('cart-content');
+  const items = Object.values(cart);
+
+  if (items.length === 0) {
+    content.innerHTML = `
+      <div class="cart-empty">
+        <div class="cart-empty-icon">🛒</div>
+        <div>Корзина пуста</div>
+        <div style="margin-top:8px;font-size:13px;color:var(--text2)">Добавьте товары из каталога</div>
+      </div>`;
+    return;
+  }
+
+  // Group by catId
+  const grouped = {};
+  items.forEach(item => {
+    if (!grouped[item.catId]) grouped[item.catId] = [];
+    grouped[item.catId].push(item);
+  });
+
+  let html = '';
+  Object.entries(grouped).forEach(([catId, catItems]) => {
+    const cat = catalog.find(c => c.id === catId);
+    const qtyInCat = catQty(catId);
+    const unitPrice = getSmartPrice(catId, qtyInCat);
+    const basePrice = getBasePrice(catId);
+    const hasTiers = PRICING[catId]?.tiers.length > 1;
+    const catTotal = qtyInCat * unitPrice;
+
+    html += `<div class="section-title">${cat?.icon || ''} ${cat?.name || catId}</div>`;
+
+    if (hasTiers) {
+      const saved = qtyInCat * (basePrice - unitPrice);
+      html += `<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:13px;display:flex;justify-content:space-between;align-items:center">
+        <span>⚡ Smart Cena: <b style="color:#a855f7">${unitPrice} zł/шт.</b></span>
+        ${saved > 0 ? `<span style="color:#22c55e;font-weight:700">−${saved} zł</span>` : ''}
+      </div>`;
+    }
+
+    catItems.forEach(item => {
+      html += `
+        <div class="cart-item-row" id="citem-${safeId(item.key)}">
+          <div class="cart-item-header">
+            <div>
+              <div class="cart-item-name">${item.flavor}</div>
+              <div class="cart-item-cat">${item.model}</div>
+            </div>
+            <button class="cart-item-del" onclick="removeCartItem('${escQ(item.key)}')">✕</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div class="qty-ctrl">
+              <button class="qty-btn" onclick="cartChangeQty('${escQ(item.key)}', '${catId}')">−</button>
+              <div class="qty-val" id="cqty-${safeId(item.key)}">${item.qty}</div>
+              <button class="qty-btn" onclick="cartChangeQty('${escQ(item.key)}', '${catId}', 1)">+</button>
+            </div>
+            <div style="font-size:13px;color:var(--text2)">${item.qty} × ${unitPrice} zł</div>
+          </div>
+        </div>`;
+    });
+  });
+
+  const total = cartTotal();
+  const savings = cartSavings();
+  const count = cartCount();
+
+  html += `<div class="cart-summary">`;
+  html += `<div class="cart-summary-row"><span>Позиций</span><span>${count} шт.</span></div>`;
+  if (savings > 0) {
+    html += `<div class="cart-summary-row" style="color:#22c55e"><span>⚡ Экономия Smart Cena</span><span>−${savings} zł</span></div>`;
+  }
+  html += `<div class="cart-summary-total"><span>Итого</span><span>${formatPrice(total)}</span></div></div>`;
+  html += `<button class="btn-secondary" onclick="goTo('s-cats')">＋ Добавить ещё</button>`;
+  html += `<button class="btn-primary" style="margin-top:10px" onclick="openOrder()">Оформить заказ →</button>`;
+  html += `<div style="height:10px"></div>`;
+
+  content.innerHTML = html;
+}
+
+function removeCartItem(key) {
+  delete cart[key];
+  renderCart();
+  updateCartBar('s-cart');
+}
+
+function cartChangeQty(key, catId, delta) {
+  // called as (key, catId) for minus, (key, catId, 1) for plus
+  const d = (delta === undefined) ? -1 : 1;
+  if (!cart[key]) return;
+  const newQty = Math.max(0, cart[key].qty + d);
+  if (newQty === 0) { removeCartItem(key); return; }
+  cart[key].qty = newQty;
+  renderCart();
+}
+
+// ============================================================
+// ORDER
+// ============================================================
+let orderPayment = null; // 'cod' | 'crypto'
+let orderDelivery = null; // 'paczkomat' | 'kurier'
+
+function openOrder() {
+  orderPayment = null;
+  orderDelivery = null;
+  renderOrderForm();
+  goTo('s-order');
+}
+
+function renderOrderForm() {
+  const items = Object.values(cart);
+
+  // Group by model, calculate price per model group
+  const byModel = {};
+  items.forEach(i => {
+    if (!byModel[i.model]) byModel[i.model] = { model: i.model, catId: i.catId, flavors: [] };
+    byModel[i.model].flavors.push(i);
+  });
+
+  let itemsHtml = '';
+  Object.values(byModel).forEach(group => {
+    const modelQty = group.flavors.reduce((s, f) => s + f.qty, 0);
+    const unitPrice = getSmartPrice(group.catId, catQty(group.catId));
+    const modelTotal = modelQty * unitPrice;
+    itemsHtml += `<div class="order-model-group">
+      <div class="order-model-header">
+        <span class="order-model-name">${group.model}</span>
+        <span class="order-model-meta">${modelQty} шт. — ${modelTotal} zł</span>
+      </div>
+      ${group.flavors.map(f => `
+        <div class="order-flavor-row">
+          <span>${f.flavor}</span>
+          <span>${f.qty} шт.</span>
+        </div>`).join('')}
+    </div>`;
+  });
+
+  const savings = cartSavings();
+  const savingsHtml = savings > 0
+    ? `<div style="display:flex;justify-content:space-between;font-size:13px;color:#22c55e;margin-top:6px"><span>⚡ Экономия Smart Cena</span><span>−${savings} zł</span></div>`
+    : '';
+
+  let html = `
+    <div class="order-summary">
+      <div class="order-summary-title">Ваш заказ:</div>
+      ${itemsHtml}
+      ${savingsHtml}
+      <div class="order-summary-total"><span>Итого</span><span>${formatPrice(cartTotal())}</span></div>
+    </div>
+
+    <div class="form-section-title">💳 Способ оплаты</div>
+    <div class="selector-group">
+      <button class="selector-btn ${orderPayment==='cod'?'selected':''}" onclick="selectPayment('cod')">
+        <span class="sel-icon">📦</span>Наложный платёж
+      </button>
+      <button class="selector-btn ${orderPayment==='crypto'?'selected':''}" onclick="selectPayment('crypto')">
+        <span class="sel-icon">₿</span>Криптовалюта
+      </button>
+    </div>`;
+
+  if (orderPayment === 'crypto') {
+    html += `
+      <div style="background:var(--surface2);border-radius:var(--radius);padding:16px;margin-bottom:16px;text-align:center;color:var(--text2);font-size:14px;line-height:1.6">
+        После нажатия кнопки ниже — напишите менеджеру, он пришлёт реквизиты для оплаты и подтвердит заказ.
+      </div>
+      <button class="btn-primary" onclick="submitCrypto()">💬 Написать менеджеру →</button>`;
+  }
+
+  if (orderPayment === 'cod') {
+    html += `
+      <div class="form-section-title">👤 Данные получателя</div>
+      <div class="form-group">
+        <label>Imię i Nazwisko (Имя и Фамилия) *</label>
+        <input type="text" id="f-name" placeholder="Jan Kowalski" value="${document.getElementById('f-name')?.value||''}">
+      </div>
+      <div class="form-group">
+        <label>Numer telefonu *</label>
+        <input type="tel" id="f-phone" placeholder="+48 (___) ___-___" value="${document.getElementById('f-phone')?.value||''}" oninput="formatPolishPhone(this)">
+        <div class="hint">Польский номер в формате +48 (xxx) xxx-xxx</div>
+      </div>
+
+      <div class="form-section-title">🚚 Способ доставки</div>
+      <div class="selector-group">
+        <button class="selector-btn ${orderDelivery==='paczkomat'?'selected':''}" onclick="selectDelivery('paczkomat')">
+          <span class="sel-icon">🏪</span>Paczkomat InPost
+        </button>
+        <button class="selector-btn ${orderDelivery==='kurier'?'selected':''}" onclick="selectDelivery('kurier')">
+          <span class="sel-icon">🚗</span>Kurier
+        </button>
+      </div>`;
+
+    if (orderDelivery === 'paczkomat') {
+      html += `
+        <div class="form-group">
+          <label>Miasto (Город) *</label>
+          <input type="text" id="f-miasto" placeholder="Warszawa" value="${document.getElementById('f-miasto')?.value||''}">
+        </div>
+        <div class="form-group">
+          <label>Kod paczkomatu *</label>
+          <input type="text" id="f-kodpacz" placeholder="WAW01N" value="${document.getElementById('f-kodpacz')?.value||''}">
+          <div class="hint">Найдите код на сайте InPost или в приложении</div>
+        </div>`;
+    }
+
+    if (orderDelivery === 'kurier') {
+      html += `
+        <div class="form-group">
+          <label>Miasto (Город) *</label>
+          <input type="text" id="f-miasto" placeholder="Warszawa" value="${document.getElementById('f-miasto')?.value||''}">
+        </div>
+        <div class="form-group">
+          <label>Kod pocztowy (Почтовый индекс) *</label>
+          <input type="text" id="f-kod" placeholder="00-001" value="${document.getElementById('f-kod')?.value||''}">
+        </div>
+        <div class="form-group">
+          <label>Ulica (Улица) *</label>
+          <input type="text" id="f-ulica" placeholder="ul. Marszałkowska" value="${document.getElementById('f-ulica')?.value||''}">
+        </div>
+        <div class="form-group">
+          <label>Numer budynku (Номер дома) *</label>
+          <input type="text" id="f-budynek" placeholder="12" value="${document.getElementById('f-budynek')?.value||''}">
+        </div>
+        <div class="form-group">
+          <label>Numer lokalu (Номер квартиры)</label>
+          <input type="text" id="f-lokal" placeholder="5 (необязательно)" value="${document.getElementById('f-lokal')?.value||''}">
+        </div>`;
+    }
+
+    if (orderDelivery) {
+      html += `<button class="btn-primary" style="margin-top:8px" onclick="submitCOD()">Подтвердить данные ✓</button>`;
+    }
+  }
+
+  html += '<div style="height:16px"></div>';
+  document.getElementById('order-form-content').innerHTML = html;
+}
+
+function selectPayment(type) {
+  orderPayment = type;
+  orderDelivery = null;
+  renderOrderForm();
+}
+
+function selectDelivery(type) {
+  // save current input values before re-render
+  orderDelivery = type;
+  renderOrderForm();
+}
+
+function formatPolishPhone(input) {
+  let v = input.value.replace(/\D/g, '');
+  if (v.startsWith('48')) v = v.slice(2);
+  v = v.slice(0, 9);
+  let formatted = '+48 ';
+  if (v.length > 0) formatted += '(' + v.slice(0, 3);
+  if (v.length >= 3) formatted += ') ' + v.slice(3, 6);
+  if (v.length >= 6) formatted += '-' + v.slice(6, 9);
+  input.value = formatted;
+}
+
+function submitCrypto() {
+  const items = Object.values(cart);
+  let msg = `₿ *Заказ (оплата криптовалютой)*\n\n*Товары:*\n`;
+  items.forEach(i => { msg += `• ${i.flavor} (${i.model}) — ${i.qty} шт.\n`; });
+  msg += `\n💰 *Итого:* ${formatPrice(cartTotal())}`;
+  const savings = cartSavings();
+  if (savings > 0) msg += `\n⚡ *Экономия Smart Cena:* −${savings} zł`;
+  const encoded = encodeURIComponent(msg);
+  document.getElementById('manager-link').href = `https://t.me/${MANAGER_USERNAME}?text=${encoded}`;
+  document.getElementById('success-sub').textContent = 'Для подтверждения заказа и получения реквизитов напишите менеджеру.';
+  goTo('s-success');
+}
+
+function submitCOD() {
+  const name = (document.getElementById('f-name')?.value || '').trim();
+  const phone = (document.getElementById('f-phone')?.value || '').trim();
+  const miasto = (document.getElementById('f-miasto')?.value || '').trim();
+
+  if (!name || !phone || !miasto) {
+    alert('Пожалуйста, заполните все обязательные поля (*)');
+    return;
+  }
+
+  const items = Object.values(cart);
+  let msg = `📦 *Новый заказ (наложный платёж)*\n\n`;
+  msg += `👤 *Imię i Nazwisko:* ${name}\n`;
+  msg += `📞 *Telefon:* ${phone}\n`;
+
+  if (orderDelivery === 'paczkomat') {
+    const kodpacz = (document.getElementById('f-kodpacz')?.value || '').trim();
+    if (!kodpacz) { alert('Укажите Kod paczkomatu'); return; }
+    msg += `🏪 *Dostawa:* Paczkomat InPost\n`;
+    msg += `📍 *Miasto:* ${miasto}\n`;
+    msg += `📦 *Kod paczkomatu:* ${kodpacz}\n`;
+  } else {
+    const kod = (document.getElementById('f-kod')?.value || '').trim();
+    const ulica = (document.getElementById('f-ulica')?.value || '').trim();
+    const budynek = (document.getElementById('f-budynek')?.value || '').trim();
+    const lokal = (document.getElementById('f-lokal')?.value || '').trim();
+    if (!kod || !ulica || !budynek) { alert('Пожалуйста, заполните все обязательные поля (*)'); return; }
+    msg += `🚗 *Dostawa:* Kurier\n`;
+    msg += `📍 *Adres:* ${ulica} ${budynek}${lokal ? ' / ' + lokal : ''}, ${miasto}, ${kod}\n`;
+  }
+
+  msg += `\n🛒 *Товары:*\n`;
+  items.forEach(i => { msg += `• ${i.flavor} (${i.model}) — ${i.qty} шт.\n`; });
+  msg += `\n💰 *Итого:* ${formatPrice(cartTotal())} (наложный платёж)`;
+  const savings = cartSavings();
+  if (savings > 0) msg += `\n⚡ *Экономия Smart Cena:* −${savings} zł`;
+
+  const encoded = encodeURIComponent(msg);
+  document.getElementById('manager-link').href = `https://t.me/${MANAGER_USERNAME}?text=${encoded}`;
+  document.getElementById('success-sub').textContent = 'Для подтверждения вашего заказа напишите менеджеру — он всё проверит и отправит посылку.';
+  goTo('s-success');
+}
+
+function newOrder() {
+  cart = {};
+  orderPayment = null;
+  orderDelivery = null;
+  goTo('s-cats');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderCategories();
+renderAllModels();
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+function switchTab(tab) {
+  const catGrid = document.getElementById('cat-grid');
+  const allList = document.getElementById('all-models-list');
+  document.getElementById('tab-cats').classList.toggle('active', tab === 'cats');
+  document.getElementById('tab-all').classList.toggle('active', tab === 'all');
+  catGrid.style.display = tab === 'cats' ? 'grid' : 'none';
+  allList.style.display = tab === 'all' ? 'flex' : 'none';
+}
+
+function renderAllModels() {
+  const list = document.getElementById('all-models-list');
+  let html = '';
+  catalog.forEach(cat => {
+    html += `<div class="section-title">${cat.icon} ${cat.name}</div>`;
+    cat.models.forEach(m => {
+      html += `
+        <div class="model-card" onclick="openModelFromAll('${cat.id}','${m.id}')">
+          <div>
+            <div class="model-name">${m.name}</div>
+            <div class="model-count">${m.flavors.length} вкус${flavorWord(m.flavors.length)}</div>
+          </div>
+          <div class="arrow">›</div>
+        </div>`;
+    });
+  });
+  list.innerHTML = html;
+}
+
+function openModelFromAll(catId, modelId) {
+  currentCat = catalog.find(c => c.id === catId);
+  currentModel = currentCat.models.find(m => m.id === modelId);
+  document.getElementById('flavors-title').textContent = currentModel.name;
+  document.getElementById('flavors-sub').textContent = currentCat.name;
+  document.getElementById('flavor-back-btn').onclick = () => goTo('s-cats');
+  renderFlavors();
+  goTo('s-flavors');
+}
+</script>
+</body>
+</html>
