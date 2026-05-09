@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Vape Shop</title>
+<title>Vape Land</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   :root {
@@ -145,16 +145,40 @@
   .tab-bar { display: flex; gap: 8px; padding: 12px 14px 0; flex-shrink: 0; }
   .tab-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .18s; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  /* HISTORY */
+  .history-empty { text-align:center; padding:60px 20px; color:var(--text2); }
+  .history-empty-icon { font-size:48px; margin-bottom:12px; }
+  .history-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:10px; }
+  .history-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .history-order-num { font-size:13px; font-weight:700; color:var(--accent2); }
+  .history-date { font-size:12px; color:var(--text2); }
+  .history-items { font-size:13px; color:var(--text2); margin-bottom:8px; line-height:1.6; }
+  .history-footer { display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid var(--border); }
+  .history-payment { font-size:12px; color:var(--text2); }
+  .history-total { font-size:15px; font-weight:800; }
 </style>
 </head>
 <body>
 
+<!-- SCREEN 7: HISTORY -->
+<div class="screen" id="s-history">
+  <div class="header">
+    <button class="back-btn" onclick="goTo('s-cats')">←</button>
+    <div class="header-center">
+      <div class="header-title">🕐 Мои заказы</div>
+    </div>
+    <button class="home-btn" onclick="goTo('s-cats')">🏠 На главную</button>
+  </div>
+  <div class="scroll no-cart-pad" id="history-content"></div>
+</div>
+
 <!-- SCREEN 1: CATEGORIES -->
 <div class="screen active" id="s-cats">
   <div class="header">
-    <div>
-      <div class="header-title">🛒 Vape Shop</div>
+    <div class="header-center">
+      <div class="header-title">🛒 Vape Land</div>
     </div>
+    <button class="home-btn" onclick="openHistory()" style="margin-left:auto">🕐 Заказы</button>
   </div>
   <div class="tab-bar">
     <button class="tab-btn active" id="tab-cats" onclick="switchTab('cats')">🗂 Категории</button>
@@ -752,6 +776,7 @@ function renderOrderForm() {
   });
 
   const savings = cartSavings();
+  const delivery = getDeliveryCost();
   const savingsHtml = savings > 0
     ? `<div style="display:flex;justify-content:space-between;font-size:13px;color:#22c55e;margin-top:6px"><span>⚡ Экономия Smart Cena</span><span>−${savings} zł</span></div>`
     : '';
@@ -761,7 +786,8 @@ function renderOrderForm() {
       <div class="order-summary-title">Ваш заказ:</div>
       ${itemsHtml}
       ${savingsHtml}
-      <div class="order-summary-total"><span>Итого</span><span>${formatPrice(cartTotal())}</span></div>
+      <div class="order-summary-total" style="font-size:14px;font-weight:400;color:var(--text2);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><span>Cena dostawy</span><span>${delivery} zł</span></div>
+      <div class="order-summary-total"><span>Razem do zapłaty</span><span>${formatPrice(cartTotal() + delivery)}</span></div>
     </div>
 
     <div class="form-section-title">💳 Способ оплаты</div>
@@ -874,16 +900,45 @@ function formatPolishPhone(input) {
   input.value = formatted;
 }
 
+function getDeliveryCost() {
+  return cartTotal() >= 2500 ? 40 : 25;
+}
+
+function buildOrderLines() {
+  // Group items by model, return formatted lines
+  const byModel = {};
+  Object.values(cart).forEach(i => {
+    if (!byModel[i.model]) byModel[i.model] = [];
+    byModel[i.model].push(i);
+  });
+  let lines = '';
+  Object.entries(byModel).forEach(([model, items]) => {
+    lines += `${model}\n`;
+    items.forEach(i => { lines += `${i.flavor} x${i.qty}\n`; });
+    lines += '\n';
+  });
+  return lines;
+}
+
 function submitCrypto() {
-  const items = Object.values(cart);
-  let msg = `₿ *Заказ (оплата криптовалютой)*\n\n*Товары:*\n`;
-  items.forEach(i => { msg += `• ${i.flavor} (${i.model}) — ${i.qty} шт.\n`; });
-  msg += `\n💰 *Итого:* ${formatPrice(cartTotal())}`;
-  const savings = cartSavings();
-  if (savings > 0) msg += `\n⚡ *Экономия Smart Cena:* −${savings} zł`;
+  const total = cartTotal();
+  const delivery = getDeliveryCost();
+  const count = cartCount();
+  const orderLines = buildOrderLines();
+
+  let msg = `Здравствуйте! Можно подтвердить заказ?\n\n`;
+  msg += `Криптовалюта\n`;
+  msg += `📦 ЗАКАЗ\n\n`;
+  msg += orderLines;
+  msg += `TOTAL: ${count} штук\n`;
+  msg += `CENA: ${total} Zł\n\n`;
+  msg += `Cena dostawy: ${delivery} Zł\n`;
+  msg += `Razem do zapłaty: ${total}+${delivery}=${total + delivery} Zł`;
+
   const encoded = encodeURIComponent(msg);
   document.getElementById('manager-link').href = `https://t.me/${MANAGER_USERNAME}?text=${encoded}`;
   document.getElementById('success-sub').textContent = 'Для подтверждения заказа и получения реквизитов напишите менеджеру.';
+  saveOrderToHistory('crypto');
   goTo('s-success');
 }
 
@@ -897,37 +952,129 @@ function submitCOD() {
     return;
   }
 
-  const items = Object.values(cart);
-  let msg = `📦 *Новый заказ (наложный платёж)*\n\n`;
-  msg += `👤 *Imię i Nazwisko:* ${name}\n`;
-  msg += `📞 *Telefon:* ${phone}\n`;
+  const total = cartTotal();
+  const delivery = getDeliveryCost();
+  const count = cartCount();
+  const orderLines = buildOrderLines();
+
+  let msg = `Здравствуйте! Можно подтвердить заказ?\n\n`;
+  msg += `Наложный платёж\n`;
+  msg += `📦 ЗАКАЗ\n\n`;
+  msg += orderLines;
+  msg += `TOTAL: ${count} штук\n`;
+  msg += `CENA: ${total} Zł\n\n`;
+  msg += `Imię i Nazwisko: ${name}\n`;
+  msg += `Telefon: ${phone}\n`;
 
   if (orderDelivery === 'paczkomat') {
     const kodpacz = (document.getElementById('f-kodpacz')?.value || '').trim();
     if (!kodpacz) { alert('Укажите Kod paczkomatu'); return; }
-    msg += `🏪 *Dostawa:* Paczkomat InPost\n`;
-    msg += `📍 *Miasto:* ${miasto}\n`;
-    msg += `📦 *Kod paczkomatu:* ${kodpacz}\n`;
+    msg += `Dostawa: Paczkomat InPost\n`;
+    msg += `Miasto: ${miasto}\n`;
+    msg += `Kod paczkomatu: ${kodpacz}\n`;
   } else {
     const kod = (document.getElementById('f-kod')?.value || '').trim();
     const ulica = (document.getElementById('f-ulica')?.value || '').trim();
     const budynek = (document.getElementById('f-budynek')?.value || '').trim();
     const lokal = (document.getElementById('f-lokal')?.value || '').trim();
     if (!kod || !ulica || !budynek) { alert('Пожалуйста, заполните все обязательные поля (*)'); return; }
-    msg += `🚗 *Dostawa:* Kurier\n`;
-    msg += `📍 *Adres:* ${ulica} ${budynek}${lokal ? ' / ' + lokal : ''}, ${miasto}, ${kod}\n`;
+    msg += `Dostawa: Kurier\n`;
+    msg += `Miasto: ${miasto}\n`;
+    msg += `Kod pocztowy: ${kod}\n`;
+    msg += `Ulica: ${ulica} ${budynek}${lokal ? ' / ' + lokal : ''}\n`;
   }
 
-  msg += `\n🛒 *Товары:*\n`;
-  items.forEach(i => { msg += `• ${i.flavor} (${i.model}) — ${i.qty} шт.\n`; });
-  msg += `\n💰 *Итого:* ${formatPrice(cartTotal())} (наложный платёж)`;
-  const savings = cartSavings();
-  if (savings > 0) msg += `\n⚡ *Экономия Smart Cena:* −${savings} zł`;
+  msg += `\nCena dostawy: ${delivery} Zł\n`;
+  msg += `Razem do zapłaty: ${total}+${delivery}=${total + delivery} Zł`;
 
   const encoded = encodeURIComponent(msg);
   document.getElementById('manager-link').href = `https://t.me/${MANAGER_USERNAME}?text=${encoded}`;
   document.getElementById('success-sub').textContent = 'Для подтверждения вашего заказа напишите менеджеру — он всё проверит и отправит посылку.';
+  saveOrderToHistory('cod');
   goTo('s-success');
+}
+
+// ============================================================
+// ORDER HISTORY
+// ============================================================
+function saveOrderToHistory(paymentMethod, orderData) {
+  const order = {
+    id: Date.now(),
+    date: new Date().toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+    paymentMethod,
+    items: Object.values(cart).map(i => ({ flavor: i.flavor, model: i.model, qty: i.qty })),
+    total: cartTotal(),
+    delivery: getDeliveryCost(),
+    grandTotal: cartTotal() + getDeliveryCost()
+  };
+
+  const storage = window.Telegram?.WebApp?.CloudStorage;
+  if (storage) {
+    storage.getItem('orders', (err, val) => {
+      const orders = val ? JSON.parse(val) : [];
+      orders.unshift(order);
+      storage.setItem('orders', JSON.stringify(orders.slice(0, 20)));
+    });
+  } else {
+    try {
+      const orders = JSON.parse(localStorage.getItem('vl_orders') || '[]');
+      orders.unshift(order);
+      localStorage.setItem('vl_orders', JSON.stringify(orders.slice(0, 20)));
+    } catch(e) {}
+  }
+}
+
+function openHistory() {
+  const storage = window.Telegram?.WebApp?.CloudStorage;
+  if (storage) {
+    storage.getItem('orders', (err, val) => {
+      renderHistory(val ? JSON.parse(val) : []);
+    });
+  } else {
+    try {
+      const orders = JSON.parse(localStorage.getItem('vl_orders') || '[]');
+      renderHistory(orders);
+    } catch(e) { renderHistory([]); }
+  }
+  goTo('s-history');
+}
+
+function renderHistory(orders) {
+  const content = document.getElementById('history-content');
+  if (!orders || orders.length === 0) {
+    content.innerHTML = `
+      <div class="history-empty">
+        <div class="history-empty-icon">📋</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:8px">Заказов пока нет</div>
+        <div style="font-size:13px">Здесь будет история ваших заказов</div>
+      </div>`;
+    return;
+  }
+
+  content.innerHTML = orders.map((order, idx) => {
+    const byModel = {};
+    order.items.forEach(i => {
+      if (!byModel[i.model]) byModel[i.model] = [];
+      byModel[i.model].push(`${i.flavor} ×${i.qty}`);
+    });
+    const itemsText = Object.entries(byModel)
+      .map(([model, flavors]) => `<b>${model}:</b> ${flavors.join(', ')}`)
+      .join('<br>');
+    const payIcon = order.paymentMethod === 'crypto' ? '₿' : '📦';
+    const payLabel = order.paymentMethod === 'crypto' ? 'Криптовалюта' : 'Наложный платёж';
+
+    return `<div class="history-card">
+      <div class="history-card-header">
+        <span class="history-order-num">Заказ #${orders.length - idx}</span>
+        <span class="history-date">${order.date}</span>
+      </div>
+      <div class="history-items">${itemsText}</div>
+      <div class="history-footer">
+        <span class="history-payment">${payIcon} ${payLabel}</span>
+        <span class="history-total">${order.grandTotal} zł</span>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function newOrder() {
