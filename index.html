@@ -20,7 +20,8 @@
     --cart-h: 70px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 15px; overscroll-behavior: none; }
+  html { height: 100%; }
+  body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 15px; overscroll-behavior: none; }
   body { overflow: hidden; display: flex; flex-direction: column; }
 
   /* SCREENS */
@@ -42,16 +43,22 @@
 
   /* CATEGORY GRID */
   .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .cat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 14px; cursor: pointer; transition: all .18s; text-align: center; }
-  .cat-card:active { transform: scale(.96); background: var(--surface2); }
-  .cat-icon { font-size: 34px; margin-bottom: 8px; }
+  .cat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; overflow: hidden; transition: transform .18s, border-color .18s; -webkit-tap-highlight-color: transparent; }
+  .cat-card:active { transform: scale(.96); border-color: var(--accent); }
+  .cat-img { width: 100%; aspect-ratio: 4/3; background: var(--surface2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .cat-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cat-img-icon { font-size: 42px; }
+  .cat-card-body { padding: 10px 12px 13px; }
   .cat-name { font-size: 14px; font-weight: 700; }
-  .cat-count { font-size: 12px; color: var(--text2); margin-top: 4px; }
+  .cat-count { font-size: 12px; color: var(--text2); margin-top: 3px; }
 
   /* MODEL LIST */
   .model-list { display: flex; flex-direction: column; gap: 10px; }
-  .model-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all .18s; }
-  .model-card:active { background: var(--surface2); }
+  .model-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background .18s, border-color .18s; -webkit-tap-highlight-color: transparent; }
+  .model-card:active { background: var(--surface2); border-color: var(--accent); }
+  .model-thumb { width: 76px; height: 76px; border-radius: 10px; background: var(--surface2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 28px; }
+  .model-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .model-info { flex: 1; min-width: 0; }
   .model-name { font-size: 15px; font-weight: 700; }
   .model-count { font-size: 12px; color: var(--text2); margin-top: 3px; }
   .arrow { color: var(--accent2); font-size: 18px; }
@@ -124,6 +131,7 @@
   .btn-secondary { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; }
 
   .cart-total-label { font-size: 15px; font-weight: 800; color: var(--text); }
+  .cart-upsell { font-size: 11px; color: #22c55e; line-height: 1.4; display: none; }
 
   /* UPSELL BANNER */
   .upsell-banner { background: linear-gradient(135deg,#1a2a1a,#0f2010); border: 1px solid #22c55e44; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 13px; display: none; color: #22c55e; line-height: 1.5; }
@@ -156,6 +164,22 @@
   .history-footer { display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid var(--border); }
   .history-payment { font-size:12px; color:var(--text2); }
   .history-total { font-size:15px; font-weight:800; }
+
+  /* DEV: RESET LANG BTN — УДАЛИТЬ ПОСЛЕ ЗАВЕРШЕНИЯ ПЕРЕВОДОВ */
+  .dev-reset { position: fixed; bottom: 80px; right: 12px; z-index: 999; background: #ef4444; color: #fff; border: none; border-radius: 8px; padding: 6px 10px; font-size: 11px; font-weight: 700; cursor: pointer; opacity: 0.85; }
+
+  /* LANGUAGE MODAL */
+  .lang-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 32px; }
+  .lang-overlay.hidden { display: none; }
+  .lang-blur { position: fixed; inset: 0; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(10,8,20,0.55); }
+  .lang-card { position: relative; z-index: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 22px; padding: 36px 28px 32px; width: 100%; max-width: 320px; text-align: center; }
+  .lang-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; }
+  .lang-heading { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 28px; }
+  .lang-btns { display: flex; gap: 12px; }
+  .lang-btn { flex: 1; padding: 18px 10px; border-radius: 14px; border: 1.5px solid var(--border); background: var(--surface2); color: var(--text); font-size: 20px; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: border-color .18s, background .18s; -webkit-tap-highlight-color: transparent; }
+  .lang-btn span { font-size: 12px; font-weight: 600; color: var(--text2); letter-spacing: .04em; }
+  .lang-btn:active { background: var(--accent); border-color: var(--accent); }
+  .lang-btn:active span { color: #fff; }
 </style>
 </head>
 <body>
@@ -165,9 +189,9 @@
   <div class="header">
     <button class="back-btn" onclick="goTo('s-cats')">←</button>
     <div class="header-center">
-      <div class="header-title">🕐 Мои заказы</div>
+      <div class="header-title" data-i18n="history_title">🕐 Мои заказы</div>
     </div>
-    <button class="home-btn" onclick="goTo('s-cats')">🏠 На главную</button>
+    <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
   </div>
   <div class="scroll no-cart-pad" id="history-content"></div>
 </div>
@@ -178,11 +202,11 @@
     <div class="header-center">
       <div class="header-title">🛒 Vape Land</div>
     </div>
-    <button class="home-btn" onclick="openHistory()" style="margin-left:auto">🕐 Заказы</button>
+    <button class="home-btn" onclick="openHistory()" style="margin-left:auto" data-i18n="orders">🕐 Заказы</button>
   </div>
   <div class="tab-bar">
-    <button class="tab-btn active" id="tab-cats" onclick="switchTab('cats')">🗂 Категории</button>
-    <button class="tab-btn" id="tab-all" onclick="switchTab('all')">📦 Все товары</button>
+    <button class="tab-btn active" id="tab-cats" onclick="switchTab('cats')" data-i18n="tab_cats">🗂 Категории</button>
+    <button class="tab-btn" id="tab-all" onclick="switchTab('all')" data-i18n="tab_all">📦 Все товары</button>
   </div>
   <div class="scroll no-cart-pad" id="main-scroll">
     <div class="cat-grid" id="cat-grid"></div>
@@ -196,9 +220,9 @@
     <button class="back-btn" onclick="goTo('s-cats')">←</button>
     <div class="header-center">
       <div class="header-title" id="models-title"></div>
-      <div class="header-sub">Выберите модель</div>
+      <div class="header-sub" data-i18n="choose_model">Выберите модель</div>
     </div>
-    <button class="home-btn" onclick="goTo('s-cats')">🏠 На главную</button>
+    <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
   </div>
   <div class="scroll">
     <div class="model-list" id="model-list"></div>
@@ -213,7 +237,7 @@
       <div class="header-title" id="flavors-title"></div>
       <div class="header-sub" id="flavors-sub"></div>
     </div>
-    <button class="home-btn" onclick="goTo('s-cats')">🏠 На главную</button>
+    <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
   </div>
   <div class="scroll">
     <div class="flavor-list" id="flavor-list"></div>
@@ -225,9 +249,9 @@
   <div class="header">
     <button class="back-btn" id="cart-back-btn">←</button>
     <div class="header-center">
-      <div class="header-title">🛒 Корзина</div>
+      <div class="header-title" data-i18n="cart_title">🛒 Корзина</div>
     </div>
-    <button class="home-btn" onclick="goTo('s-cats')">🏠 На главную</button>
+    <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
   </div>
   <div class="scroll no-cart-pad" id="cart-content"></div>
 </div>
@@ -237,9 +261,9 @@
   <div class="header">
     <button class="back-btn" onclick="goTo('s-cart')">←</button>
     <div class="header-center">
-      <div class="header-title">📦 Оформление заказа</div>
+      <div class="header-title" data-i18n="order_title">📦 Оформление заказа</div>
     </div>
-    <button class="home-btn" onclick="goTo('s-cats')">🏠 На главную</button>
+    <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
   </div>
   <div class="scroll no-cart-pad" id="order-form-content"></div>
 </div>
@@ -248,24 +272,48 @@
 <div class="screen" id="s-success">
   <div class="success-screen">
     <div class="success-icon">✅</div>
-    <div class="success-title">Заказ оформлен!</div>
+    <div class="success-title" data-i18n="order_done">Заказ оформлен!</div>
     <div class="success-sub" id="success-sub">Для подтверждения вашего заказа напишите менеджеру — он всё проверит и отправит посылку.</div>
     <a class="btn-manager" id="manager-link" href="#" target="_blank">
-      <span>💬</span> Написать менеджеру
+      <span>💬</span> <span data-i18n="write_manager">Написать менеджеру</span>
     </a>
-    <button class="btn-secondary" onclick="newOrder()">Сделать новый заказ</button>
+    <button class="btn-secondary" onclick="newOrder()" data-i18n="new_order">Сделать новый заказ</button>
   </div>
 </div>
 
 <!-- CART BAR -->
 <div class="cart-bar" id="cart-bar">
   <div class="cart-info">
+    <div class="cart-upsell" id="cart-upsell"></div>
     <div class="cart-items-count" id="cart-items-label"></div>
     <div class="cart-total-label" id="cart-total-label"></div>
   </div>
   <button class="cart-open-btn" id="cart-open-btn">
-    🛒 Корзина <span class="cart-badge" id="cart-badge">0</span>
+    <span id="cart-btn-text">🛒 Корзина</span> <span class="cart-badge" id="cart-badge">0</span>
   </button>
+</div>
+
+
+<!-- DEV RESET BTN — УДАЛИТЬ ПОСЛЕ ЗАВЕРШЕНИЯ ПЕРЕВОДОВ -->
+<button class="dev-reset" onclick="localStorage.removeItem('vl_lang');location.reload()">🔄 Сброс языка</button>
+
+<!-- LANGUAGE MODAL -->
+<div class="lang-overlay" id="lang-overlay">
+  <div class="lang-blur"></div>
+  <div class="lang-card">
+    <div class="lang-title">Vape Land</div>
+    <div class="lang-heading">Choose your language</div>
+    <div class="lang-btns">
+      <button class="lang-btn" onclick="selectLang('pl')">
+        🇵🇱
+        <span>PL</span>
+      </button>
+      <button class="lang-btn" onclick="selectLang('ru')">
+        🇷🇺
+        <span>RU</span>
+      </button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -273,6 +321,175 @@
 // ДАННЫЕ ТОВАРОВ
 // ============================================================
 const MANAGER_USERNAME = 'Mangr_pl';
+
+// ============================================================
+// TRANSLATIONS
+// ============================================================
+let lang = null;
+try { lang = localStorage.getItem('vl_lang') || null; } catch(e) {}
+
+const TRANS = {
+  ru: {
+    home: '🏠 На главную',
+    orders: '🕐 Заказы',
+    tab_cats: '🗂 Категории',
+    tab_all: '📦 Все товары',
+    choose_model: 'Выберите модель',
+    cart_title: '🛒 Корзина',
+    cart_empty: 'Корзина пуста',
+    cart_empty_sub: 'Добавьте товары из каталога',
+    positions: 'Позиций',
+    discount: 'Скидка Smart Cena',
+    total: 'Итого',
+    add_more: '＋ Добавить ещё',
+    checkout: 'Оформить заказ →',
+    pcs: 'шт.',
+    pos_in_cart: 'поз. в корзине',
+    order_title: '📦 Оформление заказа',
+    your_order: 'Ваш заказ:',
+    saving: '⚡ Экономия Smart Cena',
+    payment_section: '💳 Способ оплаты',
+    pay_cod: 'Наложный платёж',
+    pay_crypto: 'Криптовалюта',
+    crypto_hint: 'После нажатия кнопки ниже — напишите менеджеру, он пришлёт реквизиты для оплаты и подтвердит заказ.',
+    write_manager_btn: '💬 Написать менеджеру →',
+    recipient: '👤 Данные получателя',
+    delivery_section: '🚚 Способ доставки',
+    confirm_btn: 'Подтвердить данные ✓',
+    phone_hint: 'Польский номер в формате +48 (xxx) xxx-xxx',
+    paczkomat_hint: 'Найдите код на сайте InPost или в приложении',
+    order_done: 'Заказ оформлен!',
+    success_sub_cod: 'Для подтверждения вашего заказа напишите менеджеру — он всё проверит и отправит посылку.',
+    success_sub_crypto: 'Для подтверждения заказа и получения реквизитов напишите менеджеру.',
+    write_manager: 'Написать менеджеру',
+    new_order: 'Сделать новый заказ',
+    history_title: '🕐 Мои заказы',
+    no_orders: 'Заказов пока нет',
+    no_orders_sub: 'Здесь будет история ваших заказов',
+    order_num: 'Заказ',
+    pay_label_cod: 'Наложный платёж',
+    pay_label_crypto: 'Криптовалюта',
+    smart_cena_title: '⚡ Smart Cena',
+    price_title: '💰 Цена',
+    per_piece: 'За штуку',
+    per_pcs: 'zł/шт.',
+    fill_required: 'Пожалуйста, заполните все обязательные поля (*)',
+    fill_kod: 'Укажите Kod paczkomatu',
+    cart_btn: '🛒 Корзина',
+    lbl_name: 'Imię i Nazwisko (Имя и Фамилия) *',
+    lbl_city: 'Miasto (Город) *',
+    lbl_zip: 'Kod pocztowy (Почтовый индекс) *',
+    lbl_street: 'Ulica (Улица) *',
+    lbl_building: 'Numer budynku (Номер дома) *',
+    lbl_flat: 'Numer lokalu (Номер квартиры)',
+    lbl_flat_ph: '5 (необязательно)',
+    msg_greeting: 'Здравствуйте! Можно подтвердить заказ?',
+    msg_total: n => `TOTAL: ${n} штук`,
+    delivery_cost: 'Стоимость доставки',
+    total_to_pay: 'Итого к оплате',
+    upsell: (n, p, s) => `💡 Добавь ещё <b style="color:#4ade80">${n} шт.</b> → цена <b style="color:#4ade80">${p} zł/шт.</b>, сэкономишь <b style="color:#4ade80">${s} zł</b>`,
+    flavor_label: n => 'вкус' + (n === 1 ? '' : n >= 2 && n <= 4 ? 'а' : 'ов'),
+    model_label: n => 'модел' + (n === 1 ? 'ь' : 'и'),
+  },
+  pl: {
+    home: '🏠 Strona główna',
+    orders: '🕐 Zamówienia',
+    tab_cats: '🗂 Kategorie',
+    tab_all: '📦 Wszystkie',
+    choose_model: 'Wybierz model',
+    cart_title: '🛒 Koszyk',
+    cart_empty: 'Koszyk pusty',
+    cart_empty_sub: 'Dodaj produkty z katalogu',
+    positions: 'Pozycji',
+    discount: 'Zniżka Smart Cena',
+    total: 'Razem',
+    add_more: '＋ Dodaj więcej',
+    checkout: 'Złóż zamówienie →',
+    pcs: 'szt.',
+    pos_in_cart: 'poz. w koszyku',
+    order_title: '📦 Złożenie zamówienia',
+    your_order: 'Twoje zamówienie:',
+    saving: '⚡ Oszczędność Smart Cena',
+    payment_section: '💳 Metoda płatności',
+    pay_cod: 'Pobranie',
+    pay_crypto: 'Kryptowaluta',
+    crypto_hint: 'Po kliknięciu przycisku poniżej — napisz do menedżera, prześle dane do płatności i potwierdzi zamówienie.',
+    write_manager_btn: '💬 Napisz do menedżera →',
+    recipient: '👤 Dane odbiorcy',
+    delivery_section: '🚚 Sposób dostawy',
+    confirm_btn: 'Potwierdź dane ✓',
+    phone_hint: 'Numer polski w formacie +48 (xxx) xxx-xxx',
+    paczkomat_hint: 'Znajdź kod na stronie InPost lub w aplikacji',
+    order_done: 'Zamówienie złożone!',
+    success_sub_cod: 'Aby potwierdzić zamówienie, napisz do menedżera — sprawdzi wszystko i wyśle paczkę.',
+    success_sub_crypto: 'Aby potwierdzić zamówienie i otrzymać dane do płatności, napisz do menedżera.',
+    write_manager: 'Napisz do menedżera',
+    new_order: 'Złóż nowe zamówienie',
+    history_title: '🕐 Moje zamówienia',
+    no_orders: 'Brak zamówień',
+    no_orders_sub: 'Tutaj pojawi się historia twoich zamówień',
+    order_num: 'Zamówienie',
+    pay_label_cod: 'Pobranie',
+    pay_label_crypto: 'Kryptowaluta',
+    smart_cena_title: '⚡ Smart Cena',
+    price_title: '💰 Cena',
+    per_piece: 'Za sztukę',
+    per_pcs: 'zł/szt.',
+    fill_required: 'Proszę wypełnić wszystkie wymagane pola (*)',
+    fill_kod: 'Podaj Kod paczkomatu',
+    cart_btn: '🛒 Koszyk',
+    lbl_name: 'Imię i Nazwisko *',
+    lbl_city: 'Miasto *',
+    lbl_zip: 'Kod pocztowy *',
+    lbl_street: 'Ulica *',
+    lbl_building: 'Numer budynku *',
+    lbl_flat: 'Numer lokalu',
+    lbl_flat_ph: '5 (opcjonalnie)',
+    msg_greeting: 'Dzień dobry, proszę o potwierdzenie zamówienia',
+    msg_total: n => `TOTAL: ${n} sztuk`,
+    delivery_cost: 'Cena dostawy',
+    total_to_pay: 'Razem do zapłaty',
+    upsell: (n, p, s) => `💡 Dodaj jeszcze <b style="color:#4ade80">${n} szt.</b> → cena <b style="color:#4ade80">${p} zł/szt.</b>, zaoszczędzisz <b style="color:#4ade80">${s} zł</b>`,
+    flavor_label: n => n === 1 ? 'smak' : n >= 2 && n <= 4 ? 'smaki' : 'smaków',
+    model_label: n => n === 1 ? 'model' : n >= 2 && n <= 4 ? 'modele' : 'modeli',
+  }
+};
+
+function tr(key, ...args) {
+  const val = TRANS[lang || 'ru']?.[key] ?? TRANS.ru[key];
+  return typeof val === 'function' ? val(...args) : (val ?? key);
+}
+
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = tr(el.getAttribute('data-i18n'));
+  });
+  const cartBtnText = document.getElementById('cart-btn-text');
+  if (cartBtnText) cartBtnText.textContent = tr('cart_btn');
+}
+
+
+// ============================================================
+// LANGUAGE MODAL
+// ============================================================
+function selectLang(l) {
+  lang = l;
+  try { localStorage.setItem('vl_lang', l); } catch(e) {}
+  document.getElementById('lang-overlay').classList.add('hidden');
+  applyLang();
+  renderCategories();
+  renderAllModels();
+}
+
+// Show modal on init if no lang saved
+// On load: if lang already saved, skip modal and apply lang
+if (lang) {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('lang-overlay').classList.add('hidden');
+    applyLang();
+  });
+}
+
 
 // ============================================================
 // SMART PRICING
@@ -336,6 +553,7 @@ const catalog = [
   {
     id: 'disposable',
     name: 'Одноразки',
+    name_pl: 'E-papierosy',
     icon: '💨',
     models: [
       {
@@ -358,6 +576,7 @@ const catalog = [
   {
     id: 'pods',
     name: 'Под системы',
+    name_pl: 'Pody',
     icon: '🔋',
     models: [
       {
@@ -375,6 +594,7 @@ const catalog = [
   {
     id: 'cartridges',
     name: 'Картриджи',
+    name_pl: 'Cartridge',
     icon: '🔌',
     models: [
       {
@@ -392,6 +612,7 @@ const catalog = [
   {
     id: 'liquids',
     name: 'Жидкости',
+    name_pl: 'E-liquid',
     icon: '💧',
     models: [
       {
@@ -428,6 +649,11 @@ if (tg) { tg.ready(); tg.expand(); }
 function goTo(screenId) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(screenId).classList.add('active');
+  if (screenId !== 's-flavors') {
+    const cu = document.getElementById('cart-upsell');
+    if (cu) { cu.style.display = 'none'; cu.textContent = ''; }
+  }
+  applyLang();
   updateCartBar(screenId);
 }
 
@@ -438,7 +664,7 @@ function updateCartBar(screenId) {
   const count = cartCount();
   if (!hide && count > 0) {
     bar.classList.add('visible');
-    document.getElementById('cart-items-label').textContent = `${count} поз. в корзине`;
+    document.getElementById('cart-items-label').textContent = `${count} ${tr('pos_in_cart')}`;
     document.getElementById('cart-total-label').textContent = formatPrice(total);
     document.getElementById('cart-badge').textContent = count;
   } else {
@@ -453,16 +679,20 @@ function renderCategories() {
   const grid = document.getElementById('cat-grid');
   grid.innerHTML = catalog.map(cat => `
     <div class="cat-card" onclick="openCategory('${cat.id}')">
-      <div class="cat-icon">${cat.icon}</div>
-      <div class="cat-name">${cat.name}</div>
-      <div class="cat-count">${cat.models.length} модел${cat.models.length === 1 ? 'ь' : 'и'}</div>
+      <div class="cat-img">
+        ${cat.img ? `<img src="${cat.img}" alt="${cat.name}">` : `<div class="cat-img-icon">${cat.icon}</div>`}
+      </div>
+      <div class="cat-card-body">
+        <div class="cat-name">${lang === "pl" && cat.name_pl ? cat.name_pl : cat.name}</div>
+        <div class="cat-count">${cat.models.length} ${tr('model_label', cat.models.length)}</div>
+      </div>
     </div>
   `).join('');
 }
 
 function openCategory(catId) {
   currentCat = catalog.find(c => c.id === catId);
-  document.getElementById('models-title').textContent = currentCat.icon + ' ' + currentCat.name;
+  document.getElementById('models-title').textContent = currentCat.icon + ' ' + (lang === 'pl' && currentCat.name_pl ? currentCat.name_pl : currentCat.name);
   renderModels();
   goTo('s-models');
 }
@@ -474,9 +704,12 @@ function renderModels() {
   const list = document.getElementById('model-list');
   list.innerHTML = currentCat.models.map(m => `
     <div class="model-card" onclick="openModel('${m.id}')">
-      <div>
+      <div class="model-thumb">
+        ${m.img ? `<img src="${m.img}" alt="${m.name}">` : currentCat.icon}
+      </div>
+      <div class="model-info">
         <div class="model-name">${m.name}</div>
-        <div class="model-count">${m.flavors.length} вкус${flavorWord(m.flavors.length)}</div>
+        <div class="model-count">${m.flavors.length} ${tr('flavor_label', m.flavors.length)}</div>
       </div>
       <div class="arrow">›</div>
     </div>
@@ -514,29 +747,25 @@ function renderFlavors() {
     const rows = tiers.map((t, i) => {
       const [minQty, price] = t;
       const nextMin = tiers[i+1]?.[0];
-      const label = nextMin ? `${minQty}–${nextMin-1} шт.` : `${minQty}+ шт.`;
+      const label = nextMin ? `${minQty}–${nextMin-1} ${tr('pcs')}` : `${minQty}+ ${tr('pcs')}`;
       const isActive = qtyInCat >= minQty && (!nextMin || qtyInCat < nextMin);
       return `<div class="smart-tier-row${isActive?' active':''}">
         <span>${label}</span>
-        <span class="tier-price">${price} zł/шт.</span>
+        <span class="tier-price">${price} ${tr('per_pcs')}</span>
       </div>`;
     }).join('');
     tiersHtml = `<div class="smart-tiers">
-      <div class="smart-tiers-title">⚡ Smart Cena</div>
+      <div class="smart-tiers-title">${tr('smart_cena_title')}</div>
       ${rows}
     </div>`;
   } else {
     tiersHtml = `<div class="smart-tiers">
-      <div class="smart-tiers-title">💰 Цена</div>
-      <div class="smart-tier-row active"><span>За штуку</span><span class="tier-price">${curPrice} zł</span></div>
+      <div class="smart-tiers-title">${tr('price_title')}</div>
+      <div class="smart-tier-row active"><span>${tr('per_piece')}</span><span class="tier-price">${curPrice} zł</span></div>
     </div>`;
   }
 
-  // Smart badge (updates dynamically) + upsell
-  const badgeHtml = `<div class="smart-badge" id="smart-price-badge"></div>
-  <div class="upsell-banner" id="upsell-banner"></div>`;
-
-  list.innerHTML = badgeHtml + tiersHtml + currentModel.flavors.map(flavor => {
+  list.innerHTML = tiersHtml + currentModel.flavors.map(flavor => {
     const key = `${currentModel.id}::${flavor}`;
     const qty = cart[key]?.qty || 0;
     return `
@@ -586,43 +815,33 @@ function changeQty(key, delta) {
 }
 
 function updateFlavorSmartBadge() {
-  const badge = document.getElementById('smart-price-badge');
-  const upsell = document.getElementById('upsell-banner');
-  if (!badge || !currentCat) return;
+  if (!currentCat) return;
 
   const qty = catQty(currentCat.id);
   const price = getSmartPrice(currentCat.id, qty);
   const tiers = PRICING[currentCat.id]?.tiers || [];
   const hasTiers = tiers.length > 1;
 
-  // Smart badge
-  if (qty === 0) {
-    badge.style.display = 'none';
-  } else {
-    badge.style.display = 'block';
-    badge.innerHTML = hasTiers
-      ? `⚡ Smart Cena: <b>${price} zł/шт.</b> (${qty} шт. в корзине)`
-      : `💰 Цена: <b>${price} zł/шт.</b>`;
-  }
-
-  // Upsell: find next tier
-  if (!upsell || !hasTiers || qty === 0) {
-    if (upsell) upsell.style.display = 'none';
+  // Upsell in cart bar
+  const cartUpsell = document.getElementById('cart-upsell');
+  if (!cartUpsell || !hasTiers || qty === 0) {
+    if (cartUpsell) { cartUpsell.style.display = 'none'; cartUpsell.textContent = ''; }
     return;
   }
   const nextTier = tiers.find(([minQty]) => minQty > qty);
-  if (!nextTier) { upsell.style.display = 'none'; return; }
+  if (!nextTier) { cartUpsell.style.display = 'none'; cartUpsell.textContent = ''; return; }
 
   const [nextMin, nextPrice] = nextTier;
   const need = nextMin - qty;
   const savingsPerUnit = price - nextPrice;
-  const totalSavings = nextMin * savingsPerUnit; // savings on whole batch at new price
+  const totalSavings = nextMin * savingsPerUnit;
 
   if (need <= 5) {
-    upsell.style.display = 'block';
-    upsell.innerHTML = `💡 Добавь ещё <b>${need} шт.</b> и цена упадёт до <b>${nextPrice} zł/шт.</b> — сэкономишь <b>${totalSavings} zł</b> на всём заказе!`;
+    cartUpsell.style.display = 'block';
+    cartUpsell.innerHTML = tr('upsell', need, nextPrice, totalSavings);
   } else {
-    upsell.style.display = 'none';
+    cartUpsell.style.display = 'none';
+    cartUpsell.textContent = '';
   }
 }
 
@@ -647,8 +866,8 @@ function renderCart() {
     content.innerHTML = `
       <div class="cart-empty">
         <div class="cart-empty-icon">🛒</div>
-        <div>Корзина пуста</div>
-        <div style="margin-top:8px;font-size:13px;color:var(--text2)">Добавьте товары из каталога</div>
+        <div>${tr('cart_empty')}</div>
+        <div style="margin-top:8px;font-size:13px;color:var(--text2)">${tr('cart_empty_sub')}</div>
       </div>`;
     return;
   }
@@ -665,37 +884,23 @@ function renderCart() {
     const cat = catalog.find(c => c.id === catId);
     const qtyInCat = catQty(catId);
     const unitPrice = getSmartPrice(catId, qtyInCat);
-    const basePrice = getBasePrice(catId);
-    const hasTiers = PRICING[catId]?.tiers.length > 1;
-    const catTotal = qtyInCat * unitPrice;
 
-    html += `<div class="section-title">${cat?.icon || ''} ${cat?.name || catId}</div>`;
+    html += `<div class="section-title">${cat?.icon || ''} ${lang === 'pl' && cat?.name_pl ? cat.name_pl : (cat?.name || catId)}</div>`;
 
-    if (hasTiers) {
-      const saved = qtyInCat * (basePrice - unitPrice);
-      html += `<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:13px;display:flex;justify-content:space-between;align-items:center">
-        <span>⚡ Smart Cena: <b style="color:#a855f7">${unitPrice} zł/шт.</b></span>
-        ${saved > 0 ? `<span style="color:#22c55e;font-weight:700">−${saved} zł</span>` : ''}
-      </div>`;
-    }
-
+    catItems.sort((a, b) => a.model.localeCompare(b.model));
     catItems.forEach(item => {
       html += `
         <div class="cart-item-row" id="citem-${safeId(item.key)}">
-          <div class="cart-item-header">
-            <div>
-              <div class="cart-item-name">${item.flavor}</div>
-              <div class="cart-item-cat">${item.model}</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="flex:1;min-width:0">
+              <div class="cart-item-name" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.model} — ${item.flavor}</div>
             </div>
-            <button class="cart-item-del" onclick="removeCartItem('${escQ(item.key)}')">✕</button>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <div class="qty-ctrl">
+            <div class="qty-ctrl" style="flex-shrink:0">
               <button class="qty-btn" onclick="cartChangeQty('${escQ(item.key)}', '${catId}')">−</button>
               <div class="qty-val" id="cqty-${safeId(item.key)}">${item.qty}</div>
               <button class="qty-btn" onclick="cartChangeQty('${escQ(item.key)}', '${catId}', 1)">+</button>
             </div>
-            <div style="font-size:13px;color:var(--text2)">${item.qty} × ${unitPrice} zł</div>
+            <button class="cart-item-del" onclick="removeCartItem('${escQ(item.key)}')">✕</button>
           </div>
         </div>`;
     });
@@ -706,13 +911,15 @@ function renderCart() {
   const count = cartCount();
 
   html += `<div class="cart-summary">`;
-  html += `<div class="cart-summary-row"><span>Позиций</span><span>${count} шт.</span></div>`;
+  html += `<div class="cart-summary-row" style="font-size:15px;font-weight:700;color:var(--text)"><span>${tr('positions')}</span><span>${count} ${tr('pcs')}</span></div>`;
   if (savings > 0) {
-    html += `<div class="cart-summary-row" style="color:#22c55e"><span>⚡ Экономия Smart Cena</span><span>−${savings} zł</span></div>`;
+    html += `<div class="cart-summary-row"><span>${tr('discount')}</span><span style="color:#22c55e;font-weight:700">−${savings} zł</span></div>`;
   }
-  html += `<div class="cart-summary-total"><span>Итого</span><span>${formatPrice(total)}</span></div></div>`;
-  html += `<button class="btn-secondary" onclick="goTo('s-cats')">＋ Добавить ещё</button>`;
-  html += `<button class="btn-primary" style="margin-top:10px" onclick="openOrder()">Оформить заказ →</button>`;
+  html += `<div class="cart-summary-total"><span>${tr('total')}</span><span>${formatPrice(total)}</span></div></div>`;
+  html += `<div style="display:flex;gap:10px;margin-top:14px">
+    <button style="flex:1;background:var(--surface);border:1.5px solid var(--border);color:var(--text);border-radius:12px;padding:14px 10px;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent" ontouchstart="this.style.background='var(--surface2)'" ontouchend="this.style.background='var(--surface)'" onclick="goTo('s-cats')">${tr('add_more')}</button>
+    <button style="flex:1;background:var(--accent);border:none;color:#fff;border-radius:12px;padding:14px 10px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s;-webkit-tap-highlight-color:transparent" ontouchstart="this.style.opacity='.85'" ontouchend="this.style.opacity='1'" onclick="openOrder()">${tr('checkout')}</button>
+  </div>`;
   html += `<div style="height:10px"></div>`;
 
   content.innerHTML = html;
@@ -765,12 +972,12 @@ function renderOrderForm() {
     itemsHtml += `<div class="order-model-group">
       <div class="order-model-header">
         <span class="order-model-name">${group.model}</span>
-        <span class="order-model-meta">${modelQty} шт. — ${modelTotal} zł</span>
+        <span class="order-model-meta">${modelQty} ${tr('pcs')} — ${modelTotal} zł</span>
       </div>
       ${group.flavors.map(f => `
         <div class="order-flavor-row">
           <span>${f.flavor}</span>
-          <span>${f.qty} шт.</span>
+          <span>${f.qty} ${tr('pcs')}</span>
         </div>`).join('')}
     </div>`;
   });
@@ -778,50 +985,50 @@ function renderOrderForm() {
   const savings = cartSavings();
   const delivery = getDeliveryCost();
   const savingsHtml = savings > 0
-    ? `<div style="display:flex;justify-content:space-between;font-size:13px;color:#22c55e;margin-top:6px"><span>⚡ Экономия Smart Cena</span><span>−${savings} zł</span></div>`
+    ? `<div style="display:flex;justify-content:space-between;font-size:13px;color:#22c55e;margin-top:6px"><span>${tr('saving')}</span><span>−${savings} zł</span></div>`
     : '';
 
   let html = `
     <div class="order-summary">
-      <div class="order-summary-title">Ваш заказ:</div>
+      <div class="order-summary-title">${tr('your_order')}</div>
       ${itemsHtml}
       ${savingsHtml}
-      <div class="order-summary-total" style="font-size:14px;font-weight:400;color:var(--text2);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><span>Cena dostawy</span><span>${delivery} zł</span></div>
-      <div class="order-summary-total"><span>Razem do zapłaty</span><span>${formatPrice(cartTotal() + delivery)}</span></div>
+      <div class="order-summary-total" style="font-size:14px;font-weight:400;color:var(--text2);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><span>${tr('delivery_cost')}</span><span>${delivery} zł</span></div>
+      <div class="order-summary-total"><span>${tr('total_to_pay')}</span><span>${formatPrice(cartTotal() + delivery)}</span></div>
     </div>
 
-    <div class="form-section-title">💳 Способ оплаты</div>
+    <div class="form-section-title">${tr('payment_section')}</div>
     <div class="selector-group">
       <button class="selector-btn ${orderPayment==='cod'?'selected':''}" onclick="selectPayment('cod')">
-        <span class="sel-icon">📦</span>Наложный платёж
+        <span class="sel-icon">📦</span>${tr('pay_cod')}
       </button>
       <button class="selector-btn ${orderPayment==='crypto'?'selected':''}" onclick="selectPayment('crypto')">
-        <span class="sel-icon">₿</span>Криптовалюта
+        <span class="sel-icon">₿</span>${tr('pay_crypto')}
       </button>
     </div>`;
 
   if (orderPayment === 'crypto') {
     html += `
       <div style="background:var(--surface2);border-radius:var(--radius);padding:16px;margin-bottom:16px;text-align:center;color:var(--text2);font-size:14px;line-height:1.6">
-        После нажатия кнопки ниже — напишите менеджеру, он пришлёт реквизиты для оплаты и подтвердит заказ.
+        ${tr('crypto_hint')}
       </div>
-      <button class="btn-primary" onclick="submitCrypto()">💬 Написать менеджеру →</button>`;
+      <button class="btn-primary" onclick="submitCrypto()">${tr('write_manager_btn')}</button>`;
   }
 
   if (orderPayment === 'cod') {
     html += `
-      <div class="form-section-title">👤 Данные получателя</div>
+      <div class="form-section-title">${tr('recipient')}</div>
       <div class="form-group">
-        <label>Imię i Nazwisko (Имя и Фамилия) *</label>
+        <label>${tr('lbl_name')}</label>
         <input type="text" id="f-name" placeholder="Jan Kowalski" value="${document.getElementById('f-name')?.value||''}">
       </div>
       <div class="form-group">
         <label>Numer telefonu *</label>
         <input type="tel" id="f-phone" placeholder="+48 (___) ___-___" value="${document.getElementById('f-phone')?.value||''}" oninput="formatPolishPhone(this)">
-        <div class="hint">Польский номер в формате +48 (xxx) xxx-xxx</div>
+        <div class="hint">${tr('phone_hint')}</div>
       </div>
 
-      <div class="form-section-title">🚚 Способ доставки</div>
+      <div class="form-section-title">${tr('delivery_section')}</div>
       <div class="selector-group">
         <button class="selector-btn ${orderDelivery==='paczkomat'?'selected':''}" onclick="selectDelivery('paczkomat')">
           <span class="sel-icon">🏪</span>Paczkomat InPost
@@ -834,42 +1041,42 @@ function renderOrderForm() {
     if (orderDelivery === 'paczkomat') {
       html += `
         <div class="form-group">
-          <label>Miasto (Город) *</label>
+          <label>${tr('lbl_city')}</label>
           <input type="text" id="f-miasto" placeholder="Warszawa" value="${document.getElementById('f-miasto')?.value||''}">
         </div>
         <div class="form-group">
           <label>Kod paczkomatu *</label>
           <input type="text" id="f-kodpacz" placeholder="WAW01N" value="${document.getElementById('f-kodpacz')?.value||''}">
-          <div class="hint">Найдите код на сайте InPost или в приложении</div>
+          <div class="hint">${tr('paczkomat_hint')}</div>
         </div>`;
     }
 
     if (orderDelivery === 'kurier') {
       html += `
         <div class="form-group">
-          <label>Miasto (Город) *</label>
+          <label>${tr('lbl_city')}</label>
           <input type="text" id="f-miasto" placeholder="Warszawa" value="${document.getElementById('f-miasto')?.value||''}">
         </div>
         <div class="form-group">
-          <label>Kod pocztowy (Почтовый индекс) *</label>
+          <label>${tr('lbl_zip')}</label>
           <input type="text" id="f-kod" placeholder="00-001" value="${document.getElementById('f-kod')?.value||''}">
         </div>
         <div class="form-group">
-          <label>Ulica (Улица) *</label>
+          <label>${tr('lbl_street')}</label>
           <input type="text" id="f-ulica" placeholder="ul. Marszałkowska" value="${document.getElementById('f-ulica')?.value||''}">
         </div>
         <div class="form-group">
-          <label>Numer budynku (Номер дома) *</label>
+          <label>${tr('lbl_building')}</label>
           <input type="text" id="f-budynek" placeholder="12" value="${document.getElementById('f-budynek')?.value||''}">
         </div>
         <div class="form-group">
-          <label>Numer lokalu (Номер квартиры)</label>
-          <input type="text" id="f-lokal" placeholder="5 (необязательно)" value="${document.getElementById('f-lokal')?.value||''}">
+          <label>${tr('lbl_flat')}</label>
+          <input type="text" id="f-lokal" placeholder="${tr('lbl_flat_ph')}" value="${document.getElementById('f-lokal')?.value||''}">
         </div>`;
     }
 
     if (orderDelivery) {
-      html += `<button class="btn-primary" style="margin-top:8px" onclick="submitCOD()">Подтвердить данные ✓</button>`;
+      html += `<button class="btn-primary" style="margin-top:8px" onclick="submitCOD()">${tr('confirm_btn')}</button>`;
     }
   }
 
@@ -926,18 +1133,18 @@ function submitCrypto() {
   const count = cartCount();
   const orderLines = buildOrderLines();
 
-  let msg = `Здравствуйте! Можно подтвердить заказ?\n\n`;
-  msg += `Криптовалюта\n`;
-  msg += `📦 ЗАКАЗ\n\n`;
+  let msg = `${tr('msg_greeting')}\n\n`;
+  msg += `${tr('pay_label_crypto')}\n`;
+  msg += `📦 ${lang === 'pl' ? 'ZAMÓWIENIE' : 'ЗАКАЗ'}\n\n`;
   msg += orderLines;
-  msg += `TOTAL: ${count} штук\n`;
+  msg += tr('msg_total', count) + '\n';
   msg += `CENA: ${total} Zł\n\n`;
   msg += `Cena dostawy: ${delivery} Zł\n`;
   msg += `Razem do zapłaty: ${total}+${delivery}=${total + delivery} Zł`;
 
   const encoded = encodeURIComponent(msg);
   document.getElementById('manager-link').href = `https://t.me/${MANAGER_USERNAME}?text=${encoded}`;
-  document.getElementById('success-sub').textContent = 'Для подтверждения заказа и получения реквизитов напишите менеджеру.';
+  document.getElementById('success-sub').textContent = tr('success_sub_crypto');
   saveOrderToHistory('crypto');
   goTo('s-success');
 }
@@ -948,7 +1155,7 @@ function submitCOD() {
   const miasto = (document.getElementById('f-miasto')?.value || '').trim();
 
   if (!name || !phone || !miasto) {
-    alert('Пожалуйста, заполните все обязательные поля (*)');
+    alert(tr('fill_required'));
     return;
   }
 
@@ -957,18 +1164,18 @@ function submitCOD() {
   const count = cartCount();
   const orderLines = buildOrderLines();
 
-  let msg = `Здравствуйте! Можно подтвердить заказ?\n\n`;
-  msg += `Наложный платёж\n`;
-  msg += `📦 ЗАКАЗ\n\n`;
+  let msg = `${tr('msg_greeting')}\n\n`;
+  msg += `${tr('pay_label_cod')}\n`;
+  msg += `📦 ${lang === 'pl' ? 'ZAMÓWIENIE' : 'ЗАКАЗ'}\n\n`;
   msg += orderLines;
-  msg += `TOTAL: ${count} штук\n`;
+  msg += tr('msg_total', count) + '\n';
   msg += `CENA: ${total} Zł\n\n`;
   msg += `Imię i Nazwisko: ${name}\n`;
   msg += `Telefon: ${phone}\n`;
 
   if (orderDelivery === 'paczkomat') {
     const kodpacz = (document.getElementById('f-kodpacz')?.value || '').trim();
-    if (!kodpacz) { alert('Укажите Kod paczkomatu'); return; }
+    if (!kodpacz) { alert(tr('fill_kod')); return; }
     msg += `Dostawa: Paczkomat InPost\n`;
     msg += `Miasto: ${miasto}\n`;
     msg += `Kod paczkomatu: ${kodpacz}\n`;
@@ -977,7 +1184,7 @@ function submitCOD() {
     const ulica = (document.getElementById('f-ulica')?.value || '').trim();
     const budynek = (document.getElementById('f-budynek')?.value || '').trim();
     const lokal = (document.getElementById('f-lokal')?.value || '').trim();
-    if (!kod || !ulica || !budynek) { alert('Пожалуйста, заполните все обязательные поля (*)'); return; }
+    if (!kod || !ulica || !budynek) { alert(tr('fill_required')); return; }
     msg += `Dostawa: Kurier\n`;
     msg += `Miasto: ${miasto}\n`;
     msg += `Kod pocztowy: ${kod}\n`;
@@ -989,7 +1196,7 @@ function submitCOD() {
 
   const encoded = encodeURIComponent(msg);
   document.getElementById('manager-link').href = `https://t.me/${MANAGER_USERNAME}?text=${encoded}`;
-  document.getElementById('success-sub').textContent = 'Для подтверждения вашего заказа напишите менеджеру — он всё проверит и отправит посылку.';
+  document.getElementById('success-sub').textContent = tr('success_sub_cod');
   saveOrderToHistory('cod');
   goTo('s-success');
 }
@@ -1045,8 +1252,8 @@ function renderHistory(orders) {
     content.innerHTML = `
       <div class="history-empty">
         <div class="history-empty-icon">📋</div>
-        <div style="font-size:16px;font-weight:700;margin-bottom:8px">Заказов пока нет</div>
-        <div style="font-size:13px">Здесь будет история ваших заказов</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:8px">${tr('no_orders')}</div>
+        <div style="font-size:13px">${tr('no_orders_sub')}</div>
       </div>`;
     return;
   }
@@ -1061,11 +1268,11 @@ function renderHistory(orders) {
       .map(([model, flavors]) => `<b>${model}:</b> ${flavors.join(', ')}`)
       .join('<br>');
     const payIcon = order.paymentMethod === 'crypto' ? '₿' : '📦';
-    const payLabel = order.paymentMethod === 'crypto' ? 'Криптовалюта' : 'Наложный платёж';
+    const payLabel = order.paymentMethod === 'crypto' ? tr('pay_label_crypto') : tr('pay_label_cod');
 
     return `<div class="history-card">
       <div class="history-card-header">
-        <span class="history-order-num">Заказ #${orders.length - idx}</span>
+        <span class="history-order-num">${tr('order_num')} #${orders.length - idx}</span>
         <span class="history-date">${order.date}</span>
       </div>
       <div class="history-items">${itemsText}</div>
@@ -1106,13 +1313,16 @@ function renderAllModels() {
   const list = document.getElementById('all-models-list');
   let html = '';
   catalog.forEach(cat => {
-    html += `<div class="section-title">${cat.icon} ${cat.name}</div>`;
+    html += `<div class="section-title">${cat.icon} ${lang === 'pl' && cat.name_pl ? cat.name_pl : cat.name}</div>`;
     cat.models.forEach(m => {
       html += `
         <div class="model-card" onclick="openModelFromAll('${cat.id}','${m.id}')">
-          <div>
+          <div class="model-thumb">
+            ${m.img ? `<img src="${m.img}" alt="${m.name}">` : cat.icon}
+          </div>
+          <div class="model-info">
             <div class="model-name">${m.name}</div>
-            <div class="model-count">${m.flavors.length} вкус${flavorWord(m.flavors.length)}</div>
+            <div class="model-count">${m.flavors.length} ${tr('flavor_label', m.flavors.length)}</div>
           </div>
           <div class="arrow">›</div>
         </div>`;
