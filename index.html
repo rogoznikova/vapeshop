@@ -165,9 +165,6 @@
   .history-payment { font-size:12px; color:var(--text2); }
   .history-total { font-size:15px; font-weight:800; }
 
-  /* DEV: RESET LANG BTN — УДАЛИТЬ ПОСЛЕ ЗАВЕРШЕНИЯ ПЕРЕВОДОВ */
-  .dev-reset { position: fixed; bottom: 80px; right: 12px; z-index: 999; background: #ef4444; color: #fff; border: none; border-radius: 8px; padding: 6px 10px; font-size: 11px; font-weight: 700; cursor: pointer; opacity: 0.85; }
-
   /* LANGUAGE MODAL */
   .lang-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 32px; }
   .lang-overlay.hidden { display: none; }
@@ -176,10 +173,8 @@
   .lang-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; }
   .lang-heading { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 28px; }
   .lang-btns { display: flex; gap: 12px; }
-  .lang-btn { flex: 1; padding: 18px 10px; border-radius: 14px; border: 1.5px solid var(--border); background: var(--surface2); color: var(--text); font-size: 20px; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: border-color .18s, background .18s; -webkit-tap-highlight-color: transparent; }
-  .lang-btn span { font-size: 12px; font-weight: 600; color: var(--text2); letter-spacing: .04em; }
+  .lang-btn { flex: 1; padding: 22px 10px; border-radius: 14px; border: 1.5px solid var(--border); background: var(--surface2); color: var(--text); font-size: 28px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color .18s, background .18s; -webkit-tap-highlight-color: transparent; letter-spacing: 1px; }
   .lang-btn:active { background: var(--accent); border-color: var(--accent); }
-  .lang-btn:active span { color: #fff; }
 </style>
 </head>
 <body>
@@ -286,16 +281,15 @@
   <div class="cart-info">
     <div class="cart-upsell" id="cart-upsell"></div>
     <div class="cart-items-count" id="cart-items-label"></div>
-    <div class="cart-total-label" id="cart-total-label"></div>
   </div>
-  <button class="cart-open-btn" id="cart-open-btn">
-    <span id="cart-btn-text">🛒 Корзина</span> <span class="cart-badge" id="cart-badge">0</span>
-  </button>
+  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+    <div class="cart-total-label" id="cart-total-label"></div>
+    <button class="cart-open-btn" id="cart-open-btn">
+      <span id="cart-btn-text">🛒 Корзина</span> <span class="cart-badge" id="cart-badge">0</span>
+    </button>
+  </div>
 </div>
 
-
-<!-- DEV RESET BTN — УДАЛИТЬ ПОСЛЕ ЗАВЕРШЕНИЯ ПЕРЕВОДОВ -->
-<button class="dev-reset" onclick="localStorage.removeItem('vl_lang');location.reload()">🔄 Сброс языка</button>
 
 <!-- LANGUAGE MODAL -->
 <div class="lang-overlay" id="lang-overlay">
@@ -304,14 +298,8 @@
     <div class="lang-title">Vape Land</div>
     <div class="lang-heading">Choose your language</div>
     <div class="lang-btns">
-      <button class="lang-btn" onclick="selectLang('pl')">
-        🇵🇱
-        <span>PL</span>
-      </button>
-      <button class="lang-btn" onclick="selectLang('ru')">
-        🇷🇺
-        <span>RU</span>
-      </button>
+      <button class="lang-btn" onclick="selectLang('pl')">PL</button>
+      <button class="lang-btn" onclick="selectLang('ru')">RU</button>
     </div>
   </div>
 </div>
@@ -554,6 +542,7 @@ const catalog = [
     id: 'disposable',
     name: 'Одноразки',
     name_pl: 'E-papierosy',
+    img: 'images/disposable.webp',
     icon: '💨',
     models: [
       {
