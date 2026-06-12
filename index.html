@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Vape Land</title>
+<title>Stitch Shop</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   :root {
     --bg: #0f0f13;
     --surface: #1a1a24;
     --surface2: #22222f;
-    --accent: #7c3aed;
-    --accent2: #a855f7;
+    --accent: #00a8ff;
+    --accent2: #00d4ff;
     --text: #f0f0f5;
     --text2: #9090a8;
     --border: #2e2e40;
@@ -177,6 +177,16 @@
   .lang-btns { display: flex; gap: 12px; }
   .lang-btn { flex: 1; padding: 22px 10px; border-radius: 14px; border: 1.5px solid var(--border); background: var(--surface2); color: var(--text); font-size: 28px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color .18s, background .18s; -webkit-tap-highlight-color: transparent; letter-spacing: 1px; }
   .lang-btn:active { background: var(--accent); border-color: var(--accent); }
+
+  /* SPLASH SCREEN */
+  .splash-overlay { position: fixed; inset: 0; z-index: 9999; background: linear-gradient(135deg, #0f0f13 0%, #1a1a24 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; animation: fadeOut 0.6s ease-out 1.8s forwards; }
+  .splash-overlay.hidden { display: none; }
+  @keyframes fadeInScale { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+  .splash-progress { width: 160px; height: 4px; background: rgba(0,168,255,0.2); border-radius: 2px; overflow: hidden; }
+  .splash-progress-bar { height: 100%; background: linear-gradient(90deg, #00a8ff, #00d4ff); border-radius: 2px; animation: progress 2s ease-in-out forwards; }
+  @keyframes progress { from { width: 0%; } to { width: 100%; } }
+  @keyframes fadeOut { to { opacity: 0; pointer-events: none; } }
+
 </style>
 </head>
 <body>
@@ -188,7 +198,10 @@
     <div class="header-center">
       <div class="header-title" data-i18n="history_title">🕐 Мои заказы</div>
     </div>
-    <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
+      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
+    </div>
   </div>
   <div class="scroll no-cart-pad" id="history-content"></div>
 </div>
@@ -197,9 +210,12 @@
 <div class="screen active" id="s-cats">
   <div class="header">
     <div class="header-center">
-      <div class="header-title">🛒 Vape Land</div>
+      <div class="header-title">👽 Stitch Shop</div>
     </div>
-    <button class="home-btn" onclick="openHistory()" style="margin-left:auto" data-i18n="orders">🕐 Заказы</button>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+      <button class="home-btn" data-i18n="orders" onclick="openHistory()">🕐 Заказы</button>
+      <button id="lang-switch-btn" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s">RU</button>
+    </div>
   </div>
   <div class="tab-bar">
     <button class="tab-btn active" id="tab-cats" onclick="switchTab('cats')" data-i18n="tab_cats">🗂 Категории</button>
@@ -219,7 +235,10 @@
       <div class="header-title" id="models-title"></div>
       <div class="header-sub" data-i18n="choose_model">Выберите модель</div>
     </div>
-    <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
+      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
+    </div>
   </div>
   <div class="scroll">
     <div class="model-list" id="model-list"></div>
@@ -234,7 +253,10 @@
       <div class="header-title" id="flavors-title"></div>
       <div class="header-sub" id="flavors-sub"></div>
     </div>
-    <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
+      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
+    </div>
   </div>
   <div class="scroll">
     <div class="flavor-list" id="flavor-list"></div>
@@ -248,7 +270,10 @@
     <div class="header-center">
       <div class="header-title" data-i18n="cart_title">🛒 Корзина</div>
     </div>
-    <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
+      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
+    </div>
   </div>
   <div class="scroll no-cart-pad" id="cart-content"></div>
 </div>
@@ -260,7 +285,10 @@
     <div class="header-center">
       <div class="header-title" data-i18n="order_title">📦 Оформление заказа</div>
     </div>
-    <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
+      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
+    </div>
   </div>
   <div class="scroll no-cart-pad" id="order-form-content"></div>
 </div>
@@ -287,17 +315,25 @@
   <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
     <div class="cart-total-label" id="cart-total-label"></div>
     <button class="cart-open-btn" id="cart-open-btn">
-      <span id="cart-btn-text">🛒 Корзина</span> <span class="cart-badge" id="cart-badge">0</span>
+      <span id="cart-btn-text">👽 Корзина</span> <span class="cart-badge" id="cart-badge">0</span>
     </button>
   </div>
 </div>
 
 
+<!-- SPLASH SCREEN -->
+<div class="splash-overlay" id="splash">
+  <img src="images/mascot.webp" alt="Stitch Shop" class="splash-mascot" style="width:80px;height:80px;animation:fadeInScale 0.8s ease-out">
+  <div class="splash-progress">
+    <div class="splash-progress-bar"></div>
+  </div>
+</div>
+
 <!-- LANGUAGE MODAL -->
 <div class="lang-overlay" id="lang-overlay">
   <div class="lang-blur"></div>
   <div class="lang-card">
-    <div class="lang-title">Vape Land</div>
+    <div class="lang-title">Stitch Shop</div>
     <div class="lang-heading">Choose your language</div>
     <div class="lang-btns">
       <button class="lang-btn" onclick="selectLang('pl')">PL</button>
@@ -307,6 +343,13 @@
 </div>
 
 <script>
+
+// Hide splash screen
+setTimeout(() => {
+  const splash = document.getElementById('splash');
+  if (splash) splash.classList.add('hidden');
+}, 2000);
+
 // ============================================================
 // ДАННЫЕ ТОВАРОВ
 // ============================================================
@@ -456,6 +499,13 @@ function applyLang() {
   });
   const cartBtnText = document.getElementById('cart-btn-text');
   if (cartBtnText) cartBtnText.textContent = tr('cart_btn');
+  document.querySelectorAll('#lang-switch-btn, .lang-switch-sub').forEach(btn => {
+    btn.textContent = lang === 'pl' ? 'RU' : 'PL';
+  });
+}
+
+function toggleLang() {
+  selectLang(lang === 'pl' ? 'ru' : 'pl');
 }
 
 
@@ -469,6 +519,14 @@ function selectLang(l) {
   applyLang();
   renderCategories();
   renderAllModels();
+  // Re-render current active screen
+  const active = document.querySelector('.screen.active')?.id;
+  if (active === 's-models') renderModels();
+  if (active === 's-flavors') renderFlavors();
+  if (active === 's-cart') renderCart();
+  if (active === 's-order') renderOrderForm();
+  if (active === 's-history') openHistory();
+  updateCartBar();
 }
 
 // Show modal on init if no lang saved
