@@ -775,7 +775,13 @@ let previousScreen = 's-cats';
 // TELEGRAM INIT
 // ============================================================
 const tg = window.Telegram?.WebApp;
-if (tg) { tg.ready(); tg.expand(); }
+if (tg) {
+  tg.ready();
+  tg.expand();
+  // Запрещаем свайп вниз, который сворачивает мини-апп и визуально "раздувает" нативный хедер
+  if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+  if (tg.setHeaderColor) { try { tg.setHeaderColor('#0f0f13'); } catch(e) {} }
+}
 
 // ============================================================
 // NAVIGATION
@@ -788,6 +794,7 @@ function goTo(screenId) {
     const cu = document.getElementById('cart-upsell');
     if (cu) { cu.style.display = 'none'; cu.textContent = ''; }
   }
+  if (tg && tg.isExpanded === false && tg.expand) tg.expand();
   applyLang();
   updateCartBar(screenId);
 }
