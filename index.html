@@ -4,7 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Snitch Shop</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://telegram.org/js/telegram-web-app.js">
+  function contactManager() {
+    window.open('https://t.me/Mangr_pl', '_blank');
+  }
+  
+  </script>
 <style>
   :root {
     --bg: #0f0f13;
@@ -76,7 +81,7 @@
   .qty-val { width: 32px; text-align: center; font-size: 15px; font-weight: 700; }
 
 /* CART BAR */  /* CATEGORIES BACKGROUND */
-  #s-cats { background-image: url('images/bg-categories.webp'); background-size: cover; background-position: center; background-attachment: fixed; }
+  #s-cats { background-image: url('images/bg-fantasy.webp'); background-size: cover; background-position: center; background-attachment: fixed; }
   
     /* CART BAR */
   .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; height: var(--cart-h); background: var(--surface); border-top: 1px solid var(--border); display: none; align-items: center; padding: 0 16px; gap: 12px; z-index: 100; }
@@ -215,7 +220,46 @@
   }
   @keyframes progress { from { width: 0%; } to { width: 100%; } }
 
-</style>
+  /* BUTTON GRADIENTS */
+  button, .btn-primary, .btn-secondary, input[type="button"], input[type="submit"] {
+    background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%) !important;
+    border: none !important;
+  }
+  
+  .tab-btn {
+    background: linear-gradient(135deg, var(--surface2) 0%, var(--surface) 100%) !important;
+    border: none !important;
+  }
+  
+  .tab-btn.active {
+    background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%) !important;
+  }
+  
+  .lang-btn {
+    background: linear-gradient(135deg, var(--surface2) 0%, var(--surface) 100%) !important;
+    border: 1px solid var(--border) !important;
+  }
+  
+    /* SILVER BORDER FOR TABS */
+  .tab-btn {
+    border: 2px solid #a9a9a9 !important;
+    border-radius: 12px;
+  }
+  
+    /* THIN SILVER BORDER */
+  .home-btn, #lang-switch-btn, .lang-switch-sub {
+    border: 1px solid #a9a9a9 !important;
+    border-radius: 10px;
+  }
+  
+    /* TEXT READABILITY ON BUTTONS */
+  button, .btn-primary, .btn-secondary, input[type="button"], input[type="submit"], .tab-btn {
+    color: #fff !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+  }
+  
+  </style>
 </head>
 <body>
 
@@ -391,7 +435,7 @@ try { lang = localStorage.getItem('vl_lang') || null; } catch(e) {}
 
 const TRANS = {
   ru: {
-    home: '🏠 На главную',
+    home: 'На главную',
     orders: 'Заказы',
     tab_cats: 'Категории',
     tab_all: 'Все товары',
@@ -431,7 +475,7 @@ const TRANS = {
     pay_label_cod: 'Наложный платёж',
     pay_label_crypto: 'Криптовалюта',
     smart_cena_title: 'Smart Cena',
-    price_title: '💰 Цена',
+    price_title: 'Цена',
     per_piece: 'За штуку',
     per_pcs: 'zł/шт.',
     fill_required: 'Пожалуйста, заполните все обязательные поля (*)',
@@ -453,7 +497,7 @@ const TRANS = {
     model_label: n => 'модел' + (n === 1 ? 'ь' : 'и'),
   },
   pl: {
-    home: '🏠 Strona główna',
+    home: 'Strona główna',
     orders: 'Zamówienia',
     tab_cats: 'Kategorie',
     tab_all: 'Wszystkie',
@@ -493,7 +537,7 @@ const TRANS = {
     pay_label_cod: 'Pobranie',
     pay_label_crypto: 'Kryptowaluta',
     smart_cena_title: 'Smart Cena',
-    price_title: '💰 Cena',
+    price_title: 'Cena',
     per_piece: 'Za sztukę',
     per_pcs: 'zł/szt.',
     fill_required: 'Proszę wypełnić wszystkie wymagane pola (*)',
@@ -723,8 +767,9 @@ if (tg) { tg.ready(); tg.expand(); }
 // NAVIGATION
 // ============================================================
 function goTo(screenId) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => s && s.classList.remove('active'));
+  const screen = document.getElementById(screenId);
+  if (screen) screen.classList.add('active');
   if (screenId !== 's-flavors') {
     const cu = document.getElementById('cart-upsell');
     if (cu) { cu.style.display = 'none'; cu.textContent = ''; }
@@ -801,7 +846,7 @@ function flavorWord(n) {
 function openModel(modelId) {
   currentModel = currentCat.models.find(m => m.id === modelId);
   document.getElementById('flavors-title').textContent = currentModel.name;
-  document.getElementById('flavors-sub').textContent = currentCat.name;
+  document.getElementById('flavors-sub').textContent = lang === 'pl' && currentCat.name_pl ? currentCat.name_pl : currentCat.name;
   document.getElementById('flavor-back-btn').onclick = () => goTo('s-models');
   renderFlavors();
   goTo('s-flavors');
@@ -1411,11 +1456,17 @@ function openModelFromAll(catId, modelId) {
   currentCat = catalog.find(c => c.id === catId);
   currentModel = currentCat.models.find(m => m.id === modelId);
   document.getElementById('flavors-title').textContent = currentModel.name;
-  document.getElementById('flavors-sub').textContent = currentCat.name;
+  document.getElementById('flavors-sub').textContent = lang === 'pl' && currentCat.name_pl ? currentCat.name_pl : currentCat.name;
   document.getElementById('flavor-back-btn').onclick = () => goTo('s-cats');
   renderFlavors();
   goTo('s-flavors');
 }
-</script>
+
+  function contactManager() {
+    window.open('https://t.me/Mangr_pl', '_blank');
+  }
+  
+  </script>
+
 </body>
 </html>
