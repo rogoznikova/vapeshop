@@ -156,7 +156,19 @@
   .smart-tier-row:last-child { border-bottom: none; }
   .smart-tier-row.active { color: var(--text); font-weight: 700; }
   .smart-tier-row.active .tier-price { color: #a855f7; }
-  .section-title { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; margin-top: 18px; }
+  .section-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin: 22px 0 12px;
+    padding: 7px 12px;
+    background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%);
+    border-radius: 10px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    display: inline-block;
+  }
   .section-title:first-child { margin-top: 0; }
 
   /* TOGGLE TABS */
@@ -813,7 +825,7 @@ function renderCategories() {
 
 function openCategory(catId) {
   currentCat = catalog.find(c => c.id === catId);
-  document.getElementById('models-title').textContent = currentCat.icon + ' ' + (lang === 'pl' && currentCat.name_pl ? currentCat.name_pl : currentCat.name);
+  document.getElementById('models-title').textContent = lang === 'pl' && currentCat.name_pl ? currentCat.name_pl : currentCat.name;
   renderModels();
   goTo('s-models');
 }
@@ -1006,7 +1018,7 @@ function renderCart() {
     const qtyInCat = catQty(catId);
     const unitPrice = getSmartPrice(catId, qtyInCat);
 
-    html += `<div class="section-title">${cat?.icon || ''} ${lang === 'pl' && cat?.name_pl ? cat.name_pl : (cat?.name || catId)}</div>`;
+    html += `<div class="section-title">${lang === 'pl' && cat?.name_pl ? cat.name_pl : (cat?.name || catId)}</div>`;
 
     catItems.sort((a, b) => a.model.localeCompare(b.model));
     catItems.forEach(item => {
@@ -1434,7 +1446,7 @@ function renderAllModels() {
   const list = document.getElementById('all-models-list');
   let html = '';
   catalog.forEach(cat => {
-    html += `<div class="section-title">${cat.icon} ${lang === 'pl' && cat.name_pl ? cat.name_pl : cat.name}</div>`;
+    html += `<div class="section-title">${lang === 'pl' && cat.name_pl ? cat.name_pl : cat.name}</div>`;
     cat.models.forEach(m => {
       html += `
         <div class="model-card" onclick="openModelFromAll('${cat.id}','${m.id}')">
