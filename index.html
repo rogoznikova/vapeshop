@@ -156,7 +156,7 @@
   .smart-tier-row:last-child { border-bottom: none; }
   .smart-tier-row.active { color: var(--text); font-weight: 700; }
   .smart-tier-row.active .tier-price { color: #a855f7; }
-  .section-title { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; margin-top: 18px; }
+  .section-title { font-size: 12px; color: #fff; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; margin-top: 18px; border: 1px solid #a9a9a9; border-radius: 10px; padding: 8px 12px; display: inline-block; background: linear-gradient(135deg, rgba(147, 51, 234, 0.5) 0%, rgba(192, 132, 252, 0.5) 100%); font-weight: 700; }
   .section-title:first-child { margin-top: 0; }
 
   /* TOGGLE TABS */
@@ -281,7 +281,7 @@
   
     /* FLAVORS SCREEN PADDING */
   #s-flavors .scroll {
-    padding-bottom: 120px !important;
+    padding-bottom: 200px !important;
   }
   
     /* MODEL DESCRIPTION */
@@ -662,16 +662,20 @@ const PRICING = {
 };
 
 function getSmartPrice(catId, totalQty) {
-  const p = PRICING[catId];
-  if (!p) return 0;
-  let price = p.tiers[0][1];
-  for (const [minQty, unitPrice] of p.tiers) {
+  // Check if current model has its own pricing
+  const modelTiers = currentModel?.tiers;
+  const tiers = modelTiers || PRICING[catId]?.tiers;
+  if (!tiers) return 0;
+  let price = tiers[0][1];
+  for (const [minQty, unitPrice] of tiers) {
     if (totalQty >= minQty) price = unitPrice;
   }
   return price;
 }
 
 function getBasePrice(catId) {
+  // Check if current model has its own pricing
+  if (currentModel?.tiers) return currentModel.tiers[0][1];
   return PRICING[catId]?.base || 0;
 }
 
@@ -685,24 +689,101 @@ function catQty(catId) {
 // Итого по всей корзине с учётом смарт-цен
 function cartTotal() {
   let total = 0;
-  for (const catId of Object.keys(PRICING)) {
-    const qty = catQty(catId);
-    if (qty === 0) continue;
-    total += qty * getSmartPrice(catId, qty);
+  const groups = {}; // Группируем по тирам
+  
+  // Собираем товары в группы по их тирам
+  for (const key in cart) {
+    const item = cart[key];
+    if (!item || item.qty === 0) continue;
+    
+    // Найдем модель и категорию
+    let model = null;
+    let catId = null;
+    for (const cat of catalog) {
+      const m = cat.models.find(md => md.id === item.model);
+      if (m) {
+        model = m;
+        catId = cat.id;
+        break;
+      }
+    }
+    
+    if (!model) continue;
+    
+    // Определяем какие тиры использовать
+    const tiers = model.tiers || PRICING[catId]?.tiers || [];
+    const tierKey = JSON.stringify(tiers); // Используем тиры как ключ группы
+    
+    if (!groups[tierKey]) {
+      groups[tierKey] = { tiers, qty: 0 };
+    }
+    groups[tierKey].qty += item.qty;
   }
+  
+  // Считаем цену для каждой группы
+  for (const tierKey in groups) {
+    const group = groups[tierKey];
+    let price = group.tiers[0]?.[1] || 0;
+    
+    // Применяем нужный тир для группы
+    for (const [minQty, unitPrice] of group.tiers) {
+      if (group.qty >= minQty) price = unitPrice;
+    }
+    
+    total += group.qty * price;
+  }
+  
   return total;
 }
 
 // Сколько сэкономил клиент (vs базовая цена 1-2 шт.)
 function cartSavings() {
   let saved = 0;
-  for (const catId of Object.keys(PRICING)) {
-    const qty = catQty(catId);
-    if (qty === 0) continue;
-    const base = getBasePrice(catId);
-    const smart = getSmartPrice(catId, qty);
-    saved += qty * (base - smart);
+  const groups = {}; // Группируем по тирам
+  
+  // Собираем товары в группы по их тирам
+  for (const key in cart) {
+    const item = cart[key];
+    if (!item || item.qty === 0) continue;
+    
+    // Найдем модель и категорию
+    let model = null;
+    let catId = null;
+    for (const cat of catalog) {
+      const m = cat.models.find(md => md.id === item.model);
+      if (m) {
+        model = m;
+        catId = cat.id;
+        break;
+      }
+    }
+    
+    if (!model) continue;
+    
+    // Определяем какие тиры использовать
+    const tiers = model.tiers || PRICING[catId]?.tiers || [];
+    const tierKey = JSON.stringify(tiers);
+    
+    if (!groups[tierKey]) {
+      groups[tierKey] = { tiers, qty: 0 };
+    }
+    groups[tierKey].qty += item.qty;
   }
+  
+  // Считаем скидку для каждой группы
+  for (const tierKey in groups) {
+    const group = groups[tierKey];
+    const basePrice = group.tiers[0]?.[1] || 0;
+    let smartPrice = group.tiers[0]?.[1] || 0;
+    
+    // Применяем нужный тир для группы
+    for (const [minQty, unitPrice] of group.tiers) {
+      if (group.qty >= minQty) smartPrice = unitPrice;
+    }
+    
+    saved += group.qty * (basePrice - smartPrice);
+  }
+  
   return saved;
 }
 
@@ -718,6 +799,7 @@ const catalog = [
       {
         id: 'elfd3',
         name: 'Elf Bar D3 25k',
+        tiers: [[1,65],[3,60],[5,55],[10,50],[20,43],[50,40],[100,38]],
         flavors: ['Alpine mint','Apple peach','Blackberry cranberry','Blackberry pomegrn cherry','Blue razz ice','Blueberry ice','Blueberry raspberry','Double apple','Grape cherry','Grape ice','Grape mint','Kiwi passion fruit guava','Kiwi pineapple ice','Lemon lime','Peach berry','Peach ice','Pineapple mango ice','Strawb raspberry cherry','Strawberry grape','Strawberry ice','Strawberry watermelon','Vmt','Watermelon bubblegum','Watermelon ice','Watermelon lemon','Mango peach watermelon']
       },
       {
@@ -901,7 +983,8 @@ function openModel(modelId) {
 // ============================================================
 function renderFlavors() {
   const list = document.getElementById('flavor-list');
-  const tiers = PRICING[currentCat.id]?.tiers || [];
+  // Use model's tiers if available, otherwise use category tiers
+  const tiers = currentModel?.tiers || PRICING[currentCat.id]?.tiers || [];
   const hasTiers = tiers.length > 1;
   const qtyInCat = catQty(currentCat.id);
   const curPrice = getSmartPrice(currentCat.id, qtyInCat);
@@ -974,7 +1057,8 @@ function changeQty(key, delta) {
     cart[key] = {
       key,
       flavor,
-      model: currentModel.name,
+      model: currentModel.id,
+      modelName: currentModel.name,
       category: currentCat.name,
       catId: currentCat.id,
       qty: newQty
@@ -997,7 +1081,7 @@ function updateFlavorSmartBadge() {
 
   const qty = catQty(currentCat.id);
   const price = getSmartPrice(currentCat.id, qty);
-  const tiers = PRICING[currentCat.id]?.tiers || [];
+  const tiers = currentModel?.tiers || PRICING[currentCat.id]?.tiers || [];
   const hasTiers = tiers.length > 1;
 
   // Upsell in cart bar
@@ -1065,13 +1149,13 @@ function renderCart() {
 
     html += `<div class="section-title">${cat?.icon || ''} ${lang === 'pl' && cat?.name_pl ? cat.name_pl : (cat?.name || catId)}</div>`;
 
-    catItems.sort((a, b) => a.model.localeCompare(b.model));
+    catItems.sort((a, b) => a.modelName.localeCompare(b.modelName));
     catItems.forEach(item => {
       html += `
         <div class="cart-item-row" id="citem-${safeId(item.key)}">
           <div style="display:flex;align-items:center;gap:10px">
             <div style="flex:1;min-width:0">
-              <div class="cart-item-name" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.model} — ${item.flavor}</div>
+              <div class="cart-item-name" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.modelName} — ${item.flavor}</div>
             </div>
             <div class="qty-ctrl" style="flex-shrink:0">
               <button class="qty-btn" onclick="cartChangeQty('${escQ(item.key)}', '${catId}')">−</button>
@@ -1138,8 +1222,8 @@ function renderOrderForm() {
   // Group by model, calculate price per model group
   const byModel = {};
   items.forEach(i => {
-    if (!byModel[i.model]) byModel[i.model] = { model: i.model, catId: i.catId, flavors: [] };
-    byModel[i.model].flavors.push(i);
+    if (!byModel[i.modelName]) byModel[i.modelName] = { model: i.modelName, catId: i.catId, flavors: [] };
+    byModel[i.modelName].flavors.push(i);
   });
 
   let itemsHtml = '';
@@ -1293,8 +1377,8 @@ function buildOrderLines() {
   // Group items by model, return formatted lines
   const byModel = {};
   Object.values(cart).forEach(i => {
-    if (!byModel[i.model]) byModel[i.model] = [];
-    byModel[i.model].push(i);
+    if (!byModel[i.modelName]) byModel[i.modelName] = [];
+    byModel[i.modelName].push(i);
   });
   let lines = '';
   Object.entries(byModel).forEach(([model, items]) => {
