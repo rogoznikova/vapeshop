@@ -36,7 +36,7 @@
   /* HEADER */
   .header { padding: 16px 16px 12px; display: flex; align-items: center; gap: 10px; background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
   .back-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: none; color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .home-btn { height: 36px; padding: 0 12px; border-radius: 18px; background: var(--surface); border: none; color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; flex-shrink: 0; margin-left: auto; white-space: nowrap; }
+  .home-btn { height: 36px; padding: 0 12px; border-radius: 18px; background: var(--surface); border: 1px solid #a9a9a9; color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; flex-shrink: 0; margin-left: auto; white-space: nowrap; }
   .home-btn:active { background: var(--surface2); color: var(--text); }
   .header-center { flex: 1; }
   .header-title { font-size: 17px; font-weight: 700; }
@@ -304,7 +304,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
-      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
+      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid #a9a9a9;color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
     </div>
   </div>
   <div class="scroll no-cart-pad" id="history-content"></div>
@@ -317,8 +317,8 @@
       <div class="header-title"><img src="images/logo-icon.webp" alt="Snitch Shop" style="width:28px;height:28px;vertical-align:middle;margin-right:6px"> Snitch Shop</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
-      <button data-i18n="orders" onclick="openHistory()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s">Заказы</button>
-      <button id="lang-switch-btn" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s">RU</button>
+      <button data-i18n="orders" onclick="openHistory()" style="background:var(--surface2);border:1px solid #a9a9a9;color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s">Заказы</button>
+      <button id="lang-switch-btn" onclick="toggleLang()" style="background:var(--surface2);border:1px solid #a9a9a9;color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s">RU</button>
     </div>
   </div>
   <div class="tab-bar">
@@ -341,7 +341,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
-      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
+      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid #a9a9a9;color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
     </div>
   </div>
   <div class="scroll">
@@ -359,7 +359,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
-      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
+      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid #a9a9a9;color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
     </div>
   </div>
   <div class="scroll">
@@ -376,7 +376,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
-      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
+      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid #a9a9a9;color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
     </div>
   </div>
   <div class="scroll no-cart-pad" id="cart-content"></div>
@@ -391,7 +391,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
-      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
+      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid #a9a9a9;color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
     </div>
   </div>
   <div class="scroll no-cart-pad" id="order-form-content"></div>
@@ -812,6 +812,11 @@ const catalog = [
         id: 'lushking',
         name: 'Lush King 40k',
         flavors: ['Black Currant Pineapple','Milky Oolong','Cucumber Lime','Starfruit Grape','Cactus Lime','Cherry Burst','Mountain Mint','Sour Pineapple Ice','Tropical Mango','Sour Strawberry Dragonfruit','Pomegranate Burst','Sour Apple ice','Black Grape Ice','Blue Razz Ice','Watermelon ice']
+      },
+      {
+        id: 'elfbc45k',
+        name: 'Elf Bar BC 45k',
+        flavors: ['Blackberry Lemonade','Blackcurrant Grape','Blue Razz Ice','Cherry Peach Soda','Double Mint','Grapefruit Green Tea','Kiwi Pineapple Peach','Lemon Lime','Pear Soda','Pomegranate Burst','Pomegranate Raspberry Lime','Red Raspberry Strawberry','Sour Apple Kiwi','Strawberry Grapefruit','Watermelon Ice']
       }
     ]
   },
@@ -873,6 +878,11 @@ const catalog = [
         id: 'vozol',
         name: 'VOZOL PRIME',
         flavors: ['Berry','Berry Peach','Blueberry Ice','Blueberry Razz Lemon','Blueberry watermelon','Cherry Cola','Dragon Fruit Banana Cherry','Grape Ice','Kiwi Passion Fruite Guava','LavaFire','Lemon Lime','Love 777','Mint ice','Mixed Berries','Peach Ice','Perfume Lemon','Pineapple Passion Fruit Lime','Pomegranate lemonade','Purple candy','Sour Apple Ice','Strawberry Ice cream','Strawberry Kiwi','Strawberry Watermelon','Watermelon Bubble Gum','Watermelon Ice','Blue raspberry','Peach Mango Watermelon','Strawberry Ice']
+      },
+      {
+        id: 'elfliq',
+        name: 'ELF LIQ',
+        flavors: ['Apple Peach','Apple Pear','Apple Sour','Blackberry Lemon','Blackcurrant Aniseed','Blue Raz Ice','Blue Razz Lemonade','Blueberry','Blueberry Raspberry Pomegranate','Blueberry Rose Mint','Blueberry Sour Raspberry','Cherry','Cherry Cola','Cherry Lemon Peach','Cola','Cool Mint','Double Apple','Elf Jack','Elfbull Ice','Grape','Grape Cherry','Green Grape Rose','Jasmine Raspberry','Kiwi Passion Guava','Lemon Lime','Mango Peach','PB Cloud','Peach Ice','Pina Colada','Pineapple Ice','Pineapple Colada','Pink Grapefruit','Pink Lemonade','Pink Lemonade Soda','Raspberry Lychee','Rhubarb Snow','Sour Watermelon Gummy','Spearmint','Strawberry Banana','Strawberry Kiwi','Strawberry Raspberry Cherry Ice','Strawberry Cherry Lemon','Strawberry Ice','Strawberry Snow','Watermelon','Watermelon Cherry']
       }
     ]
   }
@@ -1151,7 +1161,7 @@ function renderCart() {
     const qtyInCat = catQty(catId);
     const unitPrice = getSmartPrice(catId, qtyInCat);
 
-    html += `<div class="section-title">${cat?.icon || ''} ${lang === 'pl' && cat?.name_pl ? cat.name_pl : (cat?.name || catId)}</div>`;
+    html += `<div class="section-title">${lang === 'pl' && cat?.name_pl ? cat.name_pl : (cat?.name || catId)}</div>`;
 
     catItems.sort((a, b) => a.modelName.localeCompare(b.modelName));
     catItems.forEach(item => {
@@ -1579,7 +1589,7 @@ function renderAllModels() {
   const list = document.getElementById('all-models-list');
   let html = '';
   catalog.forEach(cat => {
-    html += `<div class="section-title">${cat.icon} ${lang === 'pl' && cat.name_pl ? cat.name_pl : cat.name}</div>`;
+    html += `<div class="section-title">${lang === 'pl' && cat.name_pl ? cat.name_pl : cat.name}</div>`;
     cat.models.forEach(m => {
       html += `
         <div class="model-card" onclick="openModelFromAll('${cat.id}','${m.id}')">
