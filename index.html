@@ -160,6 +160,19 @@
   .section-title:first-child { margin-top: 0; }
 
   /* TOGGLE TABS */
+  .banner-item {
+    grid-column: 1 / -1;
+    height: 200px;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .banner-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
   .tab-bar { display: flex; gap: 8px; padding: 12px 14px 0; flex-shrink: 0; }
 .tab-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .18s; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
@@ -301,11 +314,43 @@
     margin-top: 4px;
   }
 
-  /* Мобильная версия - скрыть текст менеджера */
-  @media (max-width: 480px) {
-    .manager-btn-text {
-      display: none;
-    }
+
+  /* FOOTER */
+  .footer {
+    padding: 30px 0 20px 0;
+    margin-top: 40px;
+    border-top: 1px solid var(--border);
+  }
+  .footer-title {
+    display: none;
+  }
+  .footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0 14px;
+  }
+  .footer-link {
+    color: var(--text2);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    transition: color .15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .footer-link:last-child {
+    border-bottom: none;
+  }
+  .footer-link:active {
+    color: var(--accent);
+  }
+  .footer-link-icon {
+    display: none;
   }
   
   </style>
@@ -334,20 +379,47 @@
       <div class="header-title"><img src="images/logo-icon.webp" alt="Snitch Shop" style="width:28px;height:28px;vertical-align:middle;margin-right:6px"> Snitch Shop</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
-      <a href="https://t.me/Mangr_pl" target="_blank" style="text-decoration:none;-webkit-tap-highlight-color:transparent">
-        <button style="background:var(--surface2);border:1px solid #a9a9a9;color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s">💬 <span class="manager-btn-text" data-i18n="write_manager">Менеджер</span></button>
-      </a>
       <button data-i18n="orders" onclick="openHistory()" style="background:var(--surface2);border:1px solid #a9a9a9;color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s">Заказы</button>
       <button id="lang-switch-btn" onclick="toggleLang()" style="background:var(--surface2);border:1px solid #a9a9a9;color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s">RU</button>
     </div>
   </div>
+  
   <div class="tab-bar">
     <button class="tab-btn active" id="tab-cats" onclick="switchTab('cats')" data-i18n="tab_cats">Категории</button>
     <button class="tab-btn" id="tab-all" onclick="switchTab('all')" data-i18n="tab_all">Все товары</button>
   </div>
   <div class="scroll no-cart-pad" id="main-scroll">
+    <!-- PROMO BANNER -->
+    
     <div class="cat-grid" id="cat-grid"></div>
     <div id="all-models-list" style="display:none;flex-direction:column;gap:10px;"></div>
+    <!-- FOOTER -->
+    <div class="footer" id="footer">
+      <div class="footer-links">
+        <a href="javascript:goToPage('delivery')" class="footer-link">
+          <span data-i18n="footer_delivery">Доставка</span>
+          <span style="font-size:16px;color:var(--text2)">›</span>
+        </a>
+        <a href="javascript:goToPage('payment')" class="footer-link">
+          <span data-i18n="footer_payment">Оплата</span>
+          <span style="font-size:16px;color:var(--text2)">›</span>
+        </a>
+        <a href="javascript:goToPage('returns')" class="footer-link">
+          <span data-i18n="footer_returns">Возврат и замена</span>
+          <span style="font-size:16px;color:var(--text2)">›</span>
+        </a>
+        <a href="javascript:goToPage('faq')" class="footer-link">
+          <span data-i18n="footer_faq">FAQ</span>
+          <span style="font-size:16px;color:var(--text2)">›</span>
+        </a>
+        <a href="https://t.me/Mangr_pl" target="_blank" class="footer-link">
+          <span data-i18n="footer_manager">Контакт с менеджером</span>
+          <span style="font-size:16px;color:var(--text2)">›</span>
+        </a>
+      </div>
+    </div>
+    
+    
   </div>
 </div>
 
@@ -564,6 +636,11 @@ const TRANS = {
     flavor_label: n => 'вкус' + (n === 1 ? '' : n >= 2 && n <= 4 ? 'а' : 'ов'),
     model_label: n => 'модел' + (n === 1 ? 'ь' : 'и'),
     max_limit: 'Максимум 200 единиц в корзине!',
+    footer_delivery: 'Доставка',
+    footer_payment: 'Оплата',
+    footer_returns: 'Возврат и замена',
+    footer_faq: 'FAQ',
+    footer_manager: 'Контакт с менеджером',
   },
   pl: {
     home: 'Strona główna',
@@ -627,6 +704,11 @@ const TRANS = {
     flavor_label: n => n === 1 ? 'smak' : n >= 2 && n <= 4 ? 'smaki' : 'smaków',
     model_label: n => n === 1 ? 'model' : n >= 2 && n <= 4 ? 'modele' : 'modeli',
     max_limit: 'Maksimum 200 sztuk w koszyku!',
+    footer_delivery: 'Dostawa',
+    footer_payment: 'Płatność',
+    footer_returns: 'Zwrot i wymiana',
+    footer_faq: 'FAQ',
+    footer_manager: 'Kontakt z menedżerem',
   }
 };
 
@@ -1037,7 +1119,12 @@ function updateCartBar(screenId) {
 // ============================================================
 function renderCategories() {
   const grid = document.getElementById('cat-grid');
-  grid.innerHTML = catalog.map(cat => `
+  let html = `
+    <div class="banner-item" id="banner-promo">
+      <img src="images/banner.webp" alt="Промо" onerror="this.style.display='none'">
+    </div>
+  `;
+  html += catalog.map(cat => `
     <div class="cat-card" onclick="openCategory('${cat.id}')">
       <div class="cat-img">
         ${cat.img ? `<img src="${cat.img}" alt="${cat.name}">` : `<div class="cat-img-icon">${cat.icon}</div>`}
@@ -1048,6 +1135,7 @@ function renderCategories() {
       </div>
     </div>
   `).join('');
+  grid.innerHTML = html;
 }
 
 function openCategory(catId) {
@@ -1764,7 +1852,11 @@ function switchTab(tab) {
 
 function renderAllModels() {
   const list = document.getElementById('all-models-list');
-  let html = '';
+  let html = `
+    <div class="banner-item" id="banner-promo-all" style="margin:16px 14px 0;gap:0">
+      <img src="images/banner.webp" alt="Промо" onerror="this.style.display='none'">
+    </div>
+  `;
   catalog.forEach(cat => {
     html += `<div class="section-title">${lang === 'pl' && cat.name_pl ? cat.name_pl : cat.name}</div>`;
     cat.models.forEach(m => {
@@ -1794,6 +1886,11 @@ function openModelFromAll(catId, modelId) {
   renderFlavors();
   goTo('s-flavors');
 }
+
+  function goToPage(page) {
+    // Заглушка для страниц футера - позже добавить реальные страницы
+    alert('Coming soon: ' + (tr(`footer_${page}`) || page));
+  }
 
   function contactManager() {
     window.open('https://t.me/Mangr_pl', '_blank');
