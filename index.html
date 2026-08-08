@@ -163,8 +163,9 @@
   .banner-item {
     grid-column: 1 / -1;
     height: 200px;
-    border-radius: 16px;
+    border-radius: var(--radius);
     overflow: hidden;
+    border: 1px solid var(--border);
   }
   .banner-item img {
     width: 100%;
@@ -331,7 +332,7 @@
     padding: 0 14px;
   }
   .footer-link {
-    color: var(--text2);
+    color: var(--text);
     font-size: 14px;
     font-weight: 500;
     text-decoration: none;
@@ -339,7 +340,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 12px 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--text2);
     transition: color .15s;
     -webkit-tap-highlight-color: transparent;
   }
@@ -384,15 +385,20 @@
     </div>
   </div>
   
-  <div class="tab-bar">
-    <button class="tab-btn active" id="tab-cats" onclick="switchTab('cats')" data-i18n="tab_cats">Категории</button>
-    <button class="tab-btn" id="tab-all" onclick="switchTab('all')" data-i18n="tab_all">Все товары</button>
-  </div>
   <div class="scroll no-cart-pad" id="main-scroll">
     <!-- PROMO BANNER -->
+    <div class="banner-item" id="banner-promo" style="margin: 16px 14px 20px;">
+      <img src="images/banner.webp" alt="Промо" onerror="this.style.display='none'">
+    </div>
+
+    <!-- TABS -->
+    <div class="tab-bar" style="padding: 0 14px 12px;">
+      <button class="tab-btn active" id="tab-cats" onclick="switchTab('cats')" data-i18n="tab_cats">Категории</button>
+      <button class="tab-btn" id="tab-all" onclick="switchTab('all')" data-i18n="tab_all">Все товары</button>
+    </div>
     
-    <div class="cat-grid" id="cat-grid"></div>
-    <div id="all-models-list" style="display:none;flex-direction:column;gap:10px;"></div>
+    <div class="cat-grid" id="cat-grid" style="margin-top: 16px;padding: 0 14px;"></div>
+    <div id="all-models-list" style="display:none;flex-direction:column;gap:10px;margin-top:16px;padding:0 14px;"></div>
     <!-- FOOTER -->
     <div class="footer" id="footer">
       <div class="footer-links">
@@ -1119,12 +1125,7 @@ function updateCartBar(screenId) {
 // ============================================================
 function renderCategories() {
   const grid = document.getElementById('cat-grid');
-  let html = `
-    <div class="banner-item" id="banner-promo">
-      <img src="images/banner.webp" alt="Промо" onerror="this.style.display='none'">
-    </div>
-  `;
-  html += catalog.map(cat => `
+  let html = catalog.map(cat => `
     <div class="cat-card" onclick="openCategory('${cat.id}')">
       <div class="cat-img">
         ${cat.img ? `<img src="${cat.img}" alt="${cat.name}">` : `<div class="cat-img-icon">${cat.icon}</div>`}
@@ -1852,11 +1853,7 @@ function switchTab(tab) {
 
 function renderAllModels() {
   const list = document.getElementById('all-models-list');
-  let html = `
-    <div class="banner-item" id="banner-promo-all" style="margin:16px 14px 0;gap:0">
-      <img src="images/banner.webp" alt="Промо" onerror="this.style.display='none'">
-    </div>
-  `;
+  let html = '';
   catalog.forEach(cat => {
     html += `<div class="section-title">${lang === 'pl' && cat.name_pl ? cat.name_pl : cat.name}</div>`;
     cat.models.forEach(m => {
