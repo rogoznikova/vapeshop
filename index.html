@@ -47,8 +47,8 @@
   .scroll.no-cart-pad { padding-bottom: 80px; }
 
   /* CATEGORY GRID */
-  .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 14px; box-sizing: border-box; }
-  .cat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; overflow: hidden; transition: transform .18s, border-color .18s; -webkit-tap-highlight-color: transparent; aspect-ratio: 1 / 1 !important; width: 100%; height: auto; display: flex; flex-direction: column; }
+  .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 10px; box-sizing: border-box; }
+  .cat-card { background: var(--surface); border: 1px solid #a9a9a9; border-radius: var(--radius); cursor: pointer; overflow: hidden; transition: transform .18s, border-color .18s; -webkit-tap-highlight-color: transparent; aspect-ratio: 1 / 1 !important; width: 100%; height: auto; display: flex; flex-direction: column; }
   .cat-card:active { transform: scale(.96); border-color: var(--accent); }
   .cat-img { width: 100%; height: 100%; background: var(--surface2); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
   .cat-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -61,7 +61,7 @@
 
   /* MODEL LIST */
   .model-list { display: flex; flex-direction: column; gap: 10px; }
-.model-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background .18s, border-color .18s; -webkit-tap-highlight-color: transparent; }
+.model-card { background: var(--surface); border: 1px solid #a9a9a9; border-radius: var(--radius); padding: 12px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background .18s, border-color .18s; -webkit-tap-highlight-color: transparent; }
   .model-card:active { background: var(--surface2); border-color: var(--accent); }
   .model-thumb { width: 76px; height: 76px; border-radius: var(--radius); background: var(--surface2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 28px; }
   .model-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -72,7 +72,7 @@
 
   /* FLAVOUR LIST */
   .flavor-list { display: flex; flex-direction: column; gap: 8px; }
-  .flavor-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: border-color .15s; }
+  .flavor-row { background: var(--surface); border: 1px solid #a9a9a9; border-radius: var(--radius); padding: 12px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: border-color .15s; }
   .flavor-row.selected { border-color: var(--accent2); }
   .flavor-name { font-size: 14px; flex: 1; }
   .qty-ctrl { display: flex; align-items: center; gap: 0; }
@@ -95,7 +95,7 @@
   /* CART SCREEN */
   .cart-empty { text-align: center; padding: 60px 20px; color: var(--text2); }
   .cart-empty-icon { font-size: 50px; margin-bottom: 12px; }
-  .cart-item-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; }
+  .cart-item-row { background: var(--surface); border: 1px solid #a9a9a9; border-radius: var(--radius); padding: 14px; margin-bottom: 10px; }
   .cart-item-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
   .cart-item-name { font-size: 14px; font-weight: 700; flex: 1; }
   .cart-item-cat { font-size: 12px; color: var(--accent2); margin-top: 2px; }
@@ -111,7 +111,7 @@
   /* ORDER FORM */
   .form-group { margin-bottom: 14px; }
   label { display: block; font-size: 13px; color: var(--text2); margin-bottom: 6px; }
-  input, textarea, select { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; color: var(--text); font-size: 15px; outline: none; transition: border-color .15s; font-family: inherit; }
+  input, textarea, select { width: 100%; background: var(--surface); border: 1px solid #a9a9a9; border-radius: var(--radius); padding: 12px 10px; color: var(--text); font-size: 15px; outline: none; transition: border-color .15s; font-family: inherit; }
   input:focus, textarea:focus { border-color: var(--accent2); }
   textarea { resize: none; height: 70px; }
   .order-summary { background: var(--surface2); border-radius: var(--radius); padding: 14px; margin-bottom: 18px; }
@@ -138,7 +138,7 @@
   .success-title { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
   .success-sub { color: var(--text2); font-size: 15px; margin-bottom: 30px; line-height: 1.5; }
   .btn-manager { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background: #229ED9; border: none; color: #fff; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; text-decoration: none; margin-bottom: 12px; }
-  .btn-secondary { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .btn-secondary { width: 100%; background: var(--surface); border: 1px solid #a9a9a9; color: var(--text); border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; }
 
   .cart-total-label { font-size: 15px; font-weight: 800; color: var(--text); }
   .cart-upsell { font-size: 11px; color: #22c55e; line-height: 1.4; display: none; margin-left: 20px; }
@@ -165,8 +165,9 @@
     height: 200px;
     border-radius: var(--radius);
     overflow: hidden;
-    border: 1px solid var(--border);
+    border: 1px solid #a9a9a9;
     box-sizing: border-box;
+    background: var(--surface);
   }
   .banner-item img {
     width: 100%;
@@ -175,8 +176,8 @@
     display: block;
   }
 
-  .tab-bar { display: flex; gap: 8px; padding: 12px 14px 0; flex-shrink: 0; }
-.tab-btn { flex: 1; padding: 10px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .18s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .tab-bar { display: flex; gap: 8px; padding: 12px 10px 0; flex-shrink: 0; }
+.tab-btn { flex: 1; padding: 10px; border-radius: var(--radius); border: 1px solid #a9a9a9; background: var(--surface); color: var(--text2); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .18s; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
   /* HISTORY */
   .history-empty { text-align:center; padding:60px 20px; color:var(--text2); }
@@ -194,7 +195,7 @@
   .lang-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 32px; }
   .lang-overlay.hidden { display: none; }
   .lang-blur { position: fixed; inset: 0; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(10,8,20,0.55); }
-  .lang-card { position: relative; z-index: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 22px; padding: 36px 28px 32px; width: 100%; max-width: 320px; text-align: center; }
+  .lang-card { position: relative; z-index: 1; background: var(--surface); border: 1px solid #a9a9a9; border-radius: 22px; padding: 36px 28px 32px; width: 100%; max-width: 320px; text-align: center; }
   .lang-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; }
   .lang-heading { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 28px; }
   .lang-btns { display: flex; gap: 12px; }
@@ -205,7 +206,7 @@
   .limit-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 32px; }
   .limit-overlay.hidden { display: none; }
   .limit-blur { position: fixed; inset: 0; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(10,8,20,0.55); }
-  .limit-card { position: relative; z-index: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 22px; padding: 36px 28px 32px; width: 100%; max-width: 340px; text-align: center; }
+  .limit-card { position: relative; z-index: 1; background: var(--surface); border: 1px solid #a9a9a9; border-radius: 22px; padding: 36px 28px 32px; width: 100%; max-width: 340px; text-align: center; }
   .limit-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; }
   .limit-heading { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 12px; }
   .limit-text { font-size: 14px; color: var(--text2); line-height: 1.6; margin-bottom: 28px; }
@@ -319,7 +320,7 @@
 
   /* FOOTER */
   .footer {
-    padding: 30px 14px 20px 14px;
+    padding: 30px 10px 20px 10px;
     margin-top: 40px;
     border-top: 1px solid var(--text2);
   }
@@ -330,7 +331,7 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 0 14px;
+    padding: 0 10px;
   }
   .footer-link {
     color: var(--text);
@@ -388,7 +389,7 @@
   
   <div class="scroll no-cart-pad" id="main-scroll">
     <!-- PROMO BANNER -->
-    <div class="banner-item" id="banner-promo" style="margin: 16px 14px 20px;">
+    <div class="banner-item" id="banner-promo" style="margin: 16px 10px 20px;">
       <img src="images/banner.webp" alt="Промо" onerror="this.style.display='none'">
     </div>
 
@@ -399,7 +400,7 @@
     </div>
     
     <div class="cat-grid" id="cat-grid" style="margin-top: 16px;"></div>
-    <div id="all-models-list" style="display:none;flex-direction:column;gap:10px;margin-top:16px;padding:0 14px;"></div>
+    <div id="all-models-list" style="display:none;flex-direction:column;gap:10px;margin-top:16px;padding:0 10px;"></div>
     <!-- FOOTER -->
     <div class="footer" id="footer">
       <div class="footer-links">
