@@ -87,7 +87,7 @@
   .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; height: var(--cart-h); background: var(--surface); border-top: 1px solid var(--border); display: none; align-items: center; padding: 0 16px; gap: 12px; z-index: 100; }
   .cart-bar.visible { display: flex; }
   .cart-info { flex: 1; }
-  .cart-items-count { font-size: 13px; color: var(--text2); }
+  .cart-items-count { font-size: 13px; color: var(--text2); margin-left: 20px; }
   .cart-total { font-size: 17px; font-weight: 700; }
   .cart-open-btn { background: var(--accent); border: none; color: #fff; border-radius: 12px; padding: 12px 20px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
   .cart-badge { background: #fff; color: var(--accent); border-radius: 50%; width: 20px; height: 20px; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-left: 10px; }
@@ -527,6 +527,7 @@ const TRANS = {
     upsell: (n, p, s) => `Добавь ещё <b style="color:#4ade80">${n} шт.</b> → цена <b style="color:#4ade80">${p} zł/шт.</b>, сэкономишь <b style="color:#4ade80">${s} zł</b>`,
     flavor_label: n => 'вкус' + (n === 1 ? '' : n >= 2 && n <= 4 ? 'а' : 'ов'),
     model_label: n => 'модел' + (n === 1 ? 'ь' : 'и'),
+    max_limit: 'Максимум 200 единиц в корзине!',
   },
   pl: {
     home: 'Strona główna',
@@ -589,6 +590,7 @@ const TRANS = {
     upsell: (n, p, s) => `Dodaj jeszcze <b style="color:#4ade80">${n} szt.</b> → cena <b style="color:#4ade80">${p} zł/szt.</b>, zaoszczędzisz <b style="color:#4ade80">${s} zł</b>`,
     flavor_label: n => n === 1 ? 'smak' : n >= 2 && n <= 4 ? 'smaki' : 'smaków',
     model_label: n => n === 1 ? 'model' : n >= 2 && n <= 4 ? 'modele' : 'modeli',
+    max_limit: 'Maksimum 200 sztuk w koszyku!',
   }
 };
 
@@ -1083,6 +1085,15 @@ function changeQty(key, delta) {
   const current = cart[key]?.qty || 0;
   const newQty = Math.max(0, current + delta);
 
+  // Проверка на максимум 200 единиц в корзине
+  if (newQty > current) { // если добавляем
+    const totalQty = cartCount();
+    if (totalQty + (newQty - current) > 200) {
+      alert(tr('max_limit'));
+      return;
+    }
+  }
+
   if (newQty === 0) {
     delete cart[key];
   } else {
@@ -1257,6 +1268,16 @@ function cartChangeQty(key, catId, delta) {
   const d = (delta === undefined) ? -1 : 1;
   if (!cart[key]) return;
   const newQty = Math.max(0, cart[key].qty + d);
+  
+  // Проверка на максимум 200 единиц в корзине
+  if (d > 0 && newQty > cart[key].qty) { // если добавляем
+    const totalQty = cartCount();
+    if (totalQty + 1 > 200) {
+      alert(tr('max_limit'));
+      return;
+    }
+  }
+  
   if (newQty === 0) { removeCartItem(key); return; }
   cart[key].qty = newQty;
   renderCart();
