@@ -186,6 +186,16 @@
   .lang-btn { flex: 1; padding: 22px 10px; border-radius: 14px; border: 1.5px solid var(--border); background: var(--surface2); color: var(--text); font-size: 28px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color .18s, background .18s; -webkit-tap-highlight-color: transparent; letter-spacing: 1px; }
   .lang-btn:active { background: var(--accent); border-color: var(--accent); }
 
+  /* LIMIT MODAL */
+  .limit-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 32px; }
+  .limit-overlay.hidden { display: none; }
+  .limit-blur { position: fixed; inset: 0; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(10,8,20,0.55); }
+  .limit-card { position: relative; z-index: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 22px; padding: 36px 28px 32px; width: 100%; max-width: 340px; text-align: center; }
+  .limit-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; }
+  .limit-heading { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 12px; }
+  .limit-text { font-size: 14px; color: var(--text2); line-height: 1.6; margin-bottom: 28px; }
+  .limit-btn { width: 100%; padding: 14px; border-radius: 14px; border: none; background: var(--accent); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity .18s; -webkit-tap-highlight-color: transparent; }
+
   /* SPLASH SCREEN */
   .splash-overlay { 
     position: fixed; inset: 0; z-index: 9999; 
@@ -446,6 +456,17 @@
   </div>
 </div>
 
+<!-- LIMIT MODAL -->
+<div class="limit-overlay hidden" id="limit-overlay">
+  <div class="limit-blur" onclick="closeLimitAlert()"></div>
+  <div class="limit-card">
+    <div class="limit-title">⚠️ Ограничение</div>
+    <div class="limit-heading" id="limit-heading">Максимум 200 единиц</div>
+    <div class="limit-text" id="limit-text">Вы можете заказать максимально 200 единиц товара. Для большего количества напишите менеджеру.</div>
+    <button class="limit-btn" onclick="closeLimitAlert()">OK</button>
+  </div>
+</div>
+
 <script>
 
 // Hide splash screen
@@ -640,6 +661,26 @@ function selectLang(l) {
   if (active === 's-order') renderOrderForm();
   if (active === 's-history') openHistory();
   updateCartBar();
+}
+
+function showLimitAlert() {
+  const limitOverlay = document.getElementById('limit-overlay');
+  const limitHeading = document.getElementById('limit-heading');
+  const limitText = document.getElementById('limit-text');
+  
+  if (lang === 'pl') {
+    limitHeading.textContent = 'Maksimum 200 sztuk';
+    limitText.textContent = 'Możesz zamówić maksymalnie 200 sztuk towaru. Aby uzyskać większą ilość, skontaktuj się z menedżerem.';
+  } else {
+    limitHeading.textContent = 'Максимум 200 единиц';
+    limitText.textContent = 'Вы можете заказать максимально 200 единиц товара. Для большего количества напишите менеджеру.';
+  }
+  
+  limitOverlay.classList.remove('hidden');
+}
+
+function closeLimitAlert() {
+  document.getElementById('limit-overlay').classList.add('hidden');
 }
 
 // Show modal on init if no lang saved
@@ -1089,7 +1130,7 @@ function changeQty(key, delta) {
   if (newQty > current) { // если добавляем
     const totalQty = cartCount();
     if (totalQty + (newQty - current) > 200) {
-      alert(tr('max_limit'));
+      showLimitAlert();
       return;
     }
   }
@@ -1189,8 +1230,9 @@ function renderCart() {
   let html = '';
   Object.entries(grouped).forEach(([catId, catItems]) => {
     const cat = catalog.find(c => c.id === catId);
+    const catQtyTotal = catItems.reduce((sum, item) => sum + item.qty, 0);
 
-    html += `<div class="section-title">${lang === 'pl' && cat?.name_pl ? cat.name_pl : (cat?.name || catId)}</div>`;
+    html += `<div class="section-title">${lang === 'pl' && cat?.name_pl ? cat.name_pl : (cat?.name || catId)} — ${catQtyTotal} ${tr('pcs')}</div>`;
 
     catItems.sort((a, b) => a.modelName.localeCompare(b.modelName));
     catItems.forEach(item => {
@@ -1273,7 +1315,7 @@ function cartChangeQty(key, catId, delta) {
   if (d > 0 && newQty > cart[key].qty) { // если добавляем
     const totalQty = cartCount();
     if (totalQty + 1 > 200) {
-      alert(tr('max_limit'));
+      showLimitAlert();
       return;
     }
   }
