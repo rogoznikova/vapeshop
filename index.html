@@ -141,7 +141,7 @@
   .btn-secondary { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; }
 
   .cart-total-label { font-size: 15px; font-weight: 800; color: var(--text); }
-  .cart-upsell { font-size: 11px; color: #22c55e; line-height: 1.4; display: none; }
+  .cart-upsell { font-size: 11px; color: #22c55e; line-height: 1.4; display: none; padding-right: 40px; padding-bottom: 20px; }
 
   /* UPSELL BANNER */
   .upsell-banner { background: linear-gradient(135deg,#1a2a1a,#0f2010); border: 1px solid #22c55e44; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 13px; display: none; color: #22c55e; line-height: 1.5; }
@@ -282,6 +282,8 @@
     /* FLAVORS SCREEN PADDING */
   #s-flavors .scroll {
     padding-bottom: 200px !important;
+    padding-right: calc(14px + max(0px, env(safe-area-inset-right))) !important;
+    padding-left: calc(14px + max(0px, env(safe-area-inset-left))) !important;
   }
   
     /* MODEL DESCRIPTION */
@@ -687,11 +689,36 @@ function catQty(catId) {
 }
 
 // Итого по всей корзине с учётом смарт-цен
+// Считаем общее количество одноразок + жидкостей (исключая поды и картриджи)
+function getTotalQtyForPricing() {
+  let total = 0;
+  for (const key in cart) {
+    const item = cart[key];
+    if (!item || item.qty === 0) continue;
+    
+    // Найдем категорию товара
+    let catId = null;
+    for (const cat of catalog) {
+      if (cat.models.find(m => m.id === item.model)) {
+        catId = cat.id;
+        break;
+      }
+    }
+    
+    // Исключаем поды и картриджи из общего подсчета
+    if (catId !== 'pods' && catId !== 'cartridges') {
+      total += item.qty;
+    }
+  }
+  return total;
+}
+
+// Итого по всей корзине с учётом Smart Cena
 function cartTotal() {
   let total = 0;
-  const groups = {}; // Группируем по тирам
+  const totalQtyForPricing = getTotalQtyForPricing();
   
-  // Собираем товары в группы по их тирам
+  // Обрабатываем каждый товар в корзине
   for (const key in cart) {
     const item = cart[key];
     if (!item || item.qty === 0) continue;
@@ -710,27 +737,22 @@ function cartTotal() {
     
     if (!model) continue;
     
-    // Определяем какие тиры использовать
-    const tiers = model.tiers || PRICING[catId]?.tiers || [];
-    const tierKey = JSON.stringify(tiers); // Используем тиры как ключ группы
-    
-    if (!groups[tierKey]) {
-      groups[tierKey] = { tiers, qty: 0 };
+    // Для подов и картриджей - фиксированные цены
+    if (catId === 'pods' || catId === 'cartridges') {
+      const basePrice = PRICING[catId]?.base || 0;
+      total += item.qty * basePrice;
+    } else {
+      // Для одноразок и жидкостей - применяем Smart Cena по общему количеству
+      const tiers = model.tiers || PRICING[catId]?.tiers || [];
+      let price = tiers[0]?.[1] || 0;
+      
+      // Применяем нужный тир по общему количеству
+      for (const [minQty, unitPrice] of tiers) {
+        if (totalQtyForPricing >= minQty) price = unitPrice;
+      }
+      
+      total += item.qty * price;
     }
-    groups[tierKey].qty += item.qty;
-  }
-  
-  // Считаем цену для каждой группы
-  for (const tierKey in groups) {
-    const group = groups[tierKey];
-    let price = group.tiers[0]?.[1] || 0;
-    
-    // Применяем нужный тир для группы
-    for (const [minQty, unitPrice] of group.tiers) {
-      if (group.qty >= minQty) price = unitPrice;
-    }
-    
-    total += group.qty * price;
   }
   
   return total;
@@ -739,9 +761,9 @@ function cartTotal() {
 // Сколько сэкономил клиент (vs базовая цена 1-2 шт.)
 function cartSavings() {
   let saved = 0;
-  const groups = {}; // Группируем по тирам
+  const totalQtyForPricing = getTotalQtyForPricing();
   
-  // Собираем товары в группы по их тирам
+  // Обрабатываем каждый товар в корзине
   for (const key in cart) {
     const item = cart[key];
     if (!item || item.qty === 0) continue;
@@ -760,28 +782,22 @@ function cartSavings() {
     
     if (!model) continue;
     
-    // Определяем какие тиры использовать
+    // Для подов и картриджей скидок нет (фиксированные цены)
+    if (catId === 'pods' || catId === 'cartridges') {
+      continue;
+    }
+    
+    // Для одноразок и жидкостей считаем скидку
     const tiers = model.tiers || PRICING[catId]?.tiers || [];
-    const tierKey = JSON.stringify(tiers);
+    const basePrice = tiers[0]?.[1] || 0;
+    let smartPrice = tiers[0]?.[1] || 0;
     
-    if (!groups[tierKey]) {
-      groups[tierKey] = { tiers, qty: 0 };
-    }
-    groups[tierKey].qty += item.qty;
-  }
-  
-  // Считаем скидку для каждой группы
-  for (const tierKey in groups) {
-    const group = groups[tierKey];
-    const basePrice = group.tiers[0]?.[1] || 0;
-    let smartPrice = group.tiers[0]?.[1] || 0;
-    
-    // Применяем нужный тир для группы
-    for (const [minQty, unitPrice] of group.tiers) {
-      if (group.qty >= minQty) smartPrice = unitPrice;
+    // Применяем нужный тир по общему количеству
+    for (const [minQty, unitPrice] of tiers) {
+      if (totalQtyForPricing >= minQty) smartPrice = unitPrice;
     }
     
-    saved += group.qty * (basePrice - smartPrice);
+    saved += item.qty * (basePrice - smartPrice);
   }
   
   return saved;
@@ -1159,16 +1175,43 @@ function renderCart() {
     grouped[item.catId].push(item);
   });
 
+  const totalQtyForPricing = getTotalQtyForPricing();
+
   let html = '';
   Object.entries(grouped).forEach(([catId, catItems]) => {
     const cat = catalog.find(c => c.id === catId);
-    const qtyInCat = catQty(catId);
-    const unitPrice = getSmartPrice(catId, qtyInCat);
 
     html += `<div class="section-title">${lang === 'pl' && cat?.name_pl ? cat.name_pl : (cat?.name || catId)}</div>`;
 
     catItems.sort((a, b) => a.modelName.localeCompare(b.modelName));
     catItems.forEach(item => {
+      // Найти модель для получения её тиров
+      let model = null;
+      for (const cat of catalog) {
+        const m = cat.models.find(md => md.id === item.model);
+        if (m) {
+          model = m;
+          break;
+        }
+      }
+      
+      // Считаем цену для этого товара
+      let itemPrice = 0;
+      if (catId === 'pods' || catId === 'cartridges') {
+        // Фиксированные цены для подов и картриджей
+        itemPrice = PRICING[catId]?.base || 0;
+      } else {
+        // Smart Cena для одноразок и жидкостей - применяем по общему количеству
+        const tiers = model?.tiers || PRICING[catId]?.tiers || [];
+        itemPrice = tiers[0]?.[1] || 0;
+        
+        for (const [minQty, unitPrice] of tiers) {
+          if (totalQtyForPricing >= minQty) itemPrice = unitPrice;
+        }
+      }
+      
+      const itemTotal = item.qty * itemPrice;
+
       html += `
         <div class="cart-item-row" id="citem-${safeId(item.key)}">
           <div style="display:flex;align-items:center;gap:10px">
@@ -1244,10 +1287,40 @@ function renderOrderForm() {
     byModel[i.modelName].flavors.push(i);
   });
 
+  const totalQtyForPricing = getTotalQtyForPricing();
+
   let itemsHtml = '';
   Object.values(byModel).forEach(group => {
     const modelQty = group.flavors.reduce((s, f) => s + f.qty, 0);
-    const unitPrice = getSmartPrice(group.catId, catQty(group.catId));
+    
+    // Найти модель для получения её тиров
+    let model = null;
+    for (const cat of catalog) {
+      const m = cat.models.find(md => {
+        const modelName = lang === 'pl' && m?.name_pl ? m.name_pl : m?.name;
+        return modelName === group.model;
+      });
+      if (m) {
+        model = m;
+        break;
+      }
+    }
+    
+    // Считаем цену для этой модели
+    let unitPrice = 0;
+    if (group.catId === 'pods' || group.catId === 'cartridges') {
+      // Фиксированные цены для подов и картриджей
+      unitPrice = PRICING[group.catId]?.base || 0;
+    } else {
+      // Smart Cena для одноразок и жидкостей - применяем по общему количеству
+      const tiers = model?.tiers || PRICING[group.catId]?.tiers || [];
+      unitPrice = tiers[0]?.[1] || 0;
+      
+      for (const [minQty, uPrice] of tiers) {
+        if (totalQtyForPricing >= minQty) unitPrice = uPrice;
+      }
+    }
+    
     const modelTotal = modelQty * unitPrice;
     itemsHtml += `<div class="order-model-group">
       <div class="order-model-header">
