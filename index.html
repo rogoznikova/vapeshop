@@ -1023,11 +1023,13 @@ const catalog = [
       {
         id: 'xrosmini',
         name: 'XROS MINI 5',
+        img: 'images/xrosmini.png',
         flavors: ['Pastel Crystal','Rose Red','Carbon Black','Purple','Titanium silver','Black','Flowing Blue','Flowing Green','Flowing Pink','Sky Blue']
       },
       {
         id: 'oxva',
         name: 'OXVA XLIM GO 2',
+        img: 'images/oxva.png',
         flavors: ['Pink Ripple','Black Carbon','Metal Silver','Light Brown Shadow','Metal Blue','Black Shadow','Green Ripple','Blue Ripple']
       }
     ]
@@ -1042,6 +1044,7 @@ const catalog = [
       {
         id: 'cart-xros',
         name: 'CARTRIDGE XROS 3 ML',
+        img: 'images/cartridge-xros.png',
         desc: '0.4 Ω | 0.6 Ω | 0.8 Ω',
         desc_pl: '0.4 Ω | 0.6 Ω | 0.8 Ω',
         flavors: ['0.4 Ω','0.6 Ω','0.8 Ω']
@@ -1049,6 +1052,7 @@ const catalog = [
       {
         id: 'cart-oxva',
         name: 'CARTRIDGE OXVA 3 ML',
+        img: 'images/cartridge-oxva.png',
         desc: '0.4 Ω | 0.6 Ω | 0.8 Ω',
         desc_pl: '0.4 Ω | 0.6 Ω | 0.8 Ω',
         flavors: ['0.4 Ω','0.6 Ω','0.8 Ω']
@@ -1065,16 +1069,19 @@ const catalog = [
       {
         id: 'puffy',
         name: 'PUFFY',
+        img: 'images/puffy.png',
         flavors: ['Banana cherry','Berri kiwi','Black grape mint','Blueberry raspberry','Grape Raspberry Black Plum','Ice mojito mint','Lemon grapefruit','Pineapple coconut','Strawberry watermelon','Watermelon Bubble gum','Cherry Ice','Cranberry Grape','Energy Drink','Grape Melon','Gummy Bear','Raspberry Watermelon','Skittles Candy','Strawberry Lime','Tropical Fruits','Berry Cherry Cocktail']
       },
       {
         id: 'vozol',
         name: 'VOZOL PRIME',
+        img: 'images/vozol.png',
         flavors: ['Berry','Berry Peach','Blueberry Ice','Blueberry Razz Lemon','Blueberry watermelon','Cherry Cola','Dragon Fruit Banana Cherry','Grape Ice','Kiwi Passion Fruite Guava','LavaFire','Lemon Lime','Love 777','Mint ice','Mixed Berries','Peach Ice','Perfume Lemon','Pineapple Passion Fruit Lime','Pomegranate lemonade','Purple candy','Sour Apple Ice','Strawberry Ice cream','Strawberry Kiwi','Strawberry Watermelon','Watermelon Bubble Gum','Watermelon Ice','Blue raspberry','Peach Mango Watermelon','Strawberry Ice']
       },
       {
         id: 'elfliq',
         name: 'ELF LIQ',
+        img: 'images/elfliq.png',
         flavors: ['Apple Peach','Apple Pear','Apple Sour','Blackberry Lemon','Blackcurrant Aniseed','Blue Raz Ice','Blue Razz Lemonade','Blueberry','Blueberry Raspberry Pomegranate','Blueberry Rose Mint','Blueberry Sour Raspberry','Cherry','Cherry Cola','Cherry Lemon Peach','Cola','Cool Mint','Double Apple','Elf Jack','Elfbull Ice','Grape','Grape Cherry','Green Grape Rose','Jasmine Raspberry','Kiwi Passion Guava','Lemon Lime','Mango Peach','PB Cloud','Peach Ice','Pina Colada','Pineapple Ice','Pineapple Colada','Pink Grapefruit','Pink Lemonade','Pink Lemonade Soda','Raspberry Lychee','Rhubarb Snow','Sour Watermelon Gummy','Spearmint','Strawberry Banana','Strawberry Kiwi','Strawberry Raspberry Cherry Ice','Strawberry Cherry Lemon','Strawberry Ice','Strawberry Snow','Watermelon','Watermelon Cherry']
       }
     ]
@@ -1465,6 +1472,7 @@ let orderPayment = null; // 'cod' | 'crypto'
 let orderDelivery = null; // 'paczkomat' | 'kurier'
 
 function openOrder() {
+  console.log('openOrder called');
   orderPayment = null;
   orderDelivery = null;
   renderOrderForm();
@@ -1491,7 +1499,7 @@ function renderOrderForm() {
     let model = null;
     for (const cat of catalog) {
       const m = cat.models.find(md => {
-        const modelName = lang === 'pl' && m?.name_pl ? m.name_pl : m?.name;
+        const modelName = lang === 'pl' && md?.name_pl ? md.name_pl : md?.name;
         return modelName === group.model;
       });
       if (m) {
