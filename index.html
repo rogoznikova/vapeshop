@@ -163,13 +163,17 @@
   .banner-item {
     grid-column: 1 / -1;
     aspect-ratio: 746 / 400;
+    width: 100%;
+    height: auto;
     border-radius: var(--radius);
     overflow: hidden;
     border: 1px solid var(--text);
     box-sizing: border-box;
     background: var(--surface);
     transition: border-color .18s;
-  }
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .banner-item img {
     width: 100%;
