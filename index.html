@@ -480,7 +480,7 @@
   <div class="header">
     <button class="back-btn" id="cart-back-btn">←</button>
     <div class="header-center">
-      <div class="header-title" data-i18n="cart_title">🛒 Корзина</div>
+      <div class="header-title" data-i18n="cart_title">Корзина</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
@@ -495,7 +495,7 @@
   <div class="header">
     <button class="back-btn" onclick="goTo('s-cart')">←</button>
     <div class="header-center">
-      <div class="header-title" data-i18n="order_title">📦 Оформление заказа</div>
+      <div class="header-title" data-i18n="order_title">Оформление заказа</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
@@ -508,7 +508,7 @@
 <!-- SCREEN 6: SUCCESS -->
 <div class="screen" id="s-success">
   <div class="success-screen">
-    <div class="success-icon">✅</div>
+    <div class="success-icon"></div>
     <div class="success-title" data-i18n="order_done">Заказ оформлен!</div>
     <div class="success-sub" id="success-sub">Для подтверждения вашего заказа напишите менеджеру — он всё проверит и отправит посылку.</div>
     <a class="btn-manager" id="manager-link" href="#" target="_blank">
@@ -596,7 +596,7 @@ const TRANS = {
     tab_cats: 'Категории',
     tab_all: 'Все товары',
     choose_model: 'Выберите модель',
-    cart_title: '🛒 Корзина',
+    cart_title: 'Корзина',
     cart_empty: 'Корзина пуста',
     cart_empty_sub: 'Добавьте товары из каталога',
     positions: 'Позиций',
@@ -606,7 +606,7 @@ const TRANS = {
     checkout: 'Оформить заказ →',
     pcs: 'шт.',
     pos_in_cart: 'поз. в корзине',
-    order_title: '📦 Оформление заказа',
+    order_title: 'Оформление заказа',
     your_order: 'Ваш заказ:',
     saving: 'Экономия Smart Cena',
     payment_section: '💳 Способ оплаты',
@@ -636,7 +636,7 @@ const TRANS = {
     per_pcs: 'zł/шт.',
     fill_required: 'Пожалуйста, заполните все обязательные поля (*)',
     fill_kod: 'Укажите Kod paczkomatu',
-    cart_btn: '🛒 Корзина',
+    cart_btn: 'Корзина',
     lbl_name: 'Imię i Nazwisko (Имя и Фамилия) *',
     lbl_city: 'Miasto (Город) *',
     lbl_zip: 'Kod pocztowy (Почтовый индекс) *',
@@ -664,7 +664,7 @@ const TRANS = {
     tab_cats: 'Kategorie',
     tab_all: 'Wszystkie',
     choose_model: 'Wybierz model',
-    cart_title: '🛒 Koszyk',
+    cart_title: 'Koszyk',
     cart_empty: 'Koszyk pusty',
     cart_empty_sub: 'Dodaj produkty z katalogu',
     positions: 'Pozycji',
@@ -674,7 +674,7 @@ const TRANS = {
     checkout: 'Złóż zamówienie →',
     pcs: 'szt.',
     pos_in_cart: 'poz. w koszyku',
-    order_title: '📦 Złożenie zamówienia',
+    order_title: 'Złożenie zamówienia',
     your_order: 'Twoje zamówienie:',
     saving: 'Oszczędność Smart Cena',
     payment_section: '💳 Metoda płatności',
@@ -704,7 +704,7 @@ const TRANS = {
     per_pcs: 'zł/szt.',
     fill_required: 'Proszę wypełnić wszystkie wymagane pola (*)',
     fill_kod: 'Podaj Kod paczkomatu',
-    cart_btn: '🛒 Koszyk',
+    cart_btn: 'Koszyk',
     lbl_name: 'Imię i Nazwisko *',
     lbl_city: 'Miasto *',
     lbl_zip: 'Kod pocztowy *',
@@ -780,7 +780,7 @@ function selectLang(l) {
   // Re-render current active screen
   const active = document.querySelector('.screen.active')?.id;
   if (active === 's-models') {
-    if (currentCat) document.getElementById('models-title').textContent = currentCat.icon + ' ' + (lang === 'pl' && currentCat.name_pl ? currentCat.name_pl : currentCat.name);
+    if (currentCat) document.getElementById('models-title').textContent = (lang === 'pl' && currentCat.name_pl ? currentCat.name_pl : currentCat.name);
     renderModels();
   }
   if (active === 's-flavors') {
@@ -988,7 +988,7 @@ const catalog = [
     id: 'disposable',
     name: 'Одноразки',
     name_pl: 'E-papierosy',
-    icon: '💨',
+    icon: '',
     img: 'images/cat-disposable.webp',
     models: [
       {
@@ -1022,7 +1022,7 @@ const catalog = [
     id: 'pods',
     name: 'Под системы',
     name_pl: 'Pody',
-    icon: '🔋',
+    icon: '',
     img: 'images/cat-pods.webp',
     models: [
       {
@@ -1043,7 +1043,7 @@ const catalog = [
     id: 'cartridges',
     name: 'Картриджи',
     name_pl: 'Cartridge',
-    icon: '🔌',
+    icon: '',
     img: 'images/cat-cartridges.webp',
     models: [
       {
@@ -1068,7 +1068,7 @@ const catalog = [
     id: 'liquids',
     name: 'Жидкости',
     name_pl: 'E-liquid',
-    icon: '💧',
+    icon: '',
     img: 'images/cat-liquids.webp',
     models: [
       {
@@ -1158,7 +1158,7 @@ function renderCategories() {
 
 function openCategory(catId) {
   currentCat = catalog.find(c => c.id === catId);
-  document.getElementById('models-title').textContent = currentCat.icon + ' ' + (lang === 'pl' && currentCat.name_pl ? currentCat.name_pl : currentCat.name);
+  document.getElementById('models-title').textContent = (lang === 'pl' && currentCat.name_pl ? currentCat.name_pl : currentCat.name);
   renderModels();
   goTo('s-models');
 }
@@ -1356,7 +1356,7 @@ function renderCart() {
   if (items.length === 0) {
     content.innerHTML = `
       <div class="cart-empty">
-        <div class="cart-empty-icon">🛒</div>
+        <div class="cart-empty-icon"></div>
         <div>${tr('cart_empty')}</div>
         <div style="margin-top:8px;font-size:13px;color:var(--text2)">${tr('cart_empty_sub')}</div>
       </div>`;
@@ -1560,10 +1560,10 @@ function renderOrderForm() {
     <div class="form-section-title">${tr('payment_section')}</div>
     <div class="selector-group">
       <button class="selector-btn ${orderPayment==='cod'?'selected':''}" onclick="selectPayment('cod')">
-        <span class="sel-icon">📦</span>${tr('pay_cod')}
+        <span class="sel-icon"></span>${tr('pay_cod')}
       </button>
       <button class="selector-btn ${orderPayment==='crypto'?'selected':''}" onclick="selectPayment('crypto')">
-        <span class="sel-icon">₿</span>${tr('pay_crypto')}
+        <span class="sel-icon"></span>${tr('pay_crypto')}
       </button>
     </div>`;
 
@@ -1591,10 +1591,10 @@ function renderOrderForm() {
       <div class="form-section-title">${tr('delivery_section')}</div>
       <div class="selector-group">
         <button class="selector-btn ${orderDelivery==='paczkomat'?'selected':''}" onclick="selectDelivery('paczkomat')">
-          <span class="sel-icon">🏪</span>Paczkomat InPost
+          <span class="sel-icon"></span>Paczkomat InPost
         </button>
         <button class="selector-btn ${orderDelivery==='kurier'?'selected':''}" onclick="selectDelivery('kurier')">
-          <span class="sel-icon">🚗</span>Kurier
+          <span class="sel-icon"></span>Kurier
         </button>
       </div>`;
 
@@ -1695,7 +1695,7 @@ function submitCrypto() {
 
   let msg = `${tr('msg_greeting')}\n\n`;
   msg += `${tr('pay_label_crypto')}\n`;
-  msg += `📦 ${lang === 'pl' ? 'ZAMÓWIENIE' : 'ЗАКАЗ'}\n\n`;
+  msg += `${lang === 'pl' ? 'ZAMÓWIENIE' : 'ЗАКАЗ'}\n\n`;
   msg += orderLines;
   msg += tr('msg_total', count) + '\n';
   msg += `CENA: ${total} Zł\n\n`;
@@ -1726,7 +1726,7 @@ function submitCOD() {
 
   let msg = `${tr('msg_greeting')}\n\n`;
   msg += `${tr('pay_label_cod')}\n`;
-  msg += `📦 ${lang === 'pl' ? 'ZAMÓWIENIE' : 'ЗАКАЗ'}\n\n`;
+  msg += `${lang === 'pl' ? 'ZAMÓWIENIE' : 'ЗАКАЗ'}\n\n`;
   msg += orderLines;
   msg += tr('msg_total', count) + '\n';
   msg += `CENA: ${total} Zł\n\n`;
@@ -1736,6 +1736,7 @@ function submitCOD() {
   if (orderDelivery === 'paczkomat') {
     const kodpacz = (document.getElementById('f-kodpacz')?.value || '').trim();
     if (!kodpacz) { alert(tr('fill_kod')); return; }
+    if (!/[a-zA-Z]/.test(kodpacz)) { alert(tr('fill_kod')); return; }
     msg += `Dostawa: Paczkomat InPost\n`;
     msg += `Miasto: ${miasto}\n`;
     msg += `Kod paczkomatu: ${kodpacz}\n`;
@@ -1811,7 +1812,7 @@ function renderHistory(orders) {
   if (!orders || orders.length === 0) {
     content.innerHTML = `
       <div class="history-empty">
-        <div class="history-empty-icon">📋</div>
+        <div class="history-empty-icon"></div>
         <div style="font-size:16px;font-weight:700;margin-bottom:8px">${tr('no_orders')}</div>
         <div style="font-size:13px">${tr('no_orders_sub')}</div>
       </div>`;
@@ -1827,7 +1828,7 @@ function renderHistory(orders) {
     const itemsText = Object.entries(byModel)
       .map(([model, flavors]) => `<b>${model}:</b> ${flavors.join(', ')}`)
       .join('<br>');
-    const payIcon = order.paymentMethod === 'crypto' ? '₿' : '📦';
+    const payIcon = '';
     const payLabel = order.paymentMethod === 'crypto' ? tr('pay_label_crypto') : tr('pay_label_cod');
 
     return `<div class="history-card">
