@@ -657,6 +657,25 @@ const TRANS = {
     footer_returns: 'Возврат и замена',
     footer_faq: 'FAQ',
     footer_manager: 'Контакт с менеджером',
+    
+    // Информационные страницы
+    info_delivery_title: 'Доставка',
+    info_delivery_paczkomat: 'Доставка в Paczkomat – самовывоз посылки в пункте Paczkomat.',
+    info_delivery_zabka: 'Доставка в магазин Żabka – самовывоз посылки в магазине Żabka.',
+    info_delivery_courier: 'Доставка курьером до двери дома – пакет доставляется прямо к вашей двери.',
+    info_delivery_paczkopunkt: 'Доставка в PaczkoPunkt – самовывоз посылки в пункте PaczkoPunkt.',
+    
+    info_payment_title: 'Оплата',
+    info_payment_courier: 'При доставке курьером:',
+    info_payment_courier_methods: 'Наличные | BLIK | Apple Pay | Google Pay',
+    info_payment_pickup: 'При самовывозе (Paczkomat/Żabka/PaczkoPunkt):',
+    info_payment_pickup_methods: 'BLIK | Apple Pay | Google Pay',
+    info_payment_crypto: 'Предоплата криптовалютой:',
+    info_payment_crypto_methods: 'Bitcoin (BTC) | Ethereum (ETH) | USDT (TRC-20)',
+    
+    info_returns_title: 'Возврат и замена',
+    info_returns_step1: '1. Напиши менеджеру в Telegram и опиши проблему.',
+    info_returns_step2: '2. Отправь фото или видео, показывающее дефект товара.',
   },
   pl: {
     home: 'Strona główna',
@@ -725,6 +744,25 @@ const TRANS = {
     footer_returns: 'Zwrot i wymiana',
     footer_faq: 'FAQ',
     footer_manager: 'Kontakt z menedżerem',
+    
+    // Informacyjne strony
+    info_delivery_title: 'Dostawa',
+    info_delivery_paczkomat: 'Dostawa do Paczkomatu – odbiór osobisty w Paczkomacie.',
+    info_delivery_zabka: 'Dostawa do sklepu Żabka – odbiór osobisty w sklepie Żabka.',
+    info_delivery_courier: 'Dostawa kurierem do drzwi domu – paczka dostarczana bezpośrednio pod drzwi.',
+    info_delivery_paczkopunkt: 'Dostawa do PaczkoPunktu – odbiór osobisty w PaczkoPunkcie.',
+    
+    info_payment_title: 'Płatność',
+    info_payment_courier: 'Przy dostawie kurierem:',
+    info_payment_courier_methods: 'Gotówka | BLIK | Apple Pay | Google Pay',
+    info_payment_pickup: 'Przy odbiorze (Paczkomat/Żabka/PaczkoPunkt):',
+    info_payment_pickup_methods: 'BLIK | Apple Pay | Google Pay',
+    info_payment_crypto: 'Przedpłata kryptowalutą:',
+    info_payment_crypto_methods: 'Bitcoin (BTC) | Ethereum (ETH) | USDT (TRC-20)',
+    
+    info_returns_title: 'Zwrot i wymiana',
+    info_returns_step1: '1. Napisz menedżerowi na Telegramie i opisz problem.',
+    info_returns_step2: '2. Wyślij zdjęcie lub wideo pokazujące wadę produktu.',
   }
 };
 
@@ -1904,8 +1942,31 @@ function openModelFromAll(catId, modelId) {
 }
 
   function goToPage(page) {
-    // Заглушка для страниц футера - позже добавить реальные страницы
-    alert('Coming soon: ' + (tr(`footer_${page}`) || page));
+    let content = '';
+    
+    if (page === 'delivery') {
+      content = `${tr('info_delivery_title')}\n\n`;
+      content += `${tr('info_delivery_paczkomat')}\n\n`;
+      content += `${tr('info_delivery_zabka')}\n\n`;
+      content += `${tr('info_delivery_courier')}\n\n`;
+      content += `${tr('info_delivery_paczkopunkt')}`;
+    } else if (page === 'payment') {
+      content = `${tr('info_payment_title')}\n\n`;
+      content += `${tr('info_payment_courier')}\n`;
+      content += `${tr('info_payment_courier_methods')}\n\n`;
+      content += `${tr('info_payment_pickup')}\n`;
+      content += `${tr('info_payment_pickup_methods')}\n\n`;
+      content += `${tr('info_payment_crypto')}\n`;
+      content += `${tr('info_payment_crypto_methods')}`;
+    } else if (page === 'returns') {
+      content = `${tr('info_returns_title')}\n\n`;
+      content += `${tr('info_returns_step1')}\n`;
+      content += `${tr('info_returns_step2')}`;
+    } else if (page === 'faq') {
+      content = 'FAQ - Coming soon';
+    }
+    
+    alert(content);
   }
 
   function contactManager() {
