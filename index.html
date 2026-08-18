@@ -395,25 +395,7 @@
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     position: relative;
   }
-  .modal-close {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: none;
-    border: none;
-    color: var(--text);
-    font-size: 24px;
-    cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal-close:hover {
-    color: var(--accent);
-  }
+
   .modal-text {
     color: var(--text);
     font-size: 14px;
@@ -480,10 +462,6 @@
         </a>
         <a href="javascript:goToPage('returns')" class="footer-link">
           <span data-i18n="footer_returns">Возврат и замена</span>
-          <span style="font-size:16px;color:var(--text)">›</span>
-        </a>
-        <a href="javascript:goToPage('faq')" class="footer-link">
-          <span data-i18n="footer_faq">FAQ</span>
           <span style="font-size:16px;color:var(--text)">›</span>
         </a>
         <a href="https://t.me/Mangr_pl" target="_blank" class="footer-link">
@@ -567,7 +545,6 @@
 <div class="screen" id="s-modal">
   <div class="modal-overlay" onclick="closeModal()">
     <div class="modal-content" onclick="event.stopPropagation()">
-      <button class="modal-close" onclick="closeModal()">✕</button>
       <div id="modal-text" class="modal-text"></div>
       <button class="btn-primary" onclick="closeModal()" style="margin-top: 20px;">OK</button>
     </div>
@@ -723,14 +700,13 @@ const TRANS = {
     footer_delivery: 'Доставка',
     footer_payment: 'Оплата',
     footer_returns: 'Возврат и замена',
-    footer_faq: 'FAQ',
     footer_manager: 'Контакт с менеджером',
     
     // Информационные страницы
     info_delivery_title: 'Доставка',
     info_delivery_paczkomat: 'Доставка в Paczkomat – самовывоз посылки в пункте Paczkomat.',
     info_delivery_zabka: 'Доставка в магазин Żabka – самовывоз посылки в магазине Żabka.',
-    info_delivery_courier: 'Доставка курьером до двери дома – пакет доставляется прямо к вашей двери.',
+    info_delivery_courier: 'Доставка курьером до двери дома – посылка доставляется прямо к вашей двери.',
     info_delivery_paczkopunkt: 'Доставка в PaczkoPunkt – самовывоз посылки в пункте PaczkoPunkt.',
     
     info_payment_title: 'Оплата',
@@ -810,7 +786,6 @@ const TRANS = {
     footer_delivery: 'Dostawa',
     footer_payment: 'Płatność',
     footer_returns: 'Zwrot i wymiana',
-    footer_faq: 'FAQ',
     footer_manager: 'Kontakt z menedżerem',
     
     // Informacyjne strony
@@ -2039,8 +2014,6 @@ function openModelFromAll(catId, modelId) {
       content = `${tr('info_returns_title')}\n\n`;
       content += `${tr('info_returns_step1')}\n`;
       content += `${tr('info_returns_step2')}`;
-    } else if (page === 'faq') {
-      content = 'FAQ - Coming soon';
     }
     
     showModal(content);
