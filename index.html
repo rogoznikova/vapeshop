@@ -364,6 +364,64 @@
     display: none;
   }
   
+  /* MODAL */
+  #s-modal {
+    display: none !important;
+    z-index: 1000 !important;
+  }
+  #s-modal.active {
+    display: flex !important;
+  }
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+  }
+  .modal-content {
+    background: var(--surface);
+    border: 1px solid var(--text);
+    border-radius: var(--radius);
+    padding: 24px;
+    max-width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    position: relative;
+  }
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-close:hover {
+    color: var(--accent);
+  }
+  .modal-text {
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  
   </style>
 </head>
 <body>
@@ -506,6 +564,16 @@
 </div>
 
 <!-- SCREEN 6: SUCCESS -->
+<div class="screen" id="s-modal">
+  <div class="modal-overlay" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div id="modal-text" class="modal-text"></div>
+      <button class="btn-primary" onclick="closeModal()" style="margin-top: 20px;">OK</button>
+    </div>
+  </div>
+</div>
+
 <div class="screen" id="s-success">
   <div class="success-screen">
     <div class="success-icon"></div>
@@ -1753,7 +1821,7 @@ function submitCOD() {
   const miasto = (document.getElementById('f-miasto')?.value || '').trim();
 
   if (!name || !phone || !miasto) {
-    alert(tr('fill_required'));
+    showModal(tr('fill_required'));
     return;
   }
 
@@ -1773,8 +1841,8 @@ function submitCOD() {
 
   if (orderDelivery === 'paczkomat') {
     const kodpacz = (document.getElementById('f-kodpacz')?.value || '').trim();
-    if (!kodpacz) { alert(tr('fill_kod')); return; }
-    if (!/[a-zA-Z]/.test(kodpacz)) { alert(tr('fill_kod')); return; }
+    if (!kodpacz) { showModal(tr('fill_kod')); return; }
+    if (!/[a-zA-Z]/.test(kodpacz)) { showModal(tr('fill_kod')); return; }
     msg += `Dostawa: Paczkomat InPost\n`;
     msg += `Miasto: ${miasto}\n`;
     msg += `Kod paczkomatu: ${kodpacz}\n`;
@@ -1783,7 +1851,7 @@ function submitCOD() {
     const ulica = (document.getElementById('f-ulica')?.value || '').trim();
     const budynek = (document.getElementById('f-budynek')?.value || '').trim();
     const lokal = (document.getElementById('f-lokal')?.value || '').trim();
-    if (!kod || !ulica || !budynek) { alert(tr('fill_required')); return; }
+    if (!kod || !ulica || !budynek) { showModal(tr('fill_required')); return; }
     msg += `Dostawa: Kurier\n`;
     msg += `Miasto: ${miasto}\n`;
     msg += `Kod pocztowy: ${kod}\n`;
@@ -1941,6 +2009,15 @@ function openModelFromAll(catId, modelId) {
   goTo('s-flavors');
 }
 
+  function showModal(text) {
+    document.getElementById('modal-text').textContent = text;
+    document.getElementById('s-modal').classList.add('active');
+  }
+
+  function closeModal() {
+    document.getElementById('s-modal').classList.remove('active');
+  }
+
   function goToPage(page) {
     let content = '';
     
@@ -1966,7 +2043,7 @@ function openModelFromAll(catId, modelId) {
       content = 'FAQ - Coming soon';
     }
     
-    alert(content);
+    showModal(content);
   }
 
   function contactManager() {
