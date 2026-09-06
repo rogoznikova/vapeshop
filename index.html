@@ -74,6 +74,9 @@
   .flavor-list { display: flex; flex-direction: column; gap: 8px; }
   .flavor-row { background: var(--surface); border: 1px solid var(--text); border-radius: var(--radius); padding: 12px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: border-color .15s; }
   .flavor-row.selected { border-color: var(--accent2); }
+  .flavor-row.unavailable { opacity: 0.5; color: var(--text2); pointer-events: none; }
+  .flavor-row.unavailable .flavor-name { color: var(--text2); }
+  .flavor-row.unavailable .qty-btn, .flavor-row.unavailable .qty-val { opacity: 0.3; cursor: not-allowed; }
   .flavor-name { font-size: 14px; flex: 1; }
   .qty-ctrl { display: flex; align-items: center; gap: 0; }
   .qty-btn { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--surface2); color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; flex-shrink: 0; }
@@ -1175,6 +1178,324 @@ const catalog = [
 ];
 
 // ============================================================
+// INVENTORY MANAGEMENT - Google Sheets Integration
+// ============================================================
+
+// Spreadsheet Config
+const INVENTORY_SHEET = {
+  spreadsheetId: '11TnMwiUOyfmx4GZPzcm6QgC4UN4_3UgS0_sI9zHfJN8',
+  sheetId: 0
+};
+
+// Initialize empty - will be populated from Sheets
+let MAX_STOCK = {};
+
+// CSV Parser for Google Sheets export
+function parseCSV(csv) {
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let insideQuotes = false;
+
+  for (let i = 0; i < csv.length; i++) {
+    const char = csv[i];
+    
+    if (char === '"') {
+      if (insideQuotes && csv[i + 1] === '"') {
+        cell += '"';
+        i++;
+      } else {
+        insideQuotes = !insideQuotes;
+      }
+    } else if (char === ',' && !insideQuotes) {
+      row.push(cell.trim());
+      cell = '';
+    } else if ((char === '\n' || char === '\r') && !insideQuotes) {
+      if (cell || row.length > 0) {
+        row.push(cell.trim());
+        rows.push(row);
+        row = [];
+        cell = '';
+      }
+      if (char === '\r' && csv[i + 1] === '\n') i++;
+    } else {
+      cell += char;
+    }
+  }
+  
+  if (cell || row.length > 0) {
+    row.push(cell.trim());
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+// Load inventory from Google Sheets
+async function loadInventoryFromSheets() {
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${INVENTORY_SHEET.spreadsheetId}/export?format=csv&gid=${INVENTORY_SHEET.sheetId}`;
+    
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch Sheets');
+    
+    const csv = await response.text();
+    const rows = parseCSV(csv);
+    
+    if (rows.length < 2) {
+      console.warn('⚠️ Inventory sheet is empty');
+      return;
+    }
+    
+    const headers = rows[0];
+    
+    // Parse pairs: [ModelID, Stock]
+    for (let col = 0; col < headers.length - 1; col += 2) {
+      const modelId = headers[col];
+      const stockHeader = headers[col + 1];
+      
+      // Skip empty or invalid pairs
+      if (!modelId || modelId.toLowerCase().includes('stock')) continue;
+      
+      // Process each flavor row
+      for (let rowIdx = 1; rowIdx < rows.length; rowIdx++) {
+        const flavorName = rows[rowIdx][col];
+        const stockStr = rows[rowIdx][col + 1];
+        
+        if (!flavorName) continue;
+        
+        const stock = parseInt(stockStr) || 0;
+        const key = `${modelId}::${flavorName}`;
+        
+        MAX_STOCK[key] = stock;
+      }
+    }
+    
+    console.log('✅ Inventory loaded from Google Sheets:', Object.keys(MAX_STOCK).length, 'items');
+  } catch (error) {
+    console.error('❌ Error loading inventory from Sheets:', error);
+    console.warn('⚠️ Using fallback inventory data');
+  }
+}
+
+// OLD HARDCODED DATA - Fallback only
+const FALLBACK_STOCK = {
+  // Elf Bar D3 (26 вкусов)
+  'elfd3::Alpine mint': 10,
+  'elfd3::Apple peach': 5,
+  'elfd3::Blackberry cranberry': 8,
+  'elfd3::Blackberry pomegrn cherry': 3,
+  'elfd3::Blue razz ice': 12,
+  'elfd3::Blueberry ice': 0,
+  'elfd3::Blueberry raspberry': 6,
+  'elfd3::Double apple': 9,
+  'elfd3::Grape cherry': 4,
+  'elfd3::Grape ice': 11,
+  'elfd3::Grape mint': 7,
+  'elfd3::Kiwi passion fruit guava': 5,
+  'elfd3::Kiwi pineapple ice': 8,
+  'elfd3::Lemon lime': 0,
+  'elfd3::Peach berry': 10,
+  'elfd3::Peach ice': 6,
+  'elfd3::Pineapple mango ice': 9,
+  'elfd3::Strawb raspberry cherry': 2,
+  'elfd3::Strawberry grape': 11,
+  'elfd3::Strawberry ice': 15,
+  'elfd3::Strawberry watermelon': 8,
+  'elfd3::Vmt': 5,
+  'elfd3::Watermelon bubblegum': 7,
+  'elfd3::Watermelon ice': 13,
+  'elfd3::Watermelon lemon': 4,
+  'elfd3::Mango peach watermelon': 6,
+  
+  // Elf Bar Moon (12 вкусов)
+  'elfmoon::Cherry Watermelon': 8,
+  'elfmoon::Grape Ice': 5,
+  'elfmoon::Grape Raspberry': 0,
+  'elfmoon::Kiwi passion fruit guava': 7,
+  'elfmoon::Lime Cola': 4,
+  'elfmoon::Mango Peach Watermelon': 9,
+  'elfmoon::Miami mint': 6,
+  'elfmoon::Pomegranate Burst': 3,
+  'elfmoon::Watermelon Ice': 11,
+  'elfmoon::Blue razz ice': 8,
+  'elfmoon::Lemon lime': 5,
+  'elfmoon::Peach ice': 0,
+  
+  // Lush King (15 вкусов)
+  'lushking::Black Currant Pineapple': 6,
+  'lushking::Milky Oolong': 4,
+  'lushking::Cucumber Lime': 8,
+  'lushking::Starfruit Grape': 5,
+  'lushking::Cactus Lime': 0,
+  'lushking::Cherry Burst': 9,
+  'lushking::Mountain Mint': 7,
+  'lushking::Sour Pineapple Ice': 3,
+  'lushking::Tropical Mango': 10,
+  'lushking::Sour Strawberry Dragonfruit': 6,
+  'lushking::Pomegranate Burst': 8,
+  'lushking::Sour Apple ice': 4,
+  'lushking::Black Grape Ice': 5,
+  'lushking::Blue Razz Ice': 11,
+  'lushking::Watermelon ice': 7,
+  
+  // Elf Bar BC 45k (15 вкусов)
+  'elfbc45k::Blackberry Lemonade': 9,
+  'elfbc45k::Blackcurrant Grape': 6,
+  'elfbc45k::Blue Razz Ice': 0,
+  'elfbc45k::Cherry Peach Soda': 8,
+  'elfbc45k::Double Mint': 5,
+  'elfbc45k::Grapefruit Green Tea': 7,
+  'elfbc45k::Kiwi Pineapple Peach': 4,
+  'elfbc45k::Lemon Lime': 10,
+  'elfbc45k::Pear Soda': 6,
+  'elfbc45k::Pomegranate Burst': 3,
+  'elfbc45k::Pomegranate Raspberry Lime': 8,
+  'elfbc45k::Red Raspberry Strawberry': 5,
+  'elfbc45k::Sour Apple Kiwi': 9,
+  'elfbc45k::Strawberry Grapefruit': 0,
+  'elfbc45k::Watermelon Ice': 11,
+  
+  // XROS MINI 5 (10 цветов - считаются вкусами/цветами)
+  'xrosmini::Pastel Crystal': 3,
+  'xrosmini::Rose Red': 0,
+  'xrosmini::Carbon Black': 8,
+  'xrosmini::Purple': 5,
+  'xrosmini::Titanium silver': 2,
+  'xrosmini::Black': 7,
+  'xrosmini::Flowing Blue': 4,
+  'xrosmini::Flowing Green': 6,
+  'xrosmini::Flowing Pink': 0,
+  'xrosmini::Sky Blue': 9,
+  
+  // OXVA XLIM GO 2 (8 цветов)
+  'oxva::Pink Ripple': 5,
+  'oxva::Black Carbon': 8,
+  'oxva::Metal Silver': 3,
+  'oxva::Light Brown Shadow': 0,
+  'oxva::Metal Blue': 7,
+  'oxva::Black Shadow': 6,
+  'oxva::Green Ripple': 4,
+  'oxva::Blue Ripple': 9,
+  
+  // CARTRIDGE XROS (3 сопротивления)
+  'cart-xros::0.4 Ω': 12,
+  'cart-xros::0.6 Ω': 8,
+  'cart-xros::0.8 Ω': 0,
+  
+  // CARTRIDGE OXVA (3 сопротивления)
+  'cart-oxva::0.4 Ω': 10,
+  'cart-oxva::0.6 Ω': 0,
+  'cart-oxva::0.8 Ω': 7,
+  
+  // PUFFY (20 вкусов)
+  'puffy::Banana cherry': 8,
+  'puffy::Berri kiwi': 5,
+  'puffy::Black grape mint': 0,
+  'puffy::Blueberry raspberry': 9,
+  'puffy::Grape Raspberry Black Plum': 6,
+  'puffy::Ice mojito mint': 4,
+  'puffy::Lemon grapefruit': 7,
+  'puffy::Pineapple coconut': 3,
+  'puffy::Strawberry watermelon': 11,
+  'puffy::Watermelon Bubble gum': 8,
+  'puffy::Cherry Ice': 5,
+  'puffy::Cranberry Grape': 0,
+  'puffy::Energy Drink': 10,
+  'puffy::Grape Melon': 6,
+  'puffy::Gummy Bear': 4,
+  'puffy::Raspberry Watermelon': 8,
+  'puffy::Skittles Candy': 7,
+  'puffy::Strawberry Lime': 5,
+  'puffy::Tropical Fruits': 9,
+  'puffy::Berry Cherry Cocktail': 6,
+  
+  // VOZOL PRIME (28 вкусов)
+  'vozol::Berry': 10,
+  'vozol::Berry Peach': 8,
+  'vozol::Blueberry Ice': 0,
+  'vozol::Blueberry Razz Lemon': 6,
+  'vozol::Blueberry watermelon': 9,
+  'vozol::Cherry Cola': 5,
+  'vozol::Dragon Fruit Banana Cherry': 7,
+  'vozol::Grape Ice': 4,
+  'vozol::Kiwi Passion Fruite Guava': 11,
+  'vozol::LavaFire': 3,
+  'vozol::Lemon Lime': 8,
+  'vozol::Love 777': 0,
+  'vozol::Mint ice': 6,
+  'vozol::Mixed Berries': 9,
+  'vozol::Peach Ice': 5,
+  'vozol::Perfume Lemon': 7,
+  'vozol::Pineapple Passion Fruit Lime': 4,
+  'vozol::Pomegranate lemonade': 10,
+  'vozol::Purple candy': 6,
+  'vozol::Sour Apple Ice': 8,
+  'vozol::Strawberry Ice cream': 0,
+  'vozol::Strawberry Kiwi': 9,
+  'vozol::Strawberry Watermelon': 5,
+  'vozol::Watermelon Bubble Gum': 11,
+  'vozol::Watermelon Ice': 7,
+  'vozol::Blue raspberry': 4,
+  'vozol::Peach Mango Watermelon': 8,
+  'vozol::Strawberry Ice': 6,
+  
+  // ELF LIQ (46 вкусов)
+  'elfliq::Apple Peach': 8,
+  'elfliq::Apple Pear': 5,
+  'elfliq::Apple Sour': 0,
+  'elfliq::Blackberry Lemon': 9,
+  'elfliq::Blackcurrant Aniseed': 6,
+  'elfliq::Blue Raz Ice': 4,
+  'elfliq::Blue Razz Lemonade': 10,
+  'elfliq::Blueberry': 7,
+  'elfliq::Blueberry Raspberry Pomegranate': 5,
+  'elfliq::Blueberry Rose Mint': 8,
+  'elfliq::Blueberry Sour Raspberry': 0,
+  'elfliq::Cherry': 6,
+  'elfliq::Cherry Cola': 9,
+  'elfliq::Cherry Lemon Peach': 4,
+  'elfliq::Cola': 11,
+  'elfliq::Cool Mint': 7,
+  'elfliq::Double Apple': 5,
+  'elfliq::Elf Jack': 8,
+  'elfliq::Elfbull Ice': 3,
+  'elfliq::Grape': 9,
+  'elfliq::Grape Cherry': 0,
+  'elfliq::Green Grape Rose': 6,
+  'elfliq::Jasmine Raspberry': 8,
+  'elfliq::Kiwi Passion Guava': 5,
+  'elfliq::Lemon Lime': 10,
+  'elfliq::Mango Peach': 7,
+  'elfliq::PB Cloud': 4,
+  'elfliq::Peach Ice': 9,
+  'elfliq::Pina Colada': 0,
+  'elfliq::Pineapple Ice': 8,
+  'elfliq::Pineapple Colada': 6,
+  'elfliq::Pink Grapefruit': 5,
+  'elfliq::Pink Lemonade': 11,
+  'elfliq::Pink Lemonade Soda': 7,
+  'elfliq::Raspberry Lychee': 4,
+  'elfliq::Rhubarb Snow': 9,
+  'elfliq::Sour Watermelon Gummy': 6,
+  'elfliq::Spearmint': 8,
+  'elfliq::Strawberry Banana': 0,
+  'elfliq::Strawberry Kiwi': 10,
+  'elfliq::Strawberry Raspberry Cherry Ice': 5,
+  'elfliq::Strawberry Cherry Lemon': 7,
+  'elfliq::Strawberry Ice': 8,
+  'elfliq::Strawberry Snow': 4,
+  'elfliq::Watermelon': 9,
+  'elfliq::Watermelon Cherry': 6,
+};
+
+// Load inventory on app init
+loadInventoryFromSheets().catch(err => {
+  console.warn('Could not load from Sheets, using fallback data');
+  MAX_STOCK = FALLBACK_STOCK;
+});
+
+// ============================================================
 // STATE
 // ============================================================
 let currentCat = null;
@@ -1330,13 +1651,16 @@ function renderFlavors() {
   list.innerHTML = tiersHtml + currentModel.flavors.map(flavor => {
     const key = `${currentModel.id}::${flavor}`;
     const qty = cart[key]?.qty || 0;
+    const stock = MAX_STOCK[key] || 999; // Default to high if not defined
+    const isUnavailable = stock === 0;
+    
     return `
-      <div class="flavor-row ${qty > 0 ? 'selected' : ''}" id="row-${safeId(key)}">
+      <div class="flavor-row ${qty > 0 ? 'selected' : ''} ${isUnavailable ? 'unavailable' : ''}" id="row-${safeId(key)}" data-max-stock="${stock}">
         <div class="flavor-name">${flavor}</div>
         <div class="qty-ctrl">
-          <button class="qty-btn" onclick="changeQty('${escQ(key)}', -1)">−</button>
+          <button class="qty-btn" onclick="changeQty('${escQ(key)}', -1)" ${isUnavailable ? 'disabled' : ''}>−</button>
           <div class="qty-val" id="qty-${safeId(key)}">${qty}</div>
-          <button class="qty-btn" onclick="changeQty('${escQ(key)}', 1)">+</button>
+          <button class="qty-btn" onclick="changeQty('${escQ(key)}', 1)" ${isUnavailable ? 'disabled' : ''}>+</button>
         </div>
       </div>`;
   }).join('');
@@ -1351,6 +1675,14 @@ function changeQty(key, delta) {
   const flavor = key.split('::')[1];
   const current = cart[key]?.qty || 0;
   const newQty = Math.max(0, current + delta);
+  
+  // Get stock limit for this flavor
+  const maxStock = MAX_STOCK[key] || 999;
+  
+  // Проверка лимита запасов (молчаливо - без сообщений)
+  if (newQty > maxStock) {
+    return; // Не добавляем, если превышен лимит запасов
+  }
 
   // Проверка на максимум 200 единиц в корзине
   if (newQty > current) { // если добавляем
