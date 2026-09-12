@@ -4,12 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Snitch Shop</title>
-<script src="https://telegram.org/js/telegram-web-app.js">
-  function contactManager() {
-    window.open('https://t.me/Mangr_pl', '_blank');
-  }
-  
-  </script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
 <style>
   :root {
     --bg: #0f0f13;
@@ -1178,10 +1175,42 @@ const catalog = [
 ];
 
 // ============================================================
-// INVENTORY MANAGEMENT - Google Sheets Integration via Apps Script
+// FIREBASE CONFIGURATION
 // ============================================================
 
-// Google Apps Script URL
+const firebaseConfig = {
+  apiKey: "AIzaSyBGqu4Jk-YLguKe5aDBmlSpYKHTZh4bxzc",
+  authDomain: "snitch-ee6d1.firebaseapp.com",
+  databaseURL: "https://snitch-ee6d1-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "snitch-ee6d1",
+  storageBucket: "snitch-ee6d1.firebasestorage.app",
+  messagingSenderId: "77428059467",
+  appId: "1:77428059467:web:00098cf6a87e49edd4ccce"
+};
+
+// Initialize Firebase
+let app, db;
+try {
+  app = firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  console.log('✅ Firebase initialized successfully');
+} catch (error) {
+  console.error('❌ Firebase initialization error:', error);
+}
+
+// ============================================================
+// TELEGRAM BOT CONFIGURATION
+// ============================================================
+
+const BOT_TOKEN = '8992151345:AAF4nL34DmgWa31CApntnqjkN6ro2iBigws';
+const MANAGER_ID = '1729270710'; // @Mangr_pl
+const BOT_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
+
+// ============================================================
+// INVENTORY MANAGEMENT - Firebase Integration
+// ============================================================
+
+// Google Apps Script URL (kept for fallback)
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyBOxNXac2QOA88z48KFsXm7vtSTolGkdwX0fwXUuVPWKD4QKgq0J-VLZlFuajgrCsW/exec';
 
 // Load inventory from Google Sheets via Apps Script
@@ -2043,26 +2072,144 @@ function buildOrderLines() {
   return lines;
 }
 
+// ============================================================
+// FIREBASE ORDER SUBMISSION
+// ============================================================
+
+async function submitOrderToFirebase(paymentMethod, orderData) {
+  try {
+    if (!db) {
+      console.error('Firebase not initialized');
+      showModal('Ошибка: Firebase не инициализирован');
+      return false;
+    }
+
+    const orderId = 'order_' + Date.now();
+    const timestamp = new Date().toISOString();
+    const tgUser = tg?.initDataUnsafe?.user || {};
+    const userId = tgUser.id || 'unknown';
+    const username = tgUser.username || 'anonymous';
+
+    const orderObject = {
+      orderId,
+      userId,
+      username,
+      paymentMethod,
+      items: Object.entries(cart).map(([key, item]) => ({
+        productId: item.model,
+        flavor: item.flavor,
+        qty: item.qty,
+        price: item.price || 0
+      })),
+      ...orderData,
+      timestamp,
+      status: 'pending'
+    };
+
+    await db.ref('orders/' + orderId).set(orderObject);
+    console.log('✅ Order saved:', orderId);
+
+    for (const [key, item] of Object.entries(cart)) {
+      const path = `inventory/${item.model}::${item.flavor}`;
+      const ref = db.ref(path);
+      ref.transaction(current => current === null ? undefined : Math.max(0, current - item.qty));
+    }
+
+    await sendOrderToBot(orderObject);
+    return orderId;
+  } catch (error) {
+    console.error('❌ Order error:', error);
+    showModal(error.message || 'Ошибка при отправке заказа');
+    return false;
+  }
+}
+
+async function sendOrderToBot(orderData) {
+  try {
+    const itemsList = orderData.items.map(item => `• ${item.qty}x ${item.productId}::${item.flavor}`).join('\n');
+    let deliveryInfo = '';
+    if (orderData.deliveryMethod === 'paczkomat') {
+      deliveryInfo = `Paczkomat: ${orderData.deliveryCity}, код: ${orderData.paczkomatCode}`;
+    } else {
+      deliveryInfo = `Kurier: ${orderData.deliveryCity}, ${orderData.street} ${orderData.building}`;
+    }
+
+    const botMessage = `
+🛒 <b>НОВЫЙ ЗАКАЗ</b>
+
+👤 @${orderData.username}
+📞 ${orderData.phone}
+
+📦 <b>Товары:</b>
+${itemsList}
+
+💳 ${orderData.paymentMethod === 'crypto' ? 'Крипто' : 'При получении'}
+📍 ${deliveryInfo}
+
+💰 ${orderData.totalPrice} zł + 🚚 ${orderData.deliveryPrice} zł = <b>${orderData.totalPrice + orderData.deliveryPrice} zł</b>
+
+🔑 ${orderData.orderId}
+`;
+
+    await fetch(`${BOT_API_URL}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: MANAGER_ID,
+        text: botMessage,
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: '✅ Подтвердить', callback_data: `confirm_${orderData.orderId}` },
+              { text: '❌ Отказать', callback_data: `reject_${orderData.orderId}` }
+            ]
+          ]
+        }
+      })
+    });
+  } catch (error) {
+    console.error('❌ Bot error:', error);
+  }
+}
+
 function submitCrypto() {
   const total = cartTotal();
   const delivery = getDeliveryCost();
   const count = cartCount();
-  const orderLines = buildOrderLines();
 
-  let msg = `${tr('msg_greeting')}\n\n`;
-  msg += `${tr('pay_label_crypto')}\n`;
-  msg += `${lang === 'pl' ? 'ZAMÓWIENIE' : 'ЗАКАЗ'}\n\n`;
-  msg += orderLines;
-  msg += tr('msg_total', count) + '\n';
-  msg += `CENA: ${total} Zł\n\n`;
-  msg += `Cena dostawy: ${delivery} Zł\n`;
-  msg += `Razem do zapłaty: ${total}+${delivery}=${total + delivery} Zł`;
+  const orderData = {
+    deliveryMethod: orderDelivery,
+    deliveryCity: (document.getElementById('f-miasto')?.value || '').trim(),
+    totalPrice: total,
+    deliveryPrice: delivery,
+    paymentMethod: 'crypto'
+  };
 
-  const encoded = encodeURIComponent(msg);
-  document.getElementById('manager-link').href = `https://t.me/${MANAGER_USERNAME}?text=${encoded}`;
+  if (orderDelivery === 'paczkomat') {
+    const kodpacz = (document.getElementById('f-kodpacz')?.value || '').trim();
+    if (!kodpacz) { showModal(tr('fill_kod')); return; }
+    if (!/[a-zA-Z]/.test(kodpacz)) { showModal(tr('fill_kod')); return; }
+    orderData.paczkomatCode = kodpacz;
+  } else {
+    const kod = (document.getElementById('f-kod')?.value || '').trim();
+    const ulica = (document.getElementById('f-ulica')?.value || '').trim();
+    const budynek = (document.getElementById('f-budynek')?.value || '').trim();
+    const lokal = (document.getElementById('f-lokal')?.value || '').trim();
+    if (!kod || !ulica || !budynek) { showModal(tr('fill_required')); return; }
+    orderData.postalCode = kod;
+    orderData.street = ulica;
+    orderData.building = budynek;
+    orderData.apartment = lokal;
+  }
+
   document.getElementById('success-sub').textContent = tr('success_sub_crypto');
-  saveOrderToHistory('crypto');
-  goTo('s-success');
+  submitOrderToFirebase('crypto', orderData).then(orderId => {
+    if (orderId) {
+      saveOrderToHistory('crypto');
+      goTo('s-success');
+    }
+  });
 }
 
 function submitCOD() {
@@ -2077,45 +2224,41 @@ function submitCOD() {
 
   const total = cartTotal();
   const delivery = getDeliveryCost();
-  const count = cartCount();
-  const orderLines = buildOrderLines();
 
-  let msg = `${tr('msg_greeting')}\n\n`;
-  msg += `${tr('pay_label_cod')}\n`;
-  msg += `${lang === 'pl' ? 'ZAMÓWIENIE' : 'ЗАКАЗ'}\n\n`;
-  msg += orderLines;
-  msg += tr('msg_total', count) + '\n';
-  msg += `CENA: ${total} Zł\n\n`;
-  msg += `Imię i Nazwisko: ${name}\n`;
-  msg += `Telefon: ${phone}\n`;
+  const orderData = {
+    deliveryMethod: orderDelivery,
+    deliveryCity: miasto,
+    name: name,
+    phone: phone,
+    totalPrice: total,
+    deliveryPrice: delivery,
+    paymentMethod: 'cod'
+  };
 
   if (orderDelivery === 'paczkomat') {
     const kodpacz = (document.getElementById('f-kodpacz')?.value || '').trim();
     if (!kodpacz) { showModal(tr('fill_kod')); return; }
     if (!/[a-zA-Z]/.test(kodpacz)) { showModal(tr('fill_kod')); return; }
-    msg += `Dostawa: Paczkomat InPost\n`;
-    msg += `Miasto: ${miasto}\n`;
-    msg += `Kod paczkomatu: ${kodpacz}\n`;
+    orderData.paczkomatCode = kodpacz;
   } else {
     const kod = (document.getElementById('f-kod')?.value || '').trim();
     const ulica = (document.getElementById('f-ulica')?.value || '').trim();
     const budynek = (document.getElementById('f-budynek')?.value || '').trim();
     const lokal = (document.getElementById('f-lokal')?.value || '').trim();
     if (!kod || !ulica || !budynek) { showModal(tr('fill_required')); return; }
-    msg += `Dostawa: Kurier\n`;
-    msg += `Miasto: ${miasto}\n`;
-    msg += `Kod pocztowy: ${kod}\n`;
-    msg += `Ulica: ${ulica} ${budynek}${lokal ? ' / ' + lokal : ''}\n`;
+    orderData.postalCode = kod;
+    orderData.street = ulica;
+    orderData.building = budynek;
+    orderData.apartment = lokal;
   }
 
-  msg += `\nCena dostawy: ${delivery} Zł\n`;
-  msg += `Razem do zapłaty: ${total}+${delivery}=${total + delivery} Zł`;
-
-  const encoded = encodeURIComponent(msg);
-  document.getElementById('manager-link').href = `https://t.me/${MANAGER_USERNAME}?text=${encoded}`;
   document.getElementById('success-sub').textContent = tr('success_sub_cod');
-  saveOrderToHistory('cod');
-  goTo('s-success');
+  submitOrderToFirebase('cod', orderData).then(orderId => {
+    if (orderId) {
+      saveOrderToHistory('cod');
+      goTo('s-success');
+    }
+  });
 }
 
 // ============================================================
