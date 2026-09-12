@@ -1184,9 +1184,6 @@ const catalog = [
 // Google Apps Script URL
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyBOxNXac2QOA88z48KFsXm7vtSTolGkdwX0fwXUuVPWKD4QKgq0J-VLZlFuajgrCsW/exec';
 
-// Initialize empty - will be populated from Sheets
-let MAX_STOCK = {};
-
 // Load inventory from Google Sheets via Apps Script
 async function loadInventoryFromSheets() {
   try {
@@ -1203,6 +1200,11 @@ async function loadInventoryFromSheets() {
     MAX_STOCK = inventory;
     
     console.log('✅ Inventory loaded from Google Sheets:', Object.keys(MAX_STOCK).length, 'items');
+    
+    // Re-render flavors if currently viewing them
+    if (currentModel && document.getElementById('flavor-list')) {
+      renderFlavors();
+    }
   } catch (error) {
     console.error('❌ Error loading inventory from Sheets:', error);
     console.warn('⚠️ Using fallback inventory data');
@@ -1420,11 +1422,21 @@ const FALLBACK_STOCK = {
   'elfliq::Watermelon Cherry': 6,
 };
 
+// Start with fallback data, will be replaced when Google Sheets loads
+let MAX_STOCK = { ...FALLBACK_STOCK };
+
 // Load inventory on app init
-loadInventoryFromSheets().catch(err => {
-  console.warn('Could not load from Sheets, using fallback data');
-  MAX_STOCK = FALLBACK_STOCK;
-});
+async function initializeInventory() {
+  try {
+    await loadInventoryFromSheets();
+  } catch (err) {
+    console.warn('Could not load from Sheets, using fallback data');
+    MAX_STOCK = FALLBACK_STOCK;
+  }
+}
+
+// Start initialization
+initializeInventory();
 
 // ============================================================
 // STATE
