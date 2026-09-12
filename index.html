@@ -1188,14 +1188,29 @@ const firebaseConfig = {
   appId: "1:77428059467:web:00098cf6a87e49edd4ccce"
 };
 
-// Initialize Firebase
+// Initialize Firebase (when SDK is ready)
 let app, db;
-try {
-  app = firebase.initializeApp(firebaseConfig);
-  db = firebase.database();
-  console.log('✅ Firebase initialized successfully');
-} catch (error) {
-  console.error('❌ Firebase initialization error:', error);
+
+function initFirebase() {
+  try {
+    if (typeof firebase === 'undefined') {
+      console.warn('⚠️ Firebase SDK not loaded yet');
+      setTimeout(initFirebase, 500);
+      return;
+    }
+    app = firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    console.log('✅ Firebase initialized successfully');
+  } catch (error) {
+    console.error('❌ Firebase initialization error:', error);
+  }
+}
+
+// Wait for DOM and Firebase SDK
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initFirebase);
+} else {
+  initFirebase();
 }
 
 // ============================================================
@@ -2080,8 +2095,21 @@ async function submitOrderToFirebase(paymentMethod, orderData) {
   try {
     if (!db) {
       console.error('Firebase not initialized');
-      showModal('Ошибка: Firebase не инициализирован');
-      return false;
+      // Try to initialize again
+      if (typeof firebase !== 'undefined') {
+        try {
+          app = firebase.initializeApp(firebaseConfig);
+          db = firebase.database();
+          console.log('✅ Firebase re-initialized');
+        } catch (e) {
+          console.error('Failed to reinitialize Firebase:', e);
+          showModal('Ошибка: Firebase не подключен. Попробуйте позже.');
+          return false;
+        }
+      } else {
+        showModal('Ошибка: Firebase не загружен. Попробуйте перезагрузить приложение.');
+        return false;
+      }
     }
 
     const orderId = 'order_' + Date.now();
