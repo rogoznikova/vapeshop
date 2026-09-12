@@ -1178,98 +1178,29 @@ const catalog = [
 ];
 
 // ============================================================
-// INVENTORY MANAGEMENT - Google Sheets Integration
+// INVENTORY MANAGEMENT - Google Sheets Integration via Apps Script
 // ============================================================
 
-// Spreadsheet Config
-const INVENTORY_SHEET = {
-  spreadsheetId: '11TnMwiUOyfmx4GZPzcm6QgC4UN4_3UgS0_sI9zHfJN8',
-  sheetId: 0
-};
+// Google Apps Script URL
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyBOxNXac2QOA88z48KFsXm7vtSTolGkdwX0fwXUuVPWKD4QKgq0J-VLZlFuajgrCsW/exec';
 
 // Initialize empty - will be populated from Sheets
 let MAX_STOCK = {};
 
-// CSV Parser for Google Sheets export
-function parseCSV(csv) {
-  const rows = [];
-  let row = [];
-  let cell = '';
-  let insideQuotes = false;
-
-  for (let i = 0; i < csv.length; i++) {
-    const char = csv[i];
-    
-    if (char === '"') {
-      if (insideQuotes && csv[i + 1] === '"') {
-        cell += '"';
-        i++;
-      } else {
-        insideQuotes = !insideQuotes;
-      }
-    } else if (char === ',' && !insideQuotes) {
-      row.push(cell.trim());
-      cell = '';
-    } else if ((char === '\n' || char === '\r') && !insideQuotes) {
-      if (cell || row.length > 0) {
-        row.push(cell.trim());
-        rows.push(row);
-        row = [];
-        cell = '';
-      }
-      if (char === '\r' && csv[i + 1] === '\n') i++;
-    } else {
-      cell += char;
-    }
-  }
-  
-  if (cell || row.length > 0) {
-    row.push(cell.trim());
-    rows.push(row);
-  }
-
-  return rows;
-}
-
-// Load inventory from Google Sheets
+// Load inventory from Google Sheets via Apps Script
 async function loadInventoryFromSheets() {
   try {
-    const url = `https://docs.google.com/spreadsheets/d/${INVENTORY_SHEET.spreadsheetId}/export?format=csv&gid=${INVENTORY_SHEET.sheetId}`;
+    const response = await fetch(APPS_SCRIPT_URL);
+    if (!response.ok) throw new Error('Failed to fetch from Apps Script');
     
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('Failed to fetch Sheets');
+    const inventory = await response.json();
     
-    const csv = await response.text();
-    const rows = parseCSV(csv);
-    
-    if (rows.length < 2) {
-      console.warn('⚠️ Inventory sheet is empty');
+    if (!inventory || Object.keys(inventory).length === 0) {
+      console.warn('⚠️ Inventory data is empty');
       return;
     }
     
-    const headers = rows[0];
-    
-    // Parse pairs: [ModelID, Stock]
-    for (let col = 0; col < headers.length - 1; col += 2) {
-      const modelId = headers[col];
-      const stockHeader = headers[col + 1];
-      
-      // Skip empty or invalid pairs
-      if (!modelId || modelId.toLowerCase().includes('stock')) continue;
-      
-      // Process each flavor row
-      for (let rowIdx = 1; rowIdx < rows.length; rowIdx++) {
-        const flavorName = rows[rowIdx][col];
-        const stockStr = rows[rowIdx][col + 1];
-        
-        if (!flavorName) continue;
-        
-        const stock = parseInt(stockStr) || 0;
-        const key = `${modelId}::${flavorName}`;
-        
-        MAX_STOCK[key] = stock;
-      }
-    }
+    MAX_STOCK = inventory;
     
     console.log('✅ Inventory loaded from Google Sheets:', Object.keys(MAX_STOCK).length, 'items');
   } catch (error) {
