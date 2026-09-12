@@ -4,7 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Snitch Shop</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://telegram.org/js/telegram-web-app.js">
+  function contactManager() {
+    window.open('https://t.me/Mangr_pl', '_blank');
+  }
+  
+  </script>
 <style>
   :root {
     --bg: #0f0f13;
@@ -45,653 +50,1844 @@
   .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; box-sizing: border-box; }
   .cat-card { background: var(--surface); border: 1px solid var(--text); border-radius: var(--radius); cursor: pointer; overflow: hidden; transition: transform .18s, border-color .18s; -webkit-tap-highlight-color: transparent; aspect-ratio: 1 / 1 !important; width: 100%; height: auto; display: flex; flex-direction: column; }
   .cat-card:active { transform: scale(.96); border-color: var(--accent); }
-  .cat-card-emoji { font-size: 48px; padding-top: 12px; }
+  .cat-img { width: 100%; height: 100%; background: var(--surface2); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+  .cat-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cat-img-icon { font-size: 42px; }
+  .cat-card-body { display: none; }
   .cat-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 28px 12px 12px; background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%); border-radius: 0 0 var(--radius) var(--radius); }
-  .cat-name { font-weight: 700; }
+
+.cat-name { font-size: 18px; font-weight: 800; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,0.6); }
   .cat-count-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
 
   /* MODEL LIST */
   .model-list { display: flex; flex-direction: column; gap: 10px; }
-  .model-card { background: var(--surface); border: 1px solid var(--text); border-radius: var(--radius); padding: 12px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background .18s, border-color .18s; -webkit-tap-highlight-color: transparent; }
+.model-card { background: var(--surface); border: 1px solid var(--text); border-radius: var(--radius); padding: 12px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background .18s, border-color .18s; -webkit-tap-highlight-color: transparent; }
   .model-card:active { background: var(--surface2); border-color: var(--accent); }
   .model-thumb { width: 76px; height: 76px; border-radius: var(--radius); background: var(--surface2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 28px; }
-  .model-text { flex: 1; }
-  .model-name { font-weight: 700; margin-bottom: 4px; }
-  .model-sub { font-size: 13px; color: var(--text2); }
+  .model-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .model-info { flex: 1; min-width: 0; }
+  .model-name { font-size: 15px; font-weight: 700; }
+  .model-count { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .arrow { color: var(--accent2); font-size: 18px; }
 
-  /* FLAVOR LIST */
-  .flavor-row { background: var(--surface); border: 1px solid var(--text); border-radius: var(--radius); padding: 12px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: border-color .15s; margin-bottom: 8px; }
+  /* FLAVOUR LIST */
+  .flavor-list { display: flex; flex-direction: column; gap: 8px; }
+  .flavor-row { background: var(--surface); border: 1px solid var(--text); border-radius: var(--radius); padding: 12px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: border-color .15s; }
   .flavor-row.selected { border-color: var(--accent2); }
-  .flavor-row.unavailable { opacity: 0.5; color: var(--text2); pointer-events: none; }
-  .flavor-row.unavailable .flavor-name { color: var(--text2); }
-  .flavor-row.unavailable .qty-btn, .flavor-row.unavailable .qty-val { opacity: 0.3; cursor: not-allowed; }
-  .flavor-left { flex: 1; }
-  .flavor-name { font-weight: 600; }
-  .flavor-stock { font-size: 12px; color: var(--text2); margin-top: 2px; }
-  .flavor-right { display: flex; align-items: center; gap: 8px; }
+  .flavor-name { font-size: 14px; flex: 1; }
+  .qty-ctrl { display: flex; align-items: center; gap: 0; }
   .qty-btn { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--surface2); color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; flex-shrink: 0; }
   .qty-btn:active { background: var(--accent); }
-  .qty-val { min-width: 30px; text-align: center; font-weight: 700; }
+  .qty-val { width: 32px; text-align: center; font-size: 15px; font-weight: 700; }
 
-  /* CART BAR */
+/* CART BAR */  /* CATEGORIES BACKGROUND */
+  #s-cats { background-image: url('images/bg-main.webp'); background-size: cover; background-position: center; background-attachment: fixed; }
+  
+    /* CART BAR */
   .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; height: var(--cart-h); background: var(--surface); border-top: 1px solid var(--border); display: none; align-items: center; padding: 0 16px; gap: 12px; z-index: 100; }
-  .cart-bar.active { display: flex; }
-  .cart-total { flex: 1; }
-  .cart-total-label { font-size: 12px; color: var(--text2); }
-  .cart-total-value { font-size: 20px; font-weight: 800; }
+  .cart-bar.visible { display: flex; }
+  .cart-info { flex: 1; }
+  .cart-items-count { font-size: 13px; color: var(--text2); margin-left: 20px; }
+  .cart-total { font-size: 17px; font-weight: 700; }
   .cart-open-btn { background: var(--accent); border: none; color: #fff; border-radius: 12px; padding: 12px 20px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-  .cart-badge { background: #fff; color: var(--accent); border-radius: 50%; width: 20px; height: 20px; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .cart-badge { background: #fff; color: var(--accent); border-radius: 50%; width: 20px; height: 20px; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center;  }
 
   /* CART SCREEN */
+  .cart-empty { text-align: center; padding: 60px 20px; color: var(--text2); }
+  .cart-empty-icon { font-size: 50px; margin-bottom: 12px; }
   .cart-item-row { background: var(--surface); border: 1px solid var(--text); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; }
-  .cart-item-name { font-weight: 700; margin-bottom: 6px; }
-  .cart-item-meta { font-size: 13px; color: var(--text2); display: flex; justify-content: space-between; align-items: center; }
-  .cart-item-qty { display: flex; gap: 6px; align-items: center; }
-  .cart-item-qty-btn { width: 28px; height: 28px; border-radius: 50%; background: var(--surface2); border: none; color: var(--text); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
-  .cart-item-qty-btn:active { background: var(--accent); }
-  .cart-item-price { font-weight: 700; }
+  .cart-item-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
+  .cart-item-name { font-size: 14px; font-weight: 700; flex: 1; }
+  .cart-item-cat { font-size: 12px; color: var(--accent2); margin-top: 2px; }
+  .cart-item-del { background: none; border: none; color: #ef4444; font-size: 24px; cursor: pointer; padding: 0; margin-left: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; line-height: 1; font-weight: 700; }
+  .cart-item-row .qty-ctrl { justify-content: flex-start; }
+  .cart-summary { background: var(--surface2); border-radius: var(--radius); padding: 16px; margin-top: 16px; }
+  .cart-summary-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; color: var(--text2); }
+  .cart-summary-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: 800; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .btn-primary { width: 100%; background: var(--accent); border: none; color: #fff; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 14px; transition: opacity .15s; }
+  .btn-primary:active { opacity: .85; }
+  .btn-primary:disabled { opacity: .5; cursor: default; }
 
+  /* ORDER FORM */
+  .form-group { margin-bottom: 14px; }
+  label { display: block; font-size: 13px; color: var(--text2); margin-bottom: 6px; }
+  input, textarea, select { width: 100%; background: var(--surface); border: 1px solid var(--text); border-radius: var(--radius); padding: 12px 10px; color: var(--text); font-size: 15px; outline: none; transition: border-color .15s; font-family: inherit; }
+  input:focus, textarea:focus { border-color: var(--accent2); }
+  textarea { resize: none; height: 70px; }
+  .order-summary { background: var(--surface2); border-radius: var(--radius); padding: 14px; margin-bottom: 18px; }
+  .order-summary-title { font-size: 13px; color: var(--text2); margin-bottom: 10px; }
+  .order-model-group { margin-bottom: 12px; }
+  .order-model-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .order-model-name { font-size: 14px; font-weight: 700; }
+  .order-model-meta { font-size: 13px; color: var(--accent2); font-weight: 600; white-space: nowrap; margin-left: 8px; }
+  .order-flavor-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text2); padding: 2px 0 2px 10px; }
+  .order-summary-total { font-size: 16px; font-weight: 800; display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+
+  /* SELECTOR BUTTONS (payment / delivery) */
+  .selector-group { display: flex; gap: 10px; margin-bottom: 20px; }
+  .selector-btn { flex: 1; padding: 14px 10px; border-radius: var(--radius); border: 1.5px solid var(--border); background: var(--surface); color: var(--text2); font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; transition: all .18s; line-height: 1.4; }
+  .selector-btn .sel-icon { font-size: 22px; display: block; margin-bottom: 5px; }
+  .selector-btn.selected { border-color: var(--accent2); background: var(--surface2); color: var(--text); }
+  .selector-btn:active { background: var(--surface2); }
+  .form-section-title { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin: 18px 0 12px; }
+  .hint { font-size: 12px; color: var(--text2); margin-top: 5px; }
+
+  /* SUCCESS */
+  .success-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 24px; height: 100%; }
+  .success-icon { font-size: 64px; margin-bottom: 20px; }
+  .success-title { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+  .success-sub { color: var(--text2); font-size: 15px; margin-bottom: 30px; line-height: 1.5; }
+  .btn-manager { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background: #229ED9; border: none; color: #fff; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; text-decoration: none; margin-bottom: 12px; }
+  .btn-secondary { width: 100%; background: var(--surface); border: 1px solid var(--text); color: var(--text); border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; }
+
+  .cart-total-label { font-size: 15px; font-weight: 800; color: var(--text); }
+  .cart-upsell { font-size: 11px; color: #22c55e; line-height: 1.4; display: none; margin-left: 20px; }
+
+  /* UPSELL BANNER */
+  .upsell-banner { background: linear-gradient(135deg,#1a2a1a,#0f2010); border: 1px solid #22c55e44; border-radius: var(--radius); padding: 10px 14px; margin-bottom: 12px; font-size: 13px; display: none; color: #22c55e; line-height: 1.5; }
+  .upsell-banner b { color: #4ade80; }
+
+  /* SMART PRICE BADGE */
+  .smart-badge { background: linear-gradient(135deg,#7c3aed,#a855f7); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 12px; font-size: 13px; display: none; }
+  .smart-badge b { color: #fff; }
+  .smart-tiers { background: var(--surface2); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 14px; font-size: 13px; }
+  .smart-tiers-title { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing:.05em; margin-bottom: 8px; }
+  .smart-tier-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border); color: var(--text2); }
+  .smart-tier-row:last-child { border-bottom: none; }
+  .smart-tier-row.active { color: var(--text); font-weight: 700; }
+  .smart-tier-row.active .tier-price { color: #a855f7; }
+  .section-title { font-size: 12px; color: #fff; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; margin-top: 18px; border: 1px solid var(--text); border-radius: var(--radius); padding: 8px 12px; display: inline-block; background: linear-gradient(135deg, rgba(147, 51, 234, 0.5) 0%, rgba(192, 132, 252, 0.5) 100%); font-weight: 700; }
+  .section-title:first-child { margin-top: 0; }
+
+  /* TOGGLE TABS */
+  .banner-item {
+    grid-column: 1 / -1;
+    aspect-ratio: 746 / 400;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--text);
+    box-sizing: border-box;
+    background: var(--surface);
+    transition: border-color .18s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .banner-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  .tab-bar { display: flex; gap: 8px; padding: 12px 0 0; flex-shrink: 0; }
+.tab-btn { flex: 1; padding: 10px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--text); background: var(--surface); color: var(--text2); font-size: 14px; font-weight: 600; cursor: pointer; transition: border-color .18s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  /* HISTORY */
+  .history-empty { text-align:center; padding:60px 20px; color:var(--text2); }
+  .history-empty-icon { font-size:48px; margin-bottom:12px; }
+  .history-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:10px; }
+  .history-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .history-order-num { font-size:13px; font-weight:700; color:var(--accent2); }
+  .history-date { font-size:12px; color:var(--text2); }
+  .history-items { font-size:13px; color:var(--text2); margin-bottom:8px; line-height:1.6; }
+  .history-footer { display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid var(--border); }
+  .history-payment { font-size:12px; color:var(--text2); }
+  .history-total { font-size:15px; font-weight:800; }
+
+  /* LANGUAGE MODAL */
+  .lang-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 32px; }
+  .lang-overlay.hidden { display: none; }
+  .lang-blur { position: fixed; inset: 0; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(10,8,20,0.55); }
+  .lang-card { position: relative; z-index: 1; background: var(--surface); border: 1px solid var(--text); border-radius: 22px; padding: 36px 28px 32px; width: 100%; max-width: 320px; text-align: center; }
+  .lang-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; }
+  .lang-heading { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 28px; }
+  .lang-btns { display: flex; gap: 12px; }
+  .lang-btn { flex: 1; padding: 22px 10px; border-radius: 14px; border: 1.5px solid var(--border); background: var(--surface2); color: var(--text); font-size: 28px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color .18s, background .18s; -webkit-tap-highlight-color: transparent; letter-spacing: 1px; }
+  .lang-btn:active { background: var(--accent); border-color: var(--accent); }
+
+  /* LIMIT MODAL */
+  .limit-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 32px; }
+  .limit-overlay.hidden { display: none; }
+  .limit-blur { position: fixed; inset: 0; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(10,8,20,0.55); }
+  .limit-card { position: relative; z-index: 1; background: var(--surface); border: 1px solid var(--text); border-radius: 22px; padding: 36px 28px 32px; width: 100%; max-width: 340px; text-align: center; }
+  .limit-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; }
+  .limit-heading { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 12px; }
+  .limit-text { font-size: 14px; color: var(--text2); line-height: 1.6; margin-bottom: 28px; }
+  .limit-btn { width: 100%; padding: 14px; border-radius: 14px; border: none; background: var(--accent); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity .18s; -webkit-tap-highlight-color: transparent; }
+
+  /* SPLASH SCREEN */
+  .splash-overlay { 
+    position: fixed; inset: 0; z-index: 9999; 
+    background: #0f0f13;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    gap: 50px; 
+    animation: fadeOut 0.6s ease-out 1.8s forwards; 
+  }
+  .splash-overlay.hidden { display: none; }
+
+  @keyframes fadeInScale { 
+    from { opacity: 0; transform: scale(0.8); } 
+    to { opacity: 1; transform: scale(1); } 
+  }
+  @keyframes fadeOut { 
+    to { opacity: 0; pointer-events: none; } 
+  }
+  .splash-progress { 
+    width: 200px; 
+    height: 6px; 
+    background: rgba(0,168,255,0.15); 
+    border-radius: 8px; 
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  .splash-progress-bar { 
+    height: 100%; 
+    background: linear-gradient(90deg, #00a8ff, #00d4ff); 
+    border-radius: 8px; 
+    animation: progress 2s ease-in-out forwards;
+
+  }
+  @keyframes progress { from { width: 0%; } to { width: 100%; } }
+
+  /* BUTTON GRADIENTS */
+  button, .btn-primary, .btn-secondary, input[type="button"], input[type="submit"] {
+    background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%) !important;
+    border: none !important;
+  }
+  
+  .tab-btn {
+    background: linear-gradient(135deg, var(--surface2) 0%, var(--surface) 100%) !important;
+    border: none !important;
+  }
+  
+  .tab-btn.active {
+    background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%) !important;
+  }
+  
+  .lang-btn {
+    background: linear-gradient(135deg, var(--surface2) 0%, var(--surface) 100%) !important;
+    border: 1px solid var(--border) !important;
+  }
+  
+    /* SILVER BORDER FOR TABS */
+  .tab-btn {
+    border: 2px solid var(--text) !important;
+    border-radius: 12px;
+  }
+  
+    /* THIN SILVER BORDER */
+  .home-btn, #lang-switch-btn, .lang-switch-sub {
+    border: 1px solid var(--text) !important;
+    border-radius: var(--radius);
+  }
+  
+    /* TEXT READABILITY ON BUTTONS */
+  button, .btn-primary, .btn-secondary, input[type="button"], input[type="submit"], .tab-btn {
+    color: #fff !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+  }
+  
+    /* SILVER BORDERS */
+  .cat-card {
+    border: 1px solid var(--text) !important;
+  }
+  
+  .model-card {
+    border: 1px solid var(--text) !important;
+    border-radius: 14px;
+  }
+  
+  .flavor-card {
+    border: 1px solid var(--text) !important;
+    border-radius: 14px;
+  }
+  
+  .cart-item {
+    border: 1px solid var(--text) !important;
+    border-radius: 14px;
+  }
+  
+    /* FLAVORS SCREEN PADDING */
+  #s-flavors .scroll {
+    padding-bottom: 200px !important;
+  }
+  
+    /* MODEL DESCRIPTION */
+  .model-desc {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+
+  /* FOOTER */
+  .footer {
+    padding: 30px 0 20px 0;
+    margin-top: 40px;
+    border-top: 1px solid var(--text);
+    box-sizing: border-box;
+  }
+  .footer-title {
+    display: none;
+  }
+  .footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .footer-link {
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    margin: 0 10px;
+    border-bottom: 1px solid var(--text);
+    transition: color .15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .footer-link:last-child {
+    border-bottom: none;
+  }
+  .footer-link:active {
+    color: var(--accent);
+  }
+  .footer-link-icon {
+    display: none;
+  }
+  
   /* MODAL */
-  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 200; }
-  .modal.active { display: flex; }
-  .modal-content { background: var(--surface); border-radius: 20px; padding: 24px; max-width: 90%; max-height: 80%; overflow-y: auto; text-align: center; }
-  .modal-content > div:first-child { font-weight: 700; margin-bottom: 12px; font-size: 16px; }
-  .modal-content > div:last-child { color: var(--text2); margin-bottom: 18px; line-height: 1.4; }
-  .modal-btn { background: var(--accent); border: none; color: #fff; border-radius: 12px; padding: 12px 24px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; }
-
-  /* BUTTONS */
-  .btn { border: none; border-radius: var(--radius); padding: 14px 20px; font-size: 15px; font-weight: 700; cursor: pointer; transition: transform .15s; }
-  .btn:active { transform: scale(.96); }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-secondary { background: var(--surface2); color: var(--text); }
-  .btn-block { width: 100%; margin-bottom: 10px; }
-
-  /* FORM */
-  .form-group { margin-bottom: 16px; }
-  .form-label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
-  .form-input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface2); color: var(--text); font-size: 15px; }
-  .form-radio { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; margin-bottom: 10px; transition: border-color .15s; }
-  .form-radio:active { border-color: var(--accent); }
-  .form-radio input { cursor: pointer; }
-</style>
+  #s-modal {
+    display: none !important;
+    z-index: 1000 !important;
+  }
+  #s-modal.active {
+    display: flex !important;
+  }
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+  }
+  .modal-content {
+    background: var(--surface);
+    border: 1px solid var(--text);
+    border-radius: var(--radius);
+    padding: 24px;
+    max-width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    position: relative;
+  }
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-close:hover {
+    color: var(--accent);
+  }
+  .modal-text {
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  
+  </style>
 </head>
 <body>
 
-<!-- LANGUAGE SELECT -->
-<div class="screen" id="s-lang">
-  <div class="header"><div class="header-center"><div class="header-title">Выбор языка</div></div></div>
-  <div class="scroll" style="display: flex; flex-direction: column; align-items: stretch; justify-content: center; padding: 40px 20px;">
-    <button class="btn btn-primary btn-block" onclick="setLang('ru'); goTo('s-cats');">🇷🇺 Русский</button>
-    <button class="btn btn-primary btn-block" onclick="setLang('pl'); goTo('s-cats');">🇵🇱 Polski</button>
-  </div>
-</div>
-
-<!-- CATEGORIES -->
-<div class="screen" id="s-cats">
-  <div class="header"><div class="header-center"><div class="header-title" data-i18n="title">Snitch Shop</div></div></div>
-  <div class="scroll">
-    <div class="cat-grid" id="cat-grid"></div>
-  </div>
-  <div class="cart-bar" id="cart-bar">
-    <div class="cart-total">
-      <div class="cart-total-label" data-i18n="cart_sum">Сумма</div>
-      <div class="cart-total-value" id="cart-total">0 zł</div>
+<!-- SCREEN 7: HISTORY -->
+<div class="screen" id="s-history">
+  <div class="header">
+    <button class="back-btn" onclick="goTo('s-cats')">←</button>
+    <div class="header-center">
+      <div class="header-title" data-i18n="history_title">Мои заказы</div>
     </div>
-    <button class="cart-open-btn" onclick="goTo('s-cart')"><span>🛒</span><span class="cart-badge" id="cart-count">0</span><span data-i18n="cart_open">Корзина</span></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
+      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--text);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
+    </div>
+  </div>
+  <div class="scroll no-cart-pad" id="history-content"></div>
+</div>
+
+<!-- SCREEN 1: CATEGORIES -->
+<div class="screen active" id="s-cats">
+  <div class="header">
+    <div class="header-center">
+      <div class="header-title"><img src="images/logo-icon.webp" alt="Snitch Shop" style="width:28px;height:28px;vertical-align:middle;margin-right:6px"> Snitch Shop</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+      <button data-i18n="orders" onclick="openHistory()" style="background:var(--surface2);border:1px solid var(--text);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s">Заказы</button>
+      <button id="lang-switch-btn" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--text);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s">RU</button>
+    </div>
+  </div>
+  
+  <div class="scroll no-cart-pad" id="main-scroll">
+    <!-- PROMO BANNER -->
+    <div class="banner-item" id="banner-promo" style="margin: 16px 0 20px;">
+      <img src="images/banner.png" alt="Промо" onerror="this.style.display='none'">
+    </div>
+
+    <!-- TABS -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-cats" onclick="switchTab('cats')" data-i18n="tab_cats">Категории</button>
+      <button class="tab-btn" id="tab-all" onclick="switchTab('all')" data-i18n="tab_all">Все товары</button>
+    </div>
+    
+    <div class="cat-grid" id="cat-grid" style="margin-top: 16px;"></div>
+    <div id="all-models-list" style="display:none;flex-direction:column;gap:10px;margin-top:16px;"></div>
+    <!-- FOOTER -->
+    <div class="footer" id="footer">
+      <div class="footer-links">
+        <a href="javascript:goToPage('delivery')" class="footer-link">
+          <span data-i18n="footer_delivery">Доставка</span>
+          <span style="font-size:16px;color:var(--text)">›</span>
+        </a>
+        <a href="javascript:goToPage('payment')" class="footer-link">
+          <span data-i18n="footer_payment">Оплата</span>
+          <span style="font-size:16px;color:var(--text)">›</span>
+        </a>
+        <a href="javascript:goToPage('returns')" class="footer-link">
+          <span data-i18n="footer_returns">Возврат и замена</span>
+          <span style="font-size:16px;color:var(--text)">›</span>
+        </a>
+        <a href="javascript:goToPage('faq')" class="footer-link">
+          <span data-i18n="footer_faq">FAQ</span>
+          <span style="font-size:16px;color:var(--text)">›</span>
+        </a>
+        <a href="https://t.me/Mangr_pl" target="_blank" class="footer-link">
+          <span data-i18n="footer_manager">Контакт с менеджером</span>
+          <span style="font-size:16px;color:var(--text)">›</span>
+        </a>
+      </div>
+    </div>
+    
+    
   </div>
 </div>
 
-<!-- MODELS -->
+<!-- SCREEN 2: MODELS -->
 <div class="screen" id="s-models">
   <div class="header">
-    <button class="back-btn" onclick="goBack()">←</button>
+    <button class="back-btn" onclick="goTo('s-cats')">←</button>
     <div class="header-center">
-      <div class="header-title" id="model-header-title"></div>
-      <div class="header-sub" id="model-header-sub"></div>
+      <div class="header-title" id="models-title"></div>
+      <div class="header-sub" data-i18n="choose_model">Выберите модель</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
+      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--text);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
     </div>
   </div>
   <div class="scroll">
     <div class="model-list" id="model-list"></div>
   </div>
-  <div class="cart-bar" id="cart-bar2">
-    <div class="cart-total">
-      <div class="cart-total-label" data-i18n="cart_sum">Сумма</div>
-      <div class="cart-total-value" id="cart-total2">0 zł</div>
-    </div>
-    <button class="cart-open-btn" onclick="goTo('s-cart')"><span>🛒</span><span class="cart-badge" id="cart-count2">0</span><span data-i18n="cart_open">Корзина</span></button>
-  </div>
 </div>
 
-<!-- FLAVORS -->
+<!-- SCREEN 3: FLAVOURS -->
 <div class="screen" id="s-flavors">
   <div class="header">
-    <button class="back-btn" onclick="goBack()">←</button>
+    <button class="back-btn" id="flavor-back-btn">←</button>
     <div class="header-center">
-      <div class="header-title" id="flavor-header-title"></div>
-      <div class="header-sub" id="flavor-header-sub"></div>
+      <div class="header-title" id="flavors-title"></div>
+      <div class="header-sub" id="flavors-sub"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
+      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--text);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
     </div>
   </div>
   <div class="scroll">
-    <div id="flavor-list"></div>
-  </div>
-  <div class="cart-bar" id="cart-bar3">
-    <div class="cart-total">
-      <div class="cart-total-label" data-i18n="cart_sum">Сумма</div>
-      <div class="cart-total-value" id="cart-total3">0 zł</div>
-    </div>
-    <button class="cart-open-btn" onclick="goTo('s-cart')"><span>🛒</span><span class="cart-badge" id="cart-count3">0</span><span data-i18n="cart_open">Корзина</span></button>
+    <div class="flavor-list" id="flavor-list"></div>
   </div>
 </div>
 
-<!-- CART -->
+<!-- SCREEN 4: CART -->
 <div class="screen" id="s-cart">
   <div class="header">
-    <button class="back-btn" onclick="goBack()">←</button>
-    <div class="header-center"><div class="header-title" data-i18n="cart_title">Корзина</div></div>
+    <button class="back-btn" id="cart-back-btn">←</button>
+    <div class="header-center">
+      <div class="header-title" data-i18n="cart_title">Корзина</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
+      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--text);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
+    </div>
   </div>
-  <div class="scroll" style="padding-bottom: 120px;">
-    <div id="cart-list"></div>
-  </div>
-  <div style="position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 16px; display: flex; gap: 10px;">
-    <button class="btn btn-secondary" onclick="goBack()" data-i18n="continue">Продолжить</button>
-    <button class="btn btn-primary" onclick="goTo('s-order')" data-i18n="checkout">Оформить</button>
-  </div>
+  <div class="scroll no-cart-pad" id="cart-content"></div>
 </div>
 
-<!-- ORDER FORM -->
+<!-- SCREEN 5: ORDER FORM -->
 <div class="screen" id="s-order">
   <div class="header">
-    <button class="back-btn" onclick="goBack()">←</button>
-    <div class="header-center"><div class="header-title" data-i18n="order_title">Оформление</div></div>
+    <button class="back-btn" onclick="goTo('s-cart')">←</button>
+    <div class="header-center">
+      <div class="header-title" data-i18n="order_title">Оформление заказа</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="home-btn" onclick="goTo('s-cats')" data-i18n="home">🏠 На главную</button>
+      <button class="lang-switch-sub" onclick="toggleLang()" style="background:var(--surface2);border:1px solid var(--text);color:var(--text);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent">RU</button>
+    </div>
   </div>
-  <div class="scroll" style="padding-bottom: 80px;">
-    <div id="order-form"></div>
+  <div class="scroll no-cart-pad" id="order-form-content"></div>
+</div>
+
+<!-- SCREEN 6: SUCCESS -->
+<div class="screen" id="s-modal">
+  <div class="modal-overlay" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div id="modal-text" class="modal-text"></div>
+      <button class="btn-primary" onclick="closeModal()" style="margin-top: 20px;">OK</button>
+    </div>
   </div>
 </div>
 
-<!-- SUCCESS -->
 <div class="screen" id="s-success">
-  <div class="header">
-    <div class="header-center"><div class="header-title" data-i18n="order_done">Заказ оформлен!</div></div>
-  </div>
-  <div class="scroll" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-    <div style="font-size: 48px; margin-bottom: 20px;">✅</div>
-    <div style="font-weight: 700; font-size: 18px; margin-bottom: 8px;" data-i18n="success_title">Спасибо за заказ!</div>
-    <div style="color: var(--text2); margin-bottom: 24px;" id="success-sub"></div>
-    <a id="manager-link" class="btn btn-primary" target="_blank" data-i18n="success_contact">Написать менеджеру</a>
-    <button class="btn btn-secondary" style="margin-top: 10px;" onclick="newOrder()" data-i18n="new_order">Новый заказ</button>
+  <div class="success-screen">
+    <div class="success-icon"></div>
+    <div class="success-title" data-i18n="order_done">Заказ оформлен!</div>
+    <div class="success-sub" id="success-sub">Для подтверждения вашего заказа напишите менеджеру — он всё проверит и отправит посылку.</div>
+    <a class="btn-manager" id="manager-link" href="#" target="_blank">
+      <span>💬</span> <span data-i18n="write_manager">Написать менеджеру</span>
+    </a>
+    <button class="btn-secondary" onclick="newOrder()" data-i18n="new_order">Сделать новый заказ</button>
   </div>
 </div>
 
-<!-- HISTORY -->
-<div class="screen" id="s-history">
-  <div class="header">
-    <button class="back-btn" onclick="goBack()">←</button>
-    <div class="header-center"><div class="header-title" data-i18n="history_title">История</div></div>
+<!-- CART BAR -->
+<div class="cart-bar" id="cart-bar">
+  <div class="cart-info">
+    <div class="cart-upsell" id="cart-upsell"></div>
+    <div class="cart-items-count" id="cart-items-label"></div>
   </div>
-  <div class="scroll" id="history-list"></div>
+  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+    <div class="cart-total-label" id="cart-total-label"></div>
+    <button class="cart-open-btn" id="cart-open-btn">
+      <span id="cart-btn-text">👽 Корзина</span> <span class="cart-badge" id="cart-badge">0</span>
+    </button>
+  </div>
 </div>
 
-<!-- INFO PAGES -->
-<div class="screen" id="s-info">
-  <div class="header">
-    <button class="back-btn" onclick="goBack()">←</button>
-    <div class="header-center"><div class="header-title" id="info-title"></div></div>
+
+<!-- SPLASH SCREEN -->
+<div class="splash-overlay" id="splash">
+  <img src="images/mascot.webp" alt="Snitch Shop" class="splash-mascot" style="width:200px;height:200px;animation:fadeInScale 0.8s ease-out">
+  <div class="splash-progress">
+    <div class="splash-progress-bar"></div>
   </div>
-  <div class="scroll" id="info-content"></div>
 </div>
 
-<!-- MODAL -->
-<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
-  <div class="modal-content">
-    <div id="modal-title"></div>
-    <div id="modal-text"></div>
-    <button class="modal-btn" onclick="closeModal()">OK</button>
+<!-- LANGUAGE MODAL -->
+<div class="lang-overlay" id="lang-overlay">
+  <div class="lang-blur"></div>
+  <div class="lang-card">
+    <div class="lang-title">Snitch Shop</div>
+    <div class="lang-heading">Choose your language</div>
+    <div class="lang-btns">
+      <button class="lang-btn" onclick="selectLang('pl')">PL</button>
+      <button class="lang-btn" onclick="selectLang('ru')">RU</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIMIT MODAL -->
+<div class="limit-overlay hidden" id="limit-overlay">
+  <div class="limit-blur" onclick="closeLimitAlert()"></div>
+  <div class="limit-card">
+    <div class="limit-title" id="limit-title">⚠️ Ограничение</div>
+    <div class="limit-heading" id="limit-heading">Максимум 200 единиц</div>
+    <div class="limit-text" id="limit-text">Вы можете заказать максимально 200 единиц товара. Для большего количества напишите менеджеру.</div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="limit-btn" onclick="closeLimitAlert()" style="flex:1">OK</button>
+      <a href="https://t.me/Mangr_pl" target="_blank" style="flex:1;text-decoration:none;-webkit-tap-highlight-color:transparent">
+        <button class="limit-btn" id="limit-manager-btn" style="width:100%;margin:0">💬 Менеджер</button>
+      </a>
+    </div>
   </div>
 </div>
 
 <script>
-// ============================================================
-// DATA & CONFIG
-// ============================================================
 
+// Hide splash screen
+setTimeout(() => {
+  const splash = document.getElementById('splash');
+  if (splash) splash.classList.add('hidden');
+}, 2000);
+
+// ============================================================
+// ДАННЫЕ ТОВАРОВ
+// ============================================================
 const MANAGER_USERNAME = 'Mangr_pl';
 
-let lang = 'ru';
-let cart = {};
-let currentModel = null;
-let orderPayment = null;
-let orderDelivery = null;
-let screenStack = [];
-
-// STOCK - локальные запасы
-let MAX_STOCK = {
-  'elfd3::Alpine mint': 5, 'elfd3::Blueberry': 3, 'elfd3::Mango': 2,
-  'elfmoon::Cherry': 4, 'elfmoon::Strawberry': 6,
-  'lushking::Grape': 3, 'lushking::Watermelon': 2,
-  'elfbc45k::Peach': 5, 'elfbc45k::Pineapple': 4,
-  'xrosmini::Black': 10, 'xrosmini::White': 8,
-  'oxva::Silver': 6, 'oxva::Gold': 5,
-  'cart-xros::0.6ohm': 12, 'cart-xros::1.0ohm': 10,
-  'cart-oxva::0.6ohm': 8, 'cart-oxva::1.0ohm': 9,
-  'puffy::Mango': 7, 'puffy::Vanilla': 5,
-  'vozol::Blueberry': 4, 'vozol::Watermelon': 3,
-  'elfliq::Strawberry': 6, 'elfliq::Tobacco': 8
-};
-
-const CATALOG = [
-  { id: 'disp', name: 'Disposables', icon: '🏪', models: [
-    { id: 'elfd3', name: 'Elf Bar D3 25k', price: 45, flavors: ['Alpine mint', 'Blueberry', 'Mango', 'Strawberry', 'Peach', 'Watermelon', 'Vanilla', 'Cherry', 'Orange', 'Grape'] },
-    { id: 'elfmoon', name: 'Elf Bar Moon 40K', price: 55, flavors: ['Cherry', 'Strawberry', 'Mango', 'Blueberry'] },
-    { id: 'lushking', name: 'Lush King 40k', price: 50, flavors: ['Grape', 'Watermelon'] },
-    { id: 'elfbc45k', name: 'Elf Bar BC 45k', price: 60, flavors: ['Peach', 'Pineapple'] }
-  ]},
-  { id: 'pods', name: 'Pods', icon: '📦', models: [
-    { id: 'xrosmini', name: 'XROS MINI 5', price: 30, flavors: ['Black', 'White'] },
-    { id: 'oxva', name: 'OXVA XLIM GO 2', price: 35, flavors: ['Silver', 'Gold'] }
-  ]},
-  { id: 'carts', name: 'Cartridges', icon: '🔧', models: [
-    { id: 'cart-xros', name: 'CARTRIDGE XROS 3ML', price: 15, flavors: ['0.6ohm', '1.0ohm'] },
-    { id: 'cart-oxva', name: 'CARTRIDGE OXVA 3ML', price: 15, flavors: ['0.6ohm', '1.0ohm'] }
-  ]},
-  { id: 'liq', name: 'Liquids', icon: '🧪', models: [
-    { id: 'puffy', name: 'PUFFY', price: 20, flavors: ['Mango', 'Vanilla'] },
-    { id: 'vozol', name: 'VOZOL PRIME', price: 22, flavors: ['Blueberry', 'Watermelon'] },
-    { id: 'elfliq', name: 'ELF LIQ', price: 18, flavors: ['Strawberry', 'Tobacco'] }
-  ]}
-];
-
+// ============================================================
 // TRANSLATIONS
-const i18n = {
+// ============================================================
+let lang = null;
+try { lang = localStorage.getItem('vl_lang') || null; } catch(e) {}
+
+const TRANS = {
   ru: {
-    title: 'Snitch Shop',
-    cart_sum: 'Сумма',
-    cart_open: 'Корзина',
+    home: 'На главную',
+    orders: 'Заказы',
+    tab_cats: 'Категории',
+    tab_all: 'Все товары',
+    choose_model: 'Выберите модель',
     cart_title: 'Корзина',
-    continue: 'Продолжить',
-    checkout: 'Оформить',
+    cart_empty: 'Корзина пуста',
+    cart_empty_sub: 'Добавьте товары из каталога',
+    positions: 'Позиций',
+    discount: 'Скидка Smart Cena',
+    total: 'Итого',
+    add_more: '＋ Добавить ещё',
+    checkout: 'Оформить заказ →',
+    pcs: 'шт.',
+    pos_in_cart: 'поз. в корзине',
     order_title: 'Оформление заказа',
+    your_order: 'Ваш заказ:',
+    saving: 'Экономия Smart Cena',
+    payment_section: '💳 Способ оплаты',
+    pay_cod: 'Наложный платёж',
+    pay_crypto: 'Криптовалюта',
+    crypto_hint: 'После нажатия кнопки ниже — напишите менеджеру, он пришлёт реквизиты для оплаты и подтвердит заказ.',
+    write_manager_btn: '💬 Написать менеджеру →',
+    recipient: 'Данные получателя',
+    delivery_section: '🚚 Способ доставки',
+    confirm_btn: 'Подтвердить данные ',
+    phone_hint: 'Польский номер в формате +48 (xxx) xxx-xxx',
+    paczkomat_hint: 'Найдите код на сайте InPost или в приложении',
     order_done: 'Заказ оформлен!',
-    success_title: 'Спасибо за заказ!',
-    success_sub_crypto: 'Менеджер свяжется с вами для подтверждения платежа',
-    success_sub_cod: 'Менеджер подтвердит и отправит заказ',
-    success_contact: 'Написать менеджеру',
-    new_order: 'Новый заказ',
-    history_title: 'История заказов',
-    pay_label_crypto: '💳 Способ оплаты: Крипто',
-    pay_label_cod: '💳 Способ оплаты: При получении',
-    msg_greeting: 'Привет! У меня есть заказ:',
-    msg_total: (count) => `Товаров: ${count}`,
-    fill_required: 'Заполните все поля',
-    fill_kod: 'Введите корректный код пачкомата',
+    success_sub_cod: 'Для подтверждения вашего заказа напишите менеджеру — он всё проверит и отправит посылку.',
+    success_sub_crypto: 'Для подтверждения заказа и получения реквизитов напишите менеджеру.',
+    write_manager: 'Написать менеджеру',
+    new_order: 'Сделать новый заказ',
+    history_title: 'Мои заказы',
+    no_orders: 'Заказов пока нет',
+    no_orders_sub: 'Здесь будет история ваших заказов',
+    order_num: 'Заказ',
+    pay_label_cod: 'Наложный платёж',
+    pay_label_crypto: 'Криптовалюта',
+    smart_cena_title: 'Smart Cena',
+    price_title: 'Цена',
+    per_piece: 'За штуку',
+    per_pcs: 'zł/шт.',
+    fill_required: 'Пожалуйста, заполните все обязательные поля (*)',
+    fill_kod: 'Укажите Kod paczkomatu',
+    cart_btn: 'Корзина',
+    lbl_name: 'Imię i Nazwisko (Имя и Фамилия) *',
+    lbl_city: 'Miasto (Город) *',
+    lbl_zip: 'Kod pocztowy (Почтовый индекс) *',
+    lbl_street: 'Ulica (Улица) *',
+    lbl_building: 'Numer budynku (Номер дома) *',
+    lbl_flat: 'Numer lokalu (Номер квартиры)',
+    lbl_flat_ph: '5 (необязательно)',
+    msg_greeting: 'Здравствуйте! Можно подтвердить заказ?',
+    msg_total: n => `TOTAL: ${n} штук`,
+    delivery_cost: 'Стоимость доставки',
+    total_to_pay: 'Итого к оплате',
+    upsell: (n, p, s) => `Добавь ещё <b style="color:#4ade80">${n} шт.</b> → цена <b style="color:#4ade80">${p} zł/шт.</b>, сэкономишь <b style="color:#4ade80">${s} zł</b>`,
+    flavor_label: n => 'вкус' + (n === 1 ? '' : n >= 2 && n <= 4 ? 'а' : 'ов'),
+    model_label: n => 'модел' + (n === 1 ? 'ь' : 'и'),
+    max_limit: 'Максимум 200 единиц в корзине!',
+    footer_delivery: 'Доставка',
+    footer_payment: 'Оплата',
+    footer_returns: 'Возврат и замена',
+    footer_faq: 'FAQ',
+    footer_manager: 'Контакт с менеджером',
+    
+    // Информационные страницы
     info_delivery_title: 'Доставка',
+    info_delivery_paczkomat: 'Доставка в Paczkomat – самовывоз посылки в пункте Paczkomat.',
+    info_delivery_zabka: 'Доставка в магазин Żabka – самовывоз посылки в магазине Żabka.',
+    info_delivery_courier: 'Доставка курьером до двери дома – пакет доставляется прямо к вашей двери.',
+    info_delivery_paczkopunkt: 'Доставка в PaczkoPunkt – самовывоз посылки в пункте PaczkoPunkt.',
+    
     info_payment_title: 'Оплата',
+    info_payment_courier: 'При доставке курьером:',
+    info_payment_courier_methods: 'Наличные | BLIK | Apple Pay | Google Pay',
+    info_payment_pickup: 'При самовывозе (Paczkomat/Żabka/PaczkoPunkt):',
+    info_payment_pickup_methods: 'BLIK | Apple Pay | Google Pay',
+    info_payment_crypto: 'Предоплата криптовалютой:',
+    info_payment_crypto_methods: 'Bitcoin (BTC) | Ethereum (ETH) | USDT (TRC-20)',
+    
     info_returns_title: 'Возврат и замена',
-    info_delivery_cod: 'Куриер: 10 зл',
-    info_delivery_paczkomat: 'Paczkomat: 5 зл',
-    info_payment_crypto: 'Крипто платежи',
-    info_returns_step1: 'Шаг 1: Свяжитесь с менеджером',
-    info_returns_step2: 'Шаг 2: Согласуйте детали'
+    info_returns_step1: '1. Напиши менеджеру в Telegram и опиши проблему.',
+    info_returns_step2: '2. Отправь фото или видео, показывающее дефект товара.',
   },
   pl: {
-    title: 'Snitch Shop',
-    cart_sum: 'Suma',
-    cart_open: 'Koszyk',
+    home: 'Strona główna',
+    orders: 'Zamówienia',
+    tab_cats: 'Kategorie',
+    tab_all: 'Wszystkie',
+    choose_model: 'Wybierz model',
     cart_title: 'Koszyk',
-    continue: 'Kontynuuj',
-    checkout: 'Złóż zamówienie',
-    order_title: 'Realizacja zamówienia',
+    cart_empty: 'Koszyk pusty',
+    cart_empty_sub: 'Dodaj produkty z katalogu',
+    positions: 'Pozycji',
+    discount: 'Zniżka Smart Cena',
+    total: 'Razem',
+    add_more: '＋ Dodaj więcej',
+    checkout: 'Złóż zamówienie →',
+    pcs: 'szt.',
+    pos_in_cart: 'poz. w koszyku',
+    order_title: 'Złożenie zamówienia',
+    your_order: 'Twoje zamówienie:',
+    saving: 'Oszczędność Smart Cena',
+    payment_section: '💳 Metoda płatności',
+    pay_cod: 'Pobranie',
+    pay_crypto: 'Kryptowaluta',
+    crypto_hint: 'Po kliknięciu przycisku poniżej — napisz do menedżera, prześle dane do płatności i potwierdzi zamówienie.',
+    write_manager_btn: '💬 Napisz do menedżera →',
+    recipient: 'Dane odbiorcy',
+    delivery_section: '🚚 Sposób dostawy',
+    confirm_btn: 'Potwierdź dane ',
+    phone_hint: 'Numer polski w formacie +48 (xxx) xxx-xxx',
+    paczkomat_hint: 'Znajdź kod na stronie InPost lub w aplikacji',
     order_done: 'Zamówienie złożone!',
-    success_title: 'Dziękujemy za zamówienie!',
-    success_sub_crypto: 'Menedżer skontaktuje się w celu potwierdzenia płatności',
-    success_sub_cod: 'Menedżer potwierdzi i wyśle zamówienie',
-    success_contact: 'Napisz do menedżera',
-    new_order: 'Nowe zamówienie',
-    history_title: 'Historia zamówień',
-    pay_label_crypto: '💳 Metoda płatności: Crypto',
-    pay_label_cod: '💳 Metoda płatności: Przy odbiorze',
-    msg_greeting: 'Cześć! Mam zamówienie:',
-    msg_total: (count) => `Produktów: ${count}`,
-    fill_required: 'Wypełnij wszystkie pola',
-    fill_kod: 'Wprowadź prawidłowy kod paczkomatu',
+    success_sub_cod: 'Aby potwierdzić zamówienie, napisz do menedżera — sprawdzi wszystko i wyśle paczkę.',
+    success_sub_crypto: 'Aby potwierdzić zamówienie i otrzymać dane do płatności, napisz do menedżera.',
+    write_manager: 'Napisz do menedżera',
+    new_order: 'Złóż nowe zamówienie',
+    history_title: 'Moje zamówienia',
+    no_orders: 'Brak zamówień',
+    no_orders_sub: 'Tutaj pojawi się historia twoich zamówień',
+    order_num: 'Zamówienie',
+    pay_label_cod: 'Pobranie',
+    pay_label_crypto: 'Kryptowaluta',
+    smart_cena_title: 'Smart Cena',
+    price_title: 'Cena',
+    per_piece: 'Za sztukę',
+    per_pcs: 'zł/szt.',
+    fill_required: 'Proszę wypełnić wszystkie wymagane pola (*)',
+    fill_kod: 'Podaj Kod paczkomatu',
+    cart_btn: 'Koszyk',
+    lbl_name: 'Imię i Nazwisko *',
+    lbl_city: 'Miasto *',
+    lbl_zip: 'Kod pocztowy *',
+    lbl_street: 'Ulica *',
+    lbl_building: 'Numer budynku *',
+    lbl_flat: 'Numer lokalu',
+    lbl_flat_ph: '5 (opcjonalnie)',
+    msg_greeting: 'Dzień dobry, proszę o potwierdzenie zamówienia',
+    msg_total: n => `TOTAL: ${n} sztuk`,
+    delivery_cost: 'Cena dostawy',
+    total_to_pay: 'Razem do zapłaty',
+    upsell: (n, p, s) => `Dodaj jeszcze <b style="color:#4ade80">${n} szt.</b> → cena <b style="color:#4ade80">${p} zł/szt.</b>, zaoszczędzisz <b style="color:#4ade80">${s} zł</b>`,
+    flavor_label: n => n === 1 ? 'smak' : n >= 2 && n <= 4 ? 'smaki' : 'smaków',
+    model_label: n => n === 1 ? 'model' : n >= 2 && n <= 4 ? 'modele' : 'modeli',
+    max_limit: 'Maksimum 200 sztuk w koszyku!',
+    footer_delivery: 'Dostawa',
+    footer_payment: 'Płatność',
+    footer_returns: 'Zwrot i wymiana',
+    footer_faq: 'FAQ',
+    footer_manager: 'Kontakt z menedżerem',
+    
+    // Informacyjne strony
     info_delivery_title: 'Dostawa',
+    info_delivery_paczkomat: 'Dostawa do Paczkomatu – odbiór osobisty w Paczkomacie.',
+    info_delivery_zabka: 'Dostawa do sklepu Żabka – odbiór osobisty w sklepie Żabka.',
+    info_delivery_courier: 'Dostawa kurierem do drzwi domu – paczka dostarczana bezpośrednio pod drzwi.',
+    info_delivery_paczkopunkt: 'Dostawa do PaczkoPunktu – odbiór osobisty w PaczkoPunkcie.',
+    
     info_payment_title: 'Płatność',
+    info_payment_courier: 'Przy dostawie kurierem:',
+    info_payment_courier_methods: 'Gotówka | BLIK | Apple Pay | Google Pay',
+    info_payment_pickup: 'Przy odbiorze (Paczkomat/Żabka/PaczkoPunkt):',
+    info_payment_pickup_methods: 'BLIK | Apple Pay | Google Pay',
+    info_payment_crypto: 'Przedpłata kryptowalutą:',
+    info_payment_crypto_methods: 'Bitcoin (BTC) | Ethereum (ETH) | USDT (TRC-20)',
+    
     info_returns_title: 'Zwrot i wymiana',
-    info_delivery_cod: 'Kurier: 10 zł',
-    info_delivery_paczkomat: 'Paczkomat: 5 zł',
-    info_payment_crypto: 'Płatności kryptowalutą',
-    info_returns_step1: 'Krok 1: Skontaktuj się z menedżerem',
-    info_returns_step2: 'Krok 2: Uzgodnij szczegóły'
+    info_returns_step1: '1. Napisz menedżerowi na Telegramie i opisz problem.',
+    info_returns_step2: '2. Wyślij zdjęcie lub wideo pokazujące wadę produktu.',
   }
 };
 
 function tr(key, ...args) {
-  let val = i18n[lang][key];
-  if (typeof val === 'function') return val(...args);
-  return val || key;
+  const val = TRANS[lang || 'ru']?.[key] ?? TRANS.ru[key];
+  return typeof val === 'function' ? val(...args) : (val ?? key);
 }
 
-function setLang(l) { lang = l; }
-
-// ============================================================
-// UI FUNCTIONS
-// ============================================================
-
-function goTo(screenId) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
-  screenStack.push(screenId);
-  if (screenId === 's-cats') renderCategories();
-  if (screenId === 's-models') renderModels(currentModel);
-  if (screenId === 's-flavors') renderFlavors();
-  if (screenId === 's-cart') renderCart();
-  if (screenId === 's-order') renderOrderForm();
-  updateCartBar();
-}
-
-function goBack() {
-  screenStack.pop();
-  const prev = screenStack[screenStack.length - 1] || 's-cats';
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(prev).classList.add('active');
-  updateCartBar();
-}
-
-function showModal(title, text = '') {
-  if (typeof title === 'string' && !text) {
-    text = title;
-    title = '';
-  }
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-text').textContent = text;
-  document.getElementById('modal').classList.add('active');
-}
-
-function closeModal() {
-  document.getElementById('modal').classList.remove('active');
-}
-
-function updateCartBar() {
-  const count = Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
-  const total = Object.values(cart).reduce((sum, item) => sum + item.qty * item.price, 0);
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = tr(el.getAttribute('data-i18n'));
+  });
+  const cartBtnText = document.getElementById('cart-btn-text');
+  if (cartBtnText) cartBtnText.textContent = tr('cart_btn');
+  document.querySelectorAll('#lang-switch-btn, .lang-switch-sub').forEach(btn => {
+    btn.textContent = lang === 'pl' ? 'RU' : 'PL';
+  });
   
-  if (count > 0) {
-    document.querySelectorAll('.cart-bar').forEach(bar => bar.classList.add('active'));
-    document.getElementById('cart-total').textContent = total + ' zł';
-    document.getElementById('cart-total2').textContent = total + ' zł';
-    document.getElementById('cart-total3').textContent = total + ' zł';
-    document.getElementById('cart-count').textContent = count;
-    document.getElementById('cart-count2').textContent = count;
-    document.getElementById('cart-count3').textContent = count;
+  // Обновить limit alert при смене языка
+  const limitTitle = document.getElementById('limit-title');
+  const limitHeading = document.getElementById('limit-heading');
+  const limitText = document.getElementById('limit-text');
+  const limitManagerBtn = document.getElementById('limit-manager-btn');
+  if (lang === 'pl') {
+    limitTitle.textContent = '⚠️ OGRANICZENIE';
+    limitHeading.textContent = 'Maksimum 200 sztuk';
+    limitText.textContent = 'Możesz zamówić maksymalnie 200 sztuk towaru. Aby uzyskać większą ilość, skontaktuj się z menedżerem.';
+    limitManagerBtn.textContent = '💬 Menedżer';
   } else {
-    document.querySelectorAll('.cart-bar').forEach(bar => bar.classList.remove('active'));
+    limitTitle.textContent = '⚠️ ОГРАНИЧЕНИЕ';
+    limitHeading.textContent = 'Максимум 200 единиц';
+    limitText.textContent = 'Вы можете заказать максимально 200 единиц товара. Для большего количества напишите менеджеру.';
+    limitManagerBtn.textContent = '💬 Менеджер';
   }
 }
 
-function cartCount() {
-  return Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
+
+function toggleLang() {
+  selectLang(lang === 'pl' ? 'ru' : 'pl');
 }
 
+
+// ============================================================
+// LANGUAGE MODAL
+// ============================================================
+function selectLang(l) {
+  lang = l;
+  try { localStorage.setItem('vl_lang', l); } catch(e) {}
+  document.getElementById('lang-overlay').classList.add('hidden');
+  applyLang();
+  renderCategories();
+  renderAllModels();
+  // Re-render current active screen
+  const active = document.querySelector('.screen.active')?.id;
+  if (active === 's-models') {
+    if (currentCat) document.getElementById('models-title').textContent = (lang === 'pl' && currentCat.name_pl ? currentCat.name_pl : currentCat.name);
+    renderModels();
+  }
+  if (active === 's-flavors') {
+    if (currentModel) document.getElementById('flavors-title').textContent = currentModel.name;
+    if (currentCat) document.getElementById('flavors-sub').textContent = lang === 'pl' && currentCat.name_pl ? currentCat.name_pl : currentCat.name;
+    renderFlavors();
+  }
+  if (active === 's-cart') renderCart();
+  if (active === 's-order') renderOrderForm();
+  if (active === 's-history') openHistory();
+  updateCartBar();
+}
+
+function showLimitAlert() {
+  const limitOverlay = document.getElementById('limit-overlay');
+  const limitTitle = document.getElementById('limit-title');
+  const limitHeading = document.getElementById('limit-heading');
+  const limitText = document.getElementById('limit-text');
+  const limitManagerBtn = document.getElementById('limit-manager-btn');
+  
+  if (lang === 'pl') {
+    limitTitle.textContent = '⚠️ OGRANICZENIE';
+    limitHeading.textContent = 'Maksimum 200 sztuk';
+    limitText.textContent = 'Możesz zamówić maksymalnie 200 sztuk towaru. Aby uzyskać większą ilość, skontaktuj się z menedżerem.';
+    limitManagerBtn.textContent = "💬 Menedżer";
+  } else {
+    limitTitle.textContent = '⚠️ ОГРАНИЧЕНИЕ';
+    limitHeading.textContent = 'Максимум 200 единиц';
+    limitText.textContent = 'Вы можете заказать максимально 200 единиц товара. Для большего количества напишите менеджеру.';
+    limitManagerBtn.textContent = '💬 Менеджер';
+  }
+  
+  limitOverlay.classList.remove('hidden');
+}
+
+function closeLimitAlert() {
+  document.getElementById('limit-overlay').classList.add('hidden');
+}
+
+// Show modal on init if no lang saved
+// On load: if lang already saved, skip modal and apply lang
+if (lang) {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('lang-overlay').classList.add('hidden');
+    applyLang();
+  });
+}
+
+
+// ============================================================
+// SMART PRICING
+// ============================================================
+// Тиры: [минимальное кол-во, цена за шт. в zł]
+const PRICING = {
+  disposable: { tiers: [[1,70],[3,65],[5,60],[10,55],[20,48],[50,45],[100,40]], base: 70 },
+  pods:        { tiers: [[1,80]], base: 80 },
+  cartridges:  { tiers: [[1,60]], base: 60 },
+  liquids:     { tiers: [[1,50],[3,45],[5,40],[10,35],[20,32],[50,26],[100,24]], base: 50 }
+};
+
+function getSmartPrice(catId, totalQty) {
+  // Check if current model has its own pricing
+  const modelTiers = currentModel?.tiers;
+  const tiers = modelTiers || PRICING[catId]?.tiers;
+  if (!tiers) return 0;
+  let price = tiers[0][1];
+  for (const [minQty, unitPrice] of tiers) {
+    if (totalQty >= minQty) price = unitPrice;
+  }
+  return price;
+}
+
+function getBasePrice(catId) {
+  // Check if current model has its own pricing
+  if (currentModel?.tiers) return currentModel.tiers[0][1];
+  return PRICING[catId]?.base || 0;
+}
+
+// Сумма штук в категории
+function catQty(catId) {
+  return Object.values(cart)
+    .filter(i => i.catId === catId)
+    .reduce((s, i) => s + i.qty, 0);
+}
+
+// Итого по всей корзине с учётом смарт-цен
+// Считаем общее количество одноразок + жидкостей (исключая поды и картриджи)
+function getTotalQtyForPricing() {
+  let total = 0;
+  for (const key in cart) {
+    const item = cart[key];
+    if (!item || item.qty === 0) continue;
+    
+    // Найдем категорию товара
+    let catId = null;
+    for (const cat of catalog) {
+      if (cat.models.find(m => m.id === item.model)) {
+        catId = cat.id;
+        break;
+      }
+    }
+    
+    // Исключаем поды и картриджи из общего подсчета
+    if (catId !== 'pods' && catId !== 'cartridges') {
+      total += item.qty;
+    }
+  }
+  return total;
+}
+
+// Итого по всей корзине с учётом Smart Cena
 function cartTotal() {
-  return Object.values(cart).reduce((sum, item) => sum + item.qty * item.price, 0);
+  let total = 0;
+  const totalQtyForPricing = getTotalQtyForPricing();
+  
+  // Обрабатываем каждый товар в корзине
+  for (const key in cart) {
+    const item = cart[key];
+    if (!item || item.qty === 0) continue;
+    
+    // Найдем модель и категорию
+    let model = null;
+    let catId = null;
+    for (const cat of catalog) {
+      const m = cat.models.find(md => md.id === item.model);
+      if (m) {
+        model = m;
+        catId = cat.id;
+        break;
+      }
+    }
+    
+    if (!model) continue;
+    
+    // Для подов и картриджей - фиксированные цены
+    if (catId === 'pods' || catId === 'cartridges') {
+      const basePrice = PRICING[catId]?.base || 0;
+      total += item.qty * basePrice;
+    } else {
+      // Для одноразок и жидкостей - применяем Smart Cena по общему количеству
+      const tiers = model.tiers || PRICING[catId]?.tiers || [];
+      let price = tiers[0]?.[1] || 0;
+      
+      // Применяем нужный тир по общему количеству
+      for (const [minQty, unitPrice] of tiers) {
+        if (totalQtyForPricing >= minQty) price = unitPrice;
+      }
+      
+      total += item.qty * price;
+    }
+  }
+  
+  return total;
+}
+
+// Сколько сэкономил клиент (vs базовая цена 1-2 шт.)
+function cartSavings() {
+  let saved = 0;
+  const totalQtyForPricing = getTotalQtyForPricing();
+  
+  // Обрабатываем каждый товар в корзине
+  for (const key in cart) {
+    const item = cart[key];
+    if (!item || item.qty === 0) continue;
+    
+    // Найдем модель и категорию
+    let model = null;
+    let catId = null;
+    for (const cat of catalog) {
+      const m = cat.models.find(md => md.id === item.model);
+      if (m) {
+        model = m;
+        catId = cat.id;
+        break;
+      }
+    }
+    
+    if (!model) continue;
+    
+    // Для подов и картриджей скидок нет (фиксированные цены)
+    if (catId === 'pods' || catId === 'cartridges') {
+      continue;
+    }
+    
+    // Для одноразок и жидкостей считаем скидку
+    const tiers = model.tiers || PRICING[catId]?.tiers || [];
+    const basePrice = tiers[0]?.[1] || 0;
+    let smartPrice = tiers[0]?.[1] || 0;
+    
+    // Применяем нужный тир по общему количеству
+    for (const [minQty, unitPrice] of tiers) {
+      if (totalQtyForPricing >= minQty) smartPrice = unitPrice;
+    }
+    
+    saved += item.qty * (basePrice - smartPrice);
+  }
+  
+  return saved;
+}
+
+function formatPrice(p) { return p.toLocaleString('pl-PL') + ' zł'; }
+
+const catalog = [
+  {
+    id: 'disposable',
+    name: 'Одноразки',
+    name_pl: 'E-papierosy',
+    icon: '',
+    img: 'images/cat-disposable.webp',
+    models: [
+      {
+        id: 'elfd3',
+        name: 'Elf Bar D3 25k',
+        img: 'images/model-d3.webp',
+        tiers: [[1,65],[3,60],[5,55],[10,50],[20,43],[50,40],[100,38]],
+        flavors: ['Alpine mint','Apple peach','Blackberry cranberry','Blackberry pomegrn cherry','Blue razz ice','Blueberry ice','Blueberry raspberry','Double apple','Grape cherry','Grape ice','Grape mint','Kiwi passion fruit guava','Kiwi pineapple ice','Lemon lime','Peach berry','Peach ice','Pineapple mango ice','Strawb raspberry cherry','Strawberry grape','Strawberry ice','Strawberry watermelon','Vmt','Watermelon bubblegum','Watermelon ice','Watermelon lemon','Mango peach watermelon']
+      },
+      {
+        id: 'elfmoon',
+        name: 'Elf Bar Moon 40K',
+        img: 'images/model-moon.webp',
+        flavors: ['Cherry Watermelon','Grape Ice','Grape Raspberry','Kiwi passion fruit guava','Lime Cola','Mango Peach Watermelon','Miami mint','Pomegranate Burst','Watermelon Ice','Blue razz ice','Lemon lime','Peach ice']
+      },
+      {
+        id: 'lushking',
+        name: 'Lush King 40k',
+        img: 'images/model-lush.webp',
+        flavors: ['Black Currant Pineapple','Milky Oolong','Cucumber Lime','Starfruit Grape','Cactus Lime','Cherry Burst','Mountain Mint','Sour Pineapple Ice','Tropical Mango','Sour Strawberry Dragonfruit','Pomegranate Burst','Sour Apple ice','Black Grape Ice','Blue Razz Ice','Watermelon ice']
+      },
+      {
+        id: 'elfbc45k',
+        name: 'Elf Bar BC 45k',
+        img: 'images/model-bc45k.webp',
+        flavors: ['Blackberry Lemonade','Blackcurrant Grape','Blue Razz Ice','Cherry Peach Soda','Double Mint','Grapefruit Green Tea','Kiwi Pineapple Peach','Lemon Lime','Pear Soda','Pomegranate Burst','Pomegranate Raspberry Lime','Red Raspberry Strawberry','Sour Apple Kiwi','Strawberry Grapefruit','Watermelon Ice']
+      }
+    ]
+  },
+  {
+    id: 'pods',
+    name: 'Под системы',
+    name_pl: 'Pody',
+    icon: '',
+    img: 'images/cat-pods.webp',
+    models: [
+      {
+        id: 'xrosmini',
+        name: 'XROS MINI 5',
+        img: 'images/xrosmini.png',
+        flavors: ['Pastel Crystal','Rose Red','Carbon Black','Purple','Titanium silver','Black','Flowing Blue','Flowing Green','Flowing Pink','Sky Blue']
+      },
+      {
+        id: 'oxva',
+        name: 'OXVA XLIM GO 2',
+        img: 'images/oxva.png',
+        flavors: ['Pink Ripple','Black Carbon','Metal Silver','Light Brown Shadow','Metal Blue','Black Shadow','Green Ripple','Blue Ripple']
+      }
+    ]
+  },
+  {
+    id: 'cartridges',
+    name: 'Картриджи',
+    name_pl: 'Cartridge',
+    icon: '',
+    img: 'images/cat-cartridges.webp',
+    models: [
+      {
+        id: 'cart-xros',
+        name: 'CARTRIDGE XROS 3 ML',
+        img: 'images/cartridge-xros.png',
+        desc: '0.4 Ω | 0.6 Ω | 0.8 Ω',
+        desc_pl: '0.4 Ω | 0.6 Ω | 0.8 Ω',
+        flavors: ['0.4 Ω','0.6 Ω','0.8 Ω']
+      },
+      {
+        id: 'cart-oxva',
+        name: 'CARTRIDGE OXVA 3 ML',
+        img: 'images/cartridge-oxva.png',
+        desc: '0.4 Ω | 0.6 Ω | 0.8 Ω',
+        desc_pl: '0.4 Ω | 0.6 Ω | 0.8 Ω',
+        flavors: ['0.4 Ω','0.6 Ω','0.8 Ω']
+      }
+    ]
+  },
+  {
+    id: 'liquids',
+    name: 'Жидкости',
+    name_pl: 'E-liquid',
+    icon: '',
+    img: 'images/cat-liquids.webp',
+    models: [
+      {
+        id: 'puffy',
+        name: 'PUFFY',
+        img: 'images/puffy.png',
+        flavors: ['Banana cherry','Berri kiwi','Black grape mint','Blueberry raspberry','Grape Raspberry Black Plum','Ice mojito mint','Lemon grapefruit','Pineapple coconut','Strawberry watermelon','Watermelon Bubble gum','Cherry Ice','Cranberry Grape','Energy Drink','Grape Melon','Gummy Bear','Raspberry Watermelon','Skittles Candy','Strawberry Lime','Tropical Fruits','Berry Cherry Cocktail']
+      },
+      {
+        id: 'vozol',
+        name: 'VOZOL PRIME',
+        img: 'images/vozol.png',
+        flavors: ['Berry','Berry Peach','Blueberry Ice','Blueberry Razz Lemon','Blueberry watermelon','Cherry Cola','Dragon Fruit Banana Cherry','Grape Ice','Kiwi Passion Fruite Guava','LavaFire','Lemon Lime','Love 777','Mint ice','Mixed Berries','Peach Ice','Perfume Lemon','Pineapple Passion Fruit Lime','Pomegranate lemonade','Purple candy','Sour Apple Ice','Strawberry Ice cream','Strawberry Kiwi','Strawberry Watermelon','Watermelon Bubble Gum','Watermelon Ice','Blue raspberry','Peach Mango Watermelon','Strawberry Ice']
+      },
+      {
+        id: 'elfliq',
+        name: 'ELF LIQ',
+        img: 'images/elfliq.png',
+        flavors: ['Apple Peach','Apple Pear','Apple Sour','Blackberry Lemon','Blackcurrant Aniseed','Blue Raz Ice','Blue Razz Lemonade','Blueberry','Blueberry Raspberry Pomegranate','Blueberry Rose Mint','Blueberry Sour Raspberry','Cherry','Cherry Cola','Cherry Lemon Peach','Cola','Cool Mint','Double Apple','Elf Jack','Elfbull Ice','Grape','Grape Cherry','Green Grape Rose','Jasmine Raspberry','Kiwi Passion Guava','Lemon Lime','Mango Peach','PB Cloud','Peach Ice','Pina Colada','Pineapple Ice','Pineapple Colada','Pink Grapefruit','Pink Lemonade','Pink Lemonade Soda','Raspberry Lychee','Rhubarb Snow','Sour Watermelon Gummy','Spearmint','Strawberry Banana','Strawberry Kiwi','Strawberry Raspberry Cherry Ice','Strawberry Cherry Lemon','Strawberry Ice','Strawberry Snow','Watermelon','Watermelon Cherry']
+      }
+    ]
+  }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentCat = null;
+let currentModel = null;
+let cart = {}; // key: `modelId::flavor` → { name, model, category, qty, price }
+let previousScreen = 's-cats';
+
+// ============================================================
+// TELEGRAM INIT
+// ============================================================
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s && s.classList.remove('active'));
+  const screen = document.getElementById(screenId);
+  if (screen) screen.classList.add('active');
+  if (screenId !== 's-flavors') {
+    const cu = document.getElementById('cart-upsell');
+    if (cu) { cu.style.display = 'none'; cu.textContent = ''; }
+  }
+  applyLang();
+  updateCartBar(screenId);
+}
+
+function updateCartBar(screenId) {
+  const bar = document.getElementById('cart-bar');
+  const hide = ['s-cart','s-order','s-success'].includes(screenId);
+  const total = cartTotal();
+  const count = cartCount();
+  if (!hide && count > 0) {
+    bar.classList.add('visible');
+    document.getElementById('cart-items-label').textContent = `${count} ${tr('pos_in_cart')}`;
+    document.getElementById('cart-total-label').textContent = formatPrice(total);
+    document.getElementById('cart-badge').textContent = count;
+  } else {
+    bar.classList.remove('visible');
+  }
 }
 
 // ============================================================
-// RENDER FUNCTIONS
+// RENDER CATEGORIES
 // ============================================================
-
 function renderCategories() {
-  document.getElementById('cat-grid').innerHTML = CATALOG.map(cat => `
-    <div class="cat-card" onclick="currentModel='${cat.id}'; goTo('s-models')">
-      <div class="cat-card-emoji">${cat.icon}</div>
-      <div class="cat-overlay">
-        <div class="cat-name">${cat.name}</div>
+  const grid = document.getElementById('cat-grid');
+  let html = catalog.map(cat => `
+    <div class="cat-card" onclick="openCategory('${cat.id}')">
+      <div class="cat-img">
+        ${cat.img ? `<img src="${cat.img}" alt="${cat.name}">` : `<div class="cat-img-icon">${cat.icon}</div>`}
+        <div class="cat-overlay">
+          <div class="cat-name">${lang === "pl" && cat.name_pl ? cat.name_pl : cat.name}</div>
+        </div>
+        <div class="cat-count-badge">${cat.models.length}</div>
       </div>
+    </div>
+  `).join('');
+  grid.innerHTML = html;
+}
+
+function openCategory(catId) {
+  currentCat = catalog.find(c => c.id === catId);
+  document.getElementById('models-title').textContent = (lang === 'pl' && currentCat.name_pl ? currentCat.name_pl : currentCat.name);
+  renderModels();
+  goTo('s-models');
+}
+
+// ============================================================
+// RENDER MODELS
+// ============================================================
+function renderModels() {
+  const list = document.getElementById('model-list');
+  list.innerHTML = currentCat.models.map(m => `
+    <div class="model-card" onclick="openModel('${m.id}')">
+      <div class="model-thumb">
+        ${m.img ? `<img src="${m.img}" alt="${m.name}">` : currentCat.icon}
+      </div>
+      <div class="model-info">
+        <div class="model-name">${m.name}</div>
+        ${m.desc ? `<div class="model-desc">${lang === 'pl' && m.desc_pl ? m.desc_pl : m.desc}</div>` : ''}
+        ${currentCat?.id === 'cartridges' ? '' : `<div class="model-count">${m.flavors.length} ${tr('flavor_label', m.flavors.length)}</div>`}
+      </div>
+      <div class="arrow">›</div>
     </div>
   `).join('');
 }
 
-function renderModels(catId) {
-  const cat = CATALOG.find(c => c.id === catId);
-  document.getElementById('model-header-title').textContent = cat.name;
-  document.getElementById('model-list').innerHTML = cat.models.map(model => `
-    <div class="model-card" onclick="renderFlavorsList('${model.id}', '${model.name}', ${model.price})">
-      <div class="model-thumb">${model.icon || '📦'}</div>
-      <div class="model-text">
-        <div class="model-name">${model.name}</div>
-        <div class="model-sub">${model.price} zł</div>
-      </div>
-    </div>
-  `).join('');
+function flavorWord(n) {
+  if (n === 1) return '';
+  if (n >= 2 && n <= 4) return 'а';
+  return 'ов';
 }
 
-function renderFlavorsList(modelId, modelName, price) {
-  currentModel = modelId;
-  document.getElementById('flavor-header-title').textContent = modelName;
-  document.getElementById('flavor-header-sub').textContent = price + ' zł';
+function openModel(modelId) {
+  currentModel = currentCat.models.find(m => m.id === modelId);
+  document.getElementById('flavors-title').textContent = currentModel.name;
+  document.getElementById('flavors-sub').textContent = lang === 'pl' && currentCat.name_pl ? currentCat.name_pl : currentCat.name;
+  document.getElementById('flavor-back-btn').onclick = () => goTo('s-models');
+  renderFlavors();
   goTo('s-flavors');
 }
 
+// ============================================================
+// RENDER FLAVOURS
+// ============================================================
 function renderFlavors() {
-  const model = CATALOG.flatMap(c => c.models).find(m => m.id === currentModel);
-  if (!model) return;
+  const list = document.getElementById('flavor-list');
+  // Use model's tiers if available, otherwise use category tiers
+  const tiers = currentModel?.tiers || PRICING[currentCat.id]?.tiers || [];
+  const hasTiers = tiers.length > 1;
+  const qtyInCat = catQty(currentCat.id);
+  const curPrice = getSmartPrice(currentCat.id, qtyInCat);
 
-  document.getElementById('flavor-list').innerHTML = model.flavors.map(flavor => {
-    const key = `${currentModel}::${flavor}`;
-    const stock = MAX_STOCK[key] || 0;
-    const cartItem = cart[key] || {};
-    const isUnavailable = stock <= 0;
+  // Smart tiers table
+  let tiersHtml = '';
+  if (hasTiers) {
+    const rows = tiers.map((t, i) => {
+      const [minQty, price] = t;
+      const nextMin = tiers[i+1]?.[0];
+      const label = nextMin ? `${minQty}–${nextMin-1} ${tr('pcs')}` : `${minQty}+ ${tr('pcs')}`;
+      const isActive = qtyInCat >= minQty && (!nextMin || qtyInCat < nextMin);
+      return `<div class="smart-tier-row${isActive?' active':''}">
+        <span>${label}</span>
+        <span class="tier-price">${price} ${tr('per_pcs')}</span>
+      </div>`;
+    }).join('');
+    tiersHtml = `<div class="smart-tiers">
+      <div class="smart-tiers-title">${tr('smart_cena_title')}</div>
+      ${rows}
+    </div>`;
+  } else {
+    const priceLabel = currentCat.id === 'cartridges' ? 
+      (lang === 'pl' ? 'Za 1 opakowanie' : 'За 1 упаковку') : 
+      tr('per_piece');
+    const priceExtra = currentCat.id === 'cartridges' ?
+      (currentModel.id === 'cart-xros' ? ' (4 картриджа)' : ' (3 картриджа)') :
+      '';
+    const priceExtraPl = currentCat.id === 'cartridges' ?
+      (currentModel.id === 'cart-xros' ? ' (4 kartridże)' : ' (3 kartridże)') :
+      '';
+    const finalLabel = currentCat.id === 'cartridges' ?
+      (lang === 'pl' ? priceLabel + priceExtraPl : priceLabel + priceExtra) :
+      priceLabel;
+    
+    tiersHtml = `<div class="smart-tiers">
+      <div class="smart-tiers-title">${tr('price_title')}</div>
+      <div class="smart-tier-row active"><span>${finalLabel}</span><span class="tier-price">${curPrice} zł</span></div>
+    </div>`;
+  }
 
+  list.innerHTML = tiersHtml + currentModel.flavors.map(flavor => {
+    const key = `${currentModel.id}::${flavor}`;
+    const qty = cart[key]?.qty || 0;
     return `
-      <div class="flavor-row ${cartItem.qty ? 'selected' : ''} ${isUnavailable ? 'unavailable' : ''}">
-        <div class="flavor-left">
-          <div class="flavor-name">${flavor}</div>
-          <div class="flavor-stock">Есть: ${stock} шт</div>
+      <div class="flavor-row ${qty > 0 ? 'selected' : ''}" id="row-${safeId(key)}">
+        <div class="flavor-name">${flavor}</div>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="changeQty('${escQ(key)}', -1)">−</button>
+          <div class="qty-val" id="qty-${safeId(key)}">${qty}</div>
+          <button class="qty-btn" onclick="changeQty('${escQ(key)}', 1)">+</button>
         </div>
-        <div class="flavor-right">
-          ${!isUnavailable ? `
-            <button class="qty-btn" onclick="changeQty('${key}', ${model.id}, '${flavor}', ${model.price}, -1)">−</button>
-            <div class="qty-val">${cartItem.qty || 0}</div>
-            <button class="qty-btn" onclick="changeQty('${key}', '${currentModel}', '${flavor}', ${model.price}, 1)">+</button>
-          ` : '<span style="color: var(--text2); font-size: 12px;">Нет в наличии</span>'}
-        </div>
-      </div>
-    `;
+      </div>`;
   }).join('');
+
+  updateFlavorSmartBadge();
 }
 
-function changeQty(key, modelId, flavor, price, delta) {
-  const stock = MAX_STOCK[key] || 0;
+function safeId(key) { return key.replace(/[^a-zA-Z0-9]/g, '_'); }
+function escQ(key) { return key.replace(/'/g, "\\'"); }
+
+function changeQty(key, delta) {
+  const flavor = key.split('::')[1];
   const current = cart[key]?.qty || 0;
   const newQty = Math.max(0, current + delta);
 
-  if (newQty > stock) {
-    showModal('Недостаточно запасов', `Доступно только ${stock} шт`);
-    return;
+  // Проверка на максимум 200 единиц в корзине
+  if (newQty > current) { // если добавляем
+    const totalQty = cartCount();
+    if (totalQty + (newQty - current) > 200) {
+      showLimitAlert();
+      return;
+    }
   }
 
   if (newQty === 0) {
     delete cart[key];
   } else {
-    cart[key] = { model: modelId, flavor, qty: newQty, price };
+    cart[key] = {
+      key,
+      flavor,
+      model: currentModel.id,
+      modelName: currentModel.name,
+      category: currentCat.name,
+      catId: currentCat.id,
+      qty: newQty
+    };
   }
 
-  renderFlavors();
-  updateCartBar();
+  const sid = safeId(key);
+  const qEl = document.getElementById('qty-' + sid);
+  const rEl = document.getElementById('row-' + sid);
+  if (qEl) qEl.textContent = newQty;
+  if (rEl) rEl.classList.toggle('selected', newQty > 0);
+
+  // Update smart price hint on flavor screen
+  updateFlavorSmartBadge();
+  updateCartBar('s-flavors');
 }
 
+function updateFlavorSmartBadge() {
+  if (!currentCat) return;
+
+  const qty = catQty(currentCat.id);
+  const price = getSmartPrice(currentCat.id, qty);
+  const tiers = currentModel?.tiers || PRICING[currentCat.id]?.tiers || [];
+  const hasTiers = tiers.length > 1;
+
+  // Upsell in cart bar
+  const cartUpsell = document.getElementById('cart-upsell');
+  if (!cartUpsell || !hasTiers || qty === 0) {
+    if (cartUpsell) { cartUpsell.style.display = 'none'; cartUpsell.textContent = ''; }
+    return;
+  }
+  const nextTier = tiers.find(([minQty]) => minQty > qty);
+  if (!nextTier) { cartUpsell.style.display = 'none'; cartUpsell.textContent = ''; return; }
+
+  const [nextMin, nextPrice] = nextTier;
+  const need = nextMin - qty;
+  const savingsPerUnit = price - nextPrice;
+  const totalSavings = nextMin * savingsPerUnit;
+
+  if (need <= 5) {
+    cartUpsell.style.display = 'block';
+    cartUpsell.innerHTML = tr('upsell', need, nextPrice, totalSavings);
+  } else {
+    cartUpsell.style.display = 'none';
+    cartUpsell.textContent = '';
+  }
+}
+
+// ============================================================
+// CART
+// ============================================================
+function cartCount() { return Object.values(cart).reduce((s, i) => s + i.qty, 0); }
+
+document.getElementById('cart-open-btn').onclick = () => {
+  previousScreen = document.querySelector('.screen.active')?.id || 's-cats';
+  renderCart();
+  goTo('s-cart');
+};
+
+document.getElementById('cart-back-btn').onclick = () => goTo(previousScreen);
+
 function renderCart() {
-  const items = Object.entries(cart);
+  const content = document.getElementById('cart-content');
+  const items = Object.values(cart);
+
   if (items.length === 0) {
-    document.getElementById('cart-list').innerHTML = '<div style="text-align: center; color: var(--text2); padding: 40px;">Корзина пуста</div>';
+    content.innerHTML = `
+      <div class="cart-empty">
+        <div class="cart-empty-icon"></div>
+        <div>${tr('cart_empty')}</div>
+        <div style="margin-top:8px;font-size:13px;color:var(--text2)">${tr('cart_empty_sub')}</div>
+      </div>`;
     return;
   }
 
-  document.getElementById('cart-list').innerHTML = items.map(([key, item]) => `
-    <div class="cart-item-row">
-      <div class="cart-item-name">${item.model} - ${item.flavor}</div>
-      <div class="cart-item-meta">
-        <div class="cart-item-qty">
-          <button class="cart-item-qty-btn" onclick="changeQty('${key}', '${item.model}', '${item.flavor}', ${item.price}, -1)">−</button>
-          <span>${item.qty}</span>
-          <button class="cart-item-qty-btn" onclick="changeQty('${key}', '${item.model}', '${item.flavor}', ${item.price}, 1)">+</button>
-        </div>
-        <div class="cart-item-price">${item.qty * item.price} zł</div>
-      </div>
-    </div>
-  `).join('');
+  // Group by catId
+  const grouped = {};
+  items.forEach(item => {
+    if (!grouped[item.catId]) grouped[item.catId] = [];
+    grouped[item.catId].push(item);
+  });
+
+  const totalQtyForPricing = getTotalQtyForPricing();
+
+  let html = '';
+  Object.entries(grouped).forEach(([catId, catItems]) => {
+    const cat = catalog.find(c => c.id === catId);
+    const catQtyTotal = catItems.reduce((sum, item) => sum + item.qty, 0);
+
+    html += `<div class="section-title">${lang === 'pl' && cat?.name_pl ? cat.name_pl : (cat?.name || catId)} — ${catQtyTotal} ${tr('pcs')}</div>`;
+
+    catItems.sort((a, b) => a.modelName.localeCompare(b.modelName));
+    catItems.forEach(item => {
+      // Найти модель для получения её тиров
+      let model = null;
+      for (const cat of catalog) {
+        const m = cat.models.find(md => md.id === item.model);
+        if (m) {
+          model = m;
+          break;
+        }
+      }
+      
+      // Считаем цену для этого товара
+      let itemPrice = 0;
+      if (catId === 'pods' || catId === 'cartridges') {
+        // Фиксированные цены для подов и картриджей
+        itemPrice = PRICING[catId]?.base || 0;
+      } else {
+        // Smart Cena для одноразок и жидкостей - применяем по общему количеству
+        const tiers = model?.tiers || PRICING[catId]?.tiers || [];
+        itemPrice = tiers[0]?.[1] || 0;
+        
+        for (const [minQty, unitPrice] of tiers) {
+          if (totalQtyForPricing >= minQty) itemPrice = unitPrice;
+        }
+      }
+      
+      const itemTotal = item.qty * itemPrice;
+
+      html += `
+        <div class="cart-item-row" id="citem-${safeId(item.key)}">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="flex:1;min-width:0">
+              <div class="cart-item-name" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.modelName} — ${item.flavor}</div>
+            </div>
+            <div class="qty-ctrl" style="flex-shrink:0">
+              <button class="qty-btn" onclick="cartChangeQty('${escQ(item.key)}', '${catId}')">−</button>
+              <div class="qty-val" id="cqty-${safeId(item.key)}">${item.qty}</div>
+              <button class="qty-btn" onclick="cartChangeQty('${escQ(item.key)}', '${catId}', 1)">+</button>
+            </div>
+            <button class="cart-item-del" onclick="removeCartItem('${escQ(item.key)}')">✕</button>
+          </div>
+        </div>`;
+    });
+  });
+
+  const total = cartTotal();
+  const savings = cartSavings();
+  const count = cartCount();
+
+  html += `<div class="cart-summary">`;
+  html += `<div class="cart-summary-row" style="font-size:15px;font-weight:700;color:var(--text)"><span>${tr('positions')}</span><span>${count} ${tr('pcs')}</span></div>`;
+  if (savings > 0) {
+    html += `<div class="cart-summary-row"><span>${tr('discount')}</span><span style="color:#22c55e;font-weight:700">−${savings} zł</span></div>`;
+  }
+  html += `<div class="cart-summary-total"><span>${tr('total')}</span><span>${formatPrice(total)}</span></div></div>`;
+  html += `<div style="display:flex;gap:10px;margin-top:14px">
+    <button style="flex:1;background:var(--surface);border:1.5px solid var(--border);color:var(--text);border-radius:12px;padding:14px 10px;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent" ontouchstart="this.style.background='var(--surface2)'" ontouchend="this.style.background='var(--surface)'" onclick="goTo('s-cats')">${tr('add_more')}</button>
+    <button style="flex:1;background:var(--accent);border:none;color:#fff;border-radius:12px;padding:14px 10px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s;-webkit-tap-highlight-color:transparent" ontouchstart="this.style.opacity='.85'" ontouchend="this.style.opacity='1'" onclick="openOrder()">${tr('checkout')}</button>
+  </div>`;
+  html += `<div style="height:10px"></div>`;
+
+  content.innerHTML = html;
 }
 
-function getDeliveryCost() {
-  return orderDelivery === 'paczkomat' ? 5 : 10;
+function removeCartItem(key) {
+  delete cart[key];
+  renderCart();
+  updateCartBar('s-cart');
+}
+
+function cartChangeQty(key, catId, delta) {
+  // called as (key, catId) for minus, (key, catId, 1) for plus
+  const d = (delta === undefined) ? -1 : 1;
+  if (!cart[key]) return;
+  const newQty = Math.max(0, cart[key].qty + d);
+  
+  // Проверка на максимум 200 единиц в корзине
+  if (d > 0 && newQty > cart[key].qty) { // если добавляем
+    const totalQty = cartCount();
+    if (totalQty + 1 > 200) {
+      showLimitAlert();
+      return;
+    }
+  }
+  
+  if (newQty === 0) { removeCartItem(key); return; }
+  cart[key].qty = newQty;
+  renderCart();
+}
+
+// ============================================================
+// ORDER
+// ============================================================
+let orderPayment = null; // 'cod' | 'crypto'
+let orderDelivery = null; // 'paczkomat' | 'kurier'
+
+function openOrder() {
+  console.log('openOrder called');
+  orderPayment = null;
+  orderDelivery = null;
+  renderOrderForm();
+  goTo('s-order');
 }
 
 function renderOrderForm() {
+  const items = Object.values(cart);
+
+  // Group by model, calculate price per model group
+  const byModel = {};
+  items.forEach(i => {
+    if (!byModel[i.modelName]) byModel[i.modelName] = { model: i.modelName, catId: i.catId, flavors: [] };
+    byModel[i.modelName].flavors.push(i);
+  });
+
+  const totalQtyForPricing = getTotalQtyForPricing();
+
+  let itemsHtml = '';
+  Object.values(byModel).forEach(group => {
+    const modelQty = group.flavors.reduce((s, f) => s + f.qty, 0);
+    
+    // Найти модель для получения её тиров
+    let model = null;
+    for (const cat of catalog) {
+      const m = cat.models.find(md => {
+        const modelName = lang === 'pl' && md?.name_pl ? md.name_pl : md?.name;
+        return modelName === group.model;
+      });
+      if (m) {
+        model = m;
+        break;
+      }
+    }
+    
+    // Считаем цену для этой модели
+    let unitPrice = 0;
+    if (group.catId === 'pods' || group.catId === 'cartridges') {
+      // Фиксированные цены для подов и картриджей
+      unitPrice = PRICING[group.catId]?.base || 0;
+    } else {
+      // Smart Cena для одноразок и жидкостей - применяем по общему количеству
+      const tiers = model?.tiers || PRICING[group.catId]?.tiers || [];
+      unitPrice = tiers[0]?.[1] || 0;
+      
+      for (const [minQty, uPrice] of tiers) {
+        if (totalQtyForPricing >= minQty) unitPrice = uPrice;
+      }
+    }
+    
+    const modelTotal = modelQty * unitPrice;
+    itemsHtml += `<div class="order-model-group">
+      <div class="order-model-header">
+        <span class="order-model-name">${group.model}</span>
+        <span class="order-model-meta">${modelQty} ${tr('pcs')} — ${modelTotal} zł</span>
+      </div>
+      ${group.flavors.map(f => `
+        <div class="order-flavor-row">
+          <span>${f.flavor}</span>
+          <span>${f.qty} ${tr('pcs')}</span>
+        </div>`).join('')}
+    </div>`;
+  });
+
+  const savings = cartSavings();
+  const delivery = getDeliveryCost();
+  const savingsHtml = savings > 0
+    ? `<div style="display:flex;justify-content:space-between;font-size:13px;color:#22c55e;margin-top:6px"><span>${tr('saving')}</span><span>−${savings} zł</span></div>`
+    : '';
+
+  let html = `
+    <div class="order-summary">
+      <div class="order-summary-title">${tr('your_order')}</div>
+      ${itemsHtml}
+      ${savingsHtml}
+      <div class="order-summary-total" style="font-size:14px;font-weight:400;color:var(--text2);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><span>${tr('delivery_cost')}</span><span>${delivery} zł</span></div>
+      <div class="order-summary-total"><span>${tr('total_to_pay')}</span><span>${formatPrice(cartTotal() + delivery)}</span></div>
+    </div>
+
+    <div class="form-section-title">${tr('payment_section')}</div>
+    <div class="selector-group">
+      <button class="selector-btn ${orderPayment==='cod'?'selected':''}" onclick="selectPayment('cod')">
+        <span class="sel-icon"></span>${tr('pay_cod')}
+      </button>
+      <button class="selector-btn ${orderPayment==='crypto'?'selected':''}" onclick="selectPayment('crypto')">
+        <span class="sel-icon"></span>${tr('pay_crypto')}
+      </button>
+    </div>`;
+
+  if (orderPayment === 'crypto') {
+    html += `
+      <div style="background:var(--surface2);border-radius:var(--radius);padding:16px;margin-bottom:16px;text-align:center;color:var(--text2);font-size:14px;line-height:1.6">
+        ${tr('crypto_hint')}
+      </div>
+      <button class="btn-primary" onclick="submitCrypto()">${tr('write_manager_btn')}</button>`;
+  }
+
+  if (orderPayment === 'cod') {
+    html += `
+      <div class="form-section-title">${tr('recipient')}</div>
+      <div class="form-group">
+        <label>${tr('lbl_name')}</label>
+        <input type="text" id="f-name" placeholder="Jan Kowalski" value="${document.getElementById('f-name')?.value||''}">
+      </div>
+      <div class="form-group">
+        <label>Numer telefonu *</label>
+        <input type="tel" id="f-phone" placeholder="+48 (___) ___-___" value="${document.getElementById('f-phone')?.value||''}" oninput="formatPolishPhone(this)">
+        <div class="hint">${tr('phone_hint')}</div>
+      </div>
+
+      <div class="form-section-title">${tr('delivery_section')}</div>
+      <div class="selector-group">
+        <button class="selector-btn ${orderDelivery==='paczkomat'?'selected':''}" onclick="selectDelivery('paczkomat')">
+          <span class="sel-icon"></span>Paczkomat InPost
+        </button>
+        <button class="selector-btn ${orderDelivery==='kurier'?'selected':''}" onclick="selectDelivery('kurier')">
+          <span class="sel-icon"></span>Kurier
+        </button>
+      </div>`;
+
+    if (orderDelivery === 'paczkomat') {
+      html += `
+        <div class="form-group">
+          <label>${tr('lbl_city')}</label>
+          <input type="text" id="f-miasto" placeholder="Warszawa" value="${document.getElementById('f-miasto')?.value||''}">
+        </div>
+        <div class="form-group">
+          <label>Kod paczkomatu *</label>
+          <input type="text" id="f-kodpacz" placeholder="WAW01N" value="${document.getElementById('f-kodpacz')?.value||''}">
+          <div class="hint">${tr('paczkomat_hint')}</div>
+        </div>`;
+    }
+
+    if (orderDelivery === 'kurier') {
+      html += `
+        <div class="form-group">
+          <label>${tr('lbl_city')}</label>
+          <input type="text" id="f-miasto" placeholder="Warszawa" value="${document.getElementById('f-miasto')?.value||''}">
+        </div>
+        <div class="form-group">
+          <label>${tr('lbl_zip')}</label>
+          <input type="text" id="f-kod" placeholder="00-001" value="${document.getElementById('f-kod')?.value||''}">
+        </div>
+        <div class="form-group">
+          <label>${tr('lbl_street')}</label>
+          <input type="text" id="f-ulica" placeholder="ul. Marszałkowska" value="${document.getElementById('f-ulica')?.value||''}">
+        </div>
+        <div class="form-group">
+          <label>${tr('lbl_building')}</label>
+          <input type="text" id="f-budynek" placeholder="12" value="${document.getElementById('f-budynek')?.value||''}">
+        </div>
+        <div class="form-group">
+          <label>${tr('lbl_flat')}</label>
+          <input type="text" id="f-lokal" placeholder="${tr('lbl_flat_ph')}" value="${document.getElementById('f-lokal')?.value||''}">
+        </div>`;
+    }
+
+    if (orderDelivery) {
+      html += `<button class="btn-primary" style="margin-top:8px" onclick="submitCOD()">${tr('confirm_btn')}</button>`;
+    }
+  }
+
+  html += '<div style="height:16px"></div>';
+  document.getElementById('order-form-content').innerHTML = html;
+}
+
+function selectPayment(type) {
+  orderPayment = type;
+  orderDelivery = null;
+  renderOrderForm();
+}
+
+function selectDelivery(type) {
+  // save current input values before re-render
+  orderDelivery = type;
+  renderOrderForm();
+}
+
+function formatPolishPhone(input) {
+  let v = input.value.replace(/\D/g, '');
+  if (v.startsWith('48')) v = v.slice(2);
+  v = v.slice(0, 9);
+  let formatted = '+48 ';
+  if (v.length > 0) formatted += '(' + v.slice(0, 3);
+  if (v.length >= 3) formatted += ') ' + v.slice(3, 6);
+  if (v.length >= 6) formatted += '-' + v.slice(6, 9);
+  input.value = formatted;
+}
+
+function getDeliveryCost() {
+  return cartTotal() >= 2500 ? 40 : 25;
+}
+
+function buildOrderLines() {
+  // Group items by model, return formatted lines
+  const byModel = {};
+  Object.values(cart).forEach(i => {
+    if (!byModel[i.modelName]) byModel[i.modelName] = [];
+    byModel[i.modelName].push(i);
+  });
+  let lines = '';
+  Object.entries(byModel).forEach(([model, items]) => {
+    lines += `${model}\n`;
+    items.forEach(i => { lines += `${i.flavor} x${i.qty}\n`; });
+    lines += '\n';
+  });
+  return lines;
+}
+
+function submitCrypto() {
   const total = cartTotal();
   const delivery = getDeliveryCost();
+  const count = cartCount();
+  const orderLines = buildOrderLines();
 
-  document.getElementById('order-form').innerHTML = `
-    <div class="form-group">
-      <label class="form-label">Способ оплаты</label>
-      <label class="form-radio">
-        <input type="radio" name="payment" value="crypto" onchange="orderPayment='crypto'">
-        <span>💳 Крипто</span>
-      </label>
-      <label class="form-radio">
-        <input type="radio" name="payment" value="cod" onchange="orderPayment='cod'" checked>
-        <span>💵 При получении</span>
-      </label>
-    </div>
+  let msg = `${tr('msg_greeting')}\n\n`;
+  msg += `${tr('pay_label_crypto')}\n`;
+  msg += `${lang === 'pl' ? 'ZAMÓWIENIE' : 'ЗАКАЗ'}\n\n`;
+  msg += orderLines;
+  msg += tr('msg_total', count) + '\n';
+  msg += `CENA: ${total} Zł\n\n`;
+  msg += `Cena dostawy: ${delivery} Zł\n`;
+  msg += `Razem do zapłaty: ${total}+${delivery}=${total + delivery} Zł`;
 
-    <div class="form-group">
-      <label class="form-label">Способ доставки</label>
-      <label class="form-radio">
-        <input type="radio" name="delivery" value="paczkomat" onchange="orderDelivery='paczkomat'">
-        <span>📦 Paczkomat (5 zł)</span>
-      </label>
-      <label class="form-radio">
-        <input type="radio" name="delivery" value="kurier" onchange="orderDelivery='kurier'" checked>
-        <span>🚚 Куриер (10 zł)</span>
-      </label>
-    </div>
-
-    <div class="form-group" id="delivery-fields"></div>
-
-    <div style="background: var(--surface2); padding: 12px; border-radius: var(--radius); margin-bottom: 16px;">
-      <div style="font-size: 12px; color: var(--text2); margin-bottom: 4px;">Сумма товаров:</div>
-      <div style="font-weight: 700; margin-bottom: 8px;">${total} zł</div>
-      <div style="font-size: 12px; color: var(--text2); margin-bottom: 4px;">Доставка:</div>
-      <div style="font-weight: 700; margin-bottom: 8px;" id="delivery-cost">${delivery} zł</div>
-      <div style="border-top: 1px solid var(--border); padding-top: 8px; font-size: 14px; font-weight: 700;">
-        ИТОГО: ${total + delivery} zł
-      </div>
-    </div>
-
-    <button class="btn btn-primary btn-block" onclick="submitOrder()">Оформить заказ</button>
-  `;
-
-  renderDeliveryFields();
-  updateDeliveryCost();
+  const encoded = encodeURIComponent(msg);
+  document.getElementById('manager-link').href = `https://t.me/${MANAGER_USERNAME}?text=${encoded}`;
+  document.getElementById('success-sub').textContent = tr('success_sub_crypto');
+  saveOrderToHistory('crypto');
+  goTo('s-success');
 }
 
-function renderDeliveryFields() {
-  const fields = document.getElementById('delivery-fields');
-  fields.innerHTML = `
-    <label class="form-label">Имя и Фамилия *</label>
-    <input type="text" class="form-input" id="f-name" placeholder="John Doe">
-    <label class="form-label">Телефон *</label>
-    <input type="tel" class="form-input" id="f-phone" placeholder="+48 (543) 543-543">
-    <label class="form-label">Город *</label>
-    <input type="text" class="form-input" id="f-miasto" placeholder="Warszawa">
-  `;
-
-  if (orderDelivery === 'paczkomat') {
-    fields.innerHTML += `
-      <label class="form-label">Код пачкомата (буквы и цифры) *</label>
-      <input type="text" class="form-input" id="f-kodpacz" placeholder="WA123">
-    `;
-  } else {
-    fields.innerHTML += `
-      <label class="form-label">Индекс *</label>
-      <input type="text" class="form-input" id="f-kod" placeholder="00-001">
-      <label class="form-label">Улица *</label>
-      <input type="text" class="form-input" id="f-ulica" placeholder="Pulaskiego">
-      <label class="form-label">Дом *</label>
-      <input type="text" class="form-input" id="f-budynek" placeholder="123">
-      <label class="form-label">Квартира</label>
-      <input type="text" class="form-input" id="f-lokal" placeholder="45">
-    `;
-  }
-}
-
-function updateDeliveryCost() {
-  const cost = getDeliveryCost();
-  document.getElementById('delivery-cost').textContent = cost + ' zł';
-}
-
-function submitOrder() {
+function submitCOD() {
   const name = (document.getElementById('f-name')?.value || '').trim();
   const phone = (document.getElementById('f-phone')?.value || '').trim();
   const miasto = (document.getElementById('f-miasto')?.value || '').trim();
 
   if (!name || !phone || !miasto) {
-    showModal('Заполните все поля');
+    showModal(tr('fill_required'));
     return;
   }
 
   const total = cartTotal();
   const delivery = getDeliveryCost();
   const count = cartCount();
-  const orderLines = Object.entries(cart).map(([k, item]) => `${item.model} (${item.flavor}) x${item.qty}`).join('\n');
+  const orderLines = buildOrderLines();
 
-  let msg = `Привет! У меня есть заказ:\n\n`;
-  msg += orderLines + '\n\n';
-  msg += `Товаров: ${count}\n`;
-  msg += `Сумма: ${total} zł\n\n`;
-  msg += `Имя: ${name}\n`;
-  msg += `Телефон: ${phone}\n`;
-  msg += `Город: ${miasto}\n`;
+  let msg = `${tr('msg_greeting')}\n\n`;
+  msg += `${tr('pay_label_cod')}\n`;
+  msg += `${lang === 'pl' ? 'ZAMÓWIENIE' : 'ЗАКАЗ'}\n\n`;
+  msg += orderLines;
+  msg += tr('msg_total', count) + '\n';
+  msg += `CENA: ${total} Zł\n\n`;
+  msg += `Imię i Nazwisko: ${name}\n`;
+  msg += `Telefon: ${phone}\n`;
 
   if (orderDelivery === 'paczkomat') {
-    const kod = (document.getElementById('f-kodpacz')?.value || '').trim();
-    if (!kod) { showModal('Введите код пачкомата'); return; }
-    msg += `Доставка: Paczkomat\nКод: ${kod}\n`;
+    const kodpacz = (document.getElementById('f-kodpacz')?.value || '').trim();
+    if (!kodpacz) { showModal(tr('fill_kod')); return; }
+    if (!/[a-zA-Z]/.test(kodpacz)) { showModal(tr('fill_kod')); return; }
+    msg += `Dostawa: Paczkomat InPost\n`;
+    msg += `Miasto: ${miasto}\n`;
+    msg += `Kod paczkomatu: ${kodpacz}\n`;
   } else {
     const kod = (document.getElementById('f-kod')?.value || '').trim();
     const ulica = (document.getElementById('f-ulica')?.value || '').trim();
     const budynek = (document.getElementById('f-budynek')?.value || '').trim();
     const lokal = (document.getElementById('f-lokal')?.value || '').trim();
-    if (!kod || !ulica || !budynek) { showModal('Заполните все поля адреса'); return; }
-    msg += `Доставка: Kurier\nПочтовый индекс: ${kod}\nУлица: ${ulica} ${budynek}${lokal ? ' / ' + lokal : ''}\n`;
+    if (!kod || !ulica || !budynek) { showModal(tr('fill_required')); return; }
+    msg += `Dostawa: Kurier\n`;
+    msg += `Miasto: ${miasto}\n`;
+    msg += `Kod pocztowy: ${kod}\n`;
+    msg += `Ulica: ${ulica} ${budynek}${lokal ? ' / ' + lokal : ''}\n`;
   }
 
-  msg += `\nДоставка: ${delivery} zł\nИТОГО: ${total + delivery} zł`;
+  msg += `\nCena dostawy: ${delivery} Zł\n`;
+  msg += `Razem do zapłaty: ${total}+${delivery}=${total + delivery} Zł`;
 
   const encoded = encodeURIComponent(msg);
   document.getElementById('manager-link').href = `https://t.me/${MANAGER_USERNAME}?text=${encoded}`;
-  document.getElementById('success-sub').textContent = `Менеджер свяжется с вами для подтверждения`;
-  
-  cart = {};
-  updateCartBar();
+  document.getElementById('success-sub').textContent = tr('success_sub_cod');
+  saveOrderToHistory('cod');
   goTo('s-success');
 }
 
-function saveOrderToHistory(paymentMethod) {
-  const storage = window.Telegram?.WebApp?.CloudStorage;
+// ============================================================
+// ORDER HISTORY
+// ============================================================
+function saveOrderToHistory(paymentMethod, orderData) {
   const order = {
     id: Date.now(),
-    items: Object.values(cart),
+    date: new Date().toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+    paymentMethod,
+    items: Object.values(cart).map(i => ({ flavor: i.flavor, model: i.model, qty: i.qty })),
     total: cartTotal(),
     delivery: getDeliveryCost(),
-    payment: paymentMethod,
-    date: new Date().toLocaleString()
+    grandTotal: cartTotal() + getDeliveryCost()
   };
-  
+
+  const storage = window.Telegram?.WebApp?.CloudStorage;
   if (storage) {
     storage.getItem('orders', (err, val) => {
       const orders = val ? JSON.parse(val) : [];
       orders.unshift(order);
-      storage.setItem('orders', JSON.stringify(orders.slice(0, 20)), (err) => {});
+      storage.setItem('orders', JSON.stringify(orders.slice(0, 20)));
     });
   } else {
     try {
@@ -700,28 +1896,6 @@ function saveOrderToHistory(paymentMethod) {
       localStorage.setItem('vl_orders', JSON.stringify(orders.slice(0, 20)));
     } catch(e) {}
   }
-}
-
-function renderHistory(orders = []) {
-  if (orders.length === 0) {
-    document.getElementById('history-list').innerHTML = '<div style="text-align: center; color: var(--text2); padding: 40px;">История пуста</div>';
-    return;
-  }
-  
-  document.getElementById('history-list').innerHTML = orders.map(order => {
-    const payIcon = order.payment === 'crypto' ? '💳' : '💵';
-    const payLabel = order.payment === 'crypto' ? 'Крипто' : 'При получении';
-    return `
-      <div class="cart-item-row">
-        <div style="font-weight: 700; margin-bottom: 6px;">${order.date}</div>
-        <div style="font-size: 13px; color: var(--text2); margin-bottom: 4px;">Товаров: ${order.items.length}</div>
-        <div style="display: flex; justify-content: space-between;">
-          <span>${payIcon} ${payLabel}</span>
-          <span style="font-weight: 700;">${order.total + order.delivery} zł</span>
-        </div>
-      </div>
-    `;
-  }).join('');
 }
 
 function openHistory() {
@@ -736,40 +1910,147 @@ function openHistory() {
       renderHistory(orders);
     } catch(e) { renderHistory([]); }
   }
+  goTo('s-history');
 }
 
-function goToPage(page) {
-  if (page === 'delivery') {
-    document.getElementById('info-title').textContent = tr('info_delivery_title');
-    let content = tr('info_delivery_title') + '\n\n';
-    content += tr('info_delivery_cod') + '\n';
-    content += tr('info_delivery_paczkomat');
-  } else if (page === 'payment') {
-    document.getElementById('info-title').textContent = tr('info_payment_title');
-    let content = tr('info_payment_title') + '\n\n';
-    content += tr('info_payment_crypto');
-  } else if (page === 'returns') {
-    document.getElementById('info-title').textContent = tr('info_returns_title');
-    let content = tr('info_returns_title') + '\n\n';
-    content += tr('info_returns_step1') + '\n';
-    content += tr('info_returns_step2');
+function renderHistory(orders) {
+  const content = document.getElementById('history-content');
+  if (!orders || orders.length === 0) {
+    content.innerHTML = `
+      <div class="history-empty">
+        <div class="history-empty-icon"></div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:8px">${tr('no_orders')}</div>
+        <div style="font-size:13px">${tr('no_orders_sub')}</div>
+      </div>`;
+    return;
   }
-  
-  goTo('s-info');
+
+  content.innerHTML = orders.map((order, idx) => {
+    const byModel = {};
+    order.items.forEach(i => {
+      if (!byModel[i.model]) byModel[i.model] = [];
+      byModel[i.model].push(`${i.flavor} ×${i.qty}`);
+    });
+    const itemsText = Object.entries(byModel)
+      .map(([model, flavors]) => `<b>${model}:</b> ${flavors.join(', ')}`)
+      .join('<br>');
+    const payIcon = '';
+    const payLabel = order.paymentMethod === 'crypto' ? tr('pay_label_crypto') : tr('pay_label_cod');
+
+    return `<div class="history-card">
+      <div class="history-card-header">
+        <span class="history-order-num">${tr('order_num')} #${orders.length - idx}</span>
+        <span class="history-date">${order.date}</span>
+      </div>
+      <div class="history-items">${itemsText}</div>
+      <div class="history-footer">
+        <span class="history-payment">${payIcon} ${payLabel}</span>
+        <span class="history-total">${order.grandTotal} zł</span>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function newOrder() {
   cart = {};
-  screenStack = [];
+  orderPayment = null;
+  orderDelivery = null;
   goTo('s-cats');
 }
 
 // ============================================================
 // INIT
 // ============================================================
+renderCategories();
+renderAllModels();
 
-goTo('s-lang');
-</script>
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+function switchTab(tab) {
+  const catGrid = document.getElementById('cat-grid');
+  const allList = document.getElementById('all-models-list');
+  document.getElementById('tab-cats').classList.toggle('active', tab === 'cats');
+  document.getElementById('tab-all').classList.toggle('active', tab === 'all');
+  catGrid.style.display = tab === 'cats' ? 'grid' : 'none';
+  allList.style.display = tab === 'all' ? 'flex' : 'none';
+}
+
+function renderAllModels() {
+  const list = document.getElementById('all-models-list');
+  let html = '';
+  catalog.forEach(cat => {
+    html += `<div class="section-title">${lang === 'pl' && cat.name_pl ? cat.name_pl : cat.name}</div>`;
+    cat.models.forEach(m => {
+      html += `
+        <div class="model-card" onclick="openModelFromAll('${cat.id}','${m.id}')">
+          <div class="model-thumb">
+            ${m.img ? `<img src="${m.img}" alt="${m.name}">` : cat.icon}
+          </div>
+          <div class="model-info">
+            <div class="model-name">${m.name}</div>
+            ${m.desc ? `<div class="model-desc">${lang === 'pl' && m.desc_pl ? m.desc_pl : m.desc}</div>` : ''}
+            ${currentCat?.id === 'cartridges' ? '' : `<div class="model-count">${m.flavors.length} ${tr('flavor_label', m.flavors.length)}</div>`}
+          </div>
+          <div class="arrow">›</div>
+        </div>`;
+    });
+  });
+  list.innerHTML = html;
+}
+
+function openModelFromAll(catId, modelId) {
+  currentCat = catalog.find(c => c.id === catId);
+  currentModel = currentCat.models.find(m => m.id === modelId);
+  document.getElementById('flavors-title').textContent = currentModel.name;
+  document.getElementById('flavors-sub').textContent = lang === 'pl' && currentCat.name_pl ? currentCat.name_pl : currentCat.name;
+  document.getElementById('flavor-back-btn').onclick = () => goTo('s-cats');
+  renderFlavors();
+  goTo('s-flavors');
+}
+
+  function showModal(text) {
+    document.getElementById('modal-text').textContent = text;
+    document.getElementById('s-modal').classList.add('active');
+  }
+
+  function closeModal() {
+    document.getElementById('s-modal').classList.remove('active');
+  }
+
+  function goToPage(page) {
+    let content = '';
+    
+    if (page === 'delivery') {
+      content = `${tr('info_delivery_title')}\n\n`;
+      content += `${tr('info_delivery_paczkomat')}\n\n`;
+      content += `${tr('info_delivery_zabka')}\n\n`;
+      content += `${tr('info_delivery_courier')}\n\n`;
+      content += `${tr('info_delivery_paczkopunkt')}`;
+    } else if (page === 'payment') {
+      content = `${tr('info_payment_title')}\n\n`;
+      content += `${tr('info_payment_courier')}\n`;
+      content += `${tr('info_payment_courier_methods')}\n\n`;
+      content += `${tr('info_payment_pickup')}\n`;
+      content += `${tr('info_payment_pickup_methods')}\n\n`;
+      content += `${tr('info_payment_crypto')}\n`;
+      content += `${tr('info_payment_crypto_methods')}`;
+    } else if (page === 'returns') {
+      content = `${tr('info_returns_title')}\n\n`;
+      content += `${tr('info_returns_step1')}\n`;
+      content += `${tr('info_returns_step2')}`;
+    } else if (page === 'faq') {
+      content = 'FAQ - Coming soon';
+    }
+    
+    showModal(content);
+  }
+
+  function contactManager() {
+    window.open('https://t.me/Mangr_pl', '_blank');
+  }
+  
+  </script>
 
 </body>
 </html>
