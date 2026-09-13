@@ -667,13 +667,13 @@ async function verifyAndCreateOrder(items, buyer, shipping) {
 
     if (!res.ok) {
       if (data.error === 'insufficient_stock') {
-        return { ok: false, message: `К сожалению, товара "${data.sku}" осталось только ${data.available} шт. Уменьшите количество.` };
+        return { ok: false, message: tr('stock_checkout_error', data.sku) };
       }
-      return { ok: false, message: 'Не удалось оформить заказ. Попробуйте ещё раз.' };
+      return { ok: false, message: tr('stock_order_failed') };
     }
     return { ok: true };
   } catch (e) {
-    return { ok: false, message: 'Ошибка соединения с сервером. Проверьте интернет и попробуйте снова.' };
+    return { ok: false, message: tr('stock_connection_error') };
   }
 }
 
@@ -702,9 +702,8 @@ async function loadStockForModel(model) {
 
     const stockEl = document.getElementById('stock-' + safeId(key));
     if (stockEl) {
-      stockEl.textContent = stockCache[sku] > 0
-        ? `Осталось: ${stockCache[sku]} шт`
-        : 'Нет в наличии';
+      // Точное число остатка клиенту не показываем — только факт, что товара нет
+      stockEl.textContent = stockCache[sku] <= 0 ? tr('stock_out') : '';
       stockEl.classList.toggle('out-of-stock', stockCache[sku] <= 0);
     }
   }));
@@ -803,6 +802,13 @@ const TRANS = {
     info_returns_title: 'Возврат и замена',
     info_returns_step1: '1. Напиши менеджеру в Telegram и опиши проблему.',
     info_returns_step2: '2. Отправь фото или видео, показывающее дефект товара.',
+
+    stock_out: 'Нет в наличии',
+    stock_limit_partial: 'Больше этого вкуса, к сожалению, нет в наличии.',
+    stock_limit_zero: 'Этот вкус временно закончился.',
+    stock_checkout_error: sku => `К сожалению, товара "${sku}" уже не хватает в нужном количестве. Уменьшите количество и попробуйте снова.`,
+    stock_order_failed: 'Не удалось оформить заказ. Попробуйте ещё раз.',
+    stock_connection_error: 'Ошибка соединения с сервером. Проверьте интернет и попробуйте снова.',
   },
   pl: {
     home: 'Strona główna',
@@ -889,6 +895,13 @@ const TRANS = {
     info_returns_title: 'Zwrot i wymiana',
     info_returns_step1: '1. Napisz menedżerowi na Telegramie i opisz problem.',
     info_returns_step2: '2. Wyślij zdjęcie lub wideo pokazujące wadę produktu.',
+
+    stock_out: 'Wyprzedane',
+    stock_limit_partial: 'Niestety, nie mamy już tyle tego smaku.',
+    stock_limit_zero: 'Ten smak został wyprzedany.',
+    stock_checkout_error: sku => `Niestety, produktu "${sku}" zabrakło w takiej ilości. Zmniejsz liczbę i spróbuj ponownie.`,
+    stock_order_failed: 'Nie udało się złożyć zamówienia. Spróbuj ponownie.',
+    stock_connection_error: 'Błąd połączenia z serwerem. Sprawdź internet i spróbuj ponownie.',
   }
 };
 
@@ -1443,8 +1456,8 @@ function changeQty(key, delta) {
     const available = stockCache[sku];
     if (available !== undefined && newQty > available) {
       showModal(available > 0
-        ? `Доступно только ${available} шт этого вкуса.`
-        : 'Этот вкус временно закончился.');
+        ? tr('stock_limit_partial')
+        : tr('stock_limit_zero'));
       return;
     }
   }
