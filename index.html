@@ -75,6 +75,8 @@
   .flavor-row { background: var(--surface); border: 1px solid var(--text); border-radius: var(--radius); padding: 12px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: border-color .15s; }
   .flavor-row.selected { border-color: var(--accent2); }
   .flavor-name { font-size: 14px; flex: 1; }
+  .stock-hint { font-size: 11px; color: var(--text2); white-space: nowrap; }
+  .stock-hint.out-of-stock { color: #ff6b6b; }
   .qty-ctrl { display: flex; align-items: center; gap: 0; }
   .qty-btn { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--surface2); color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; flex-shrink: 0; }
   .qty-btn:active { background: var(--accent); }
@@ -628,10 +630,92 @@ setTimeout(() => {
 const MANAGER_USERNAME = 'Mangr_pl';
 
 // ============================================================
+// СКЛАД (KeyCRM через прокси-сервер) — ПИЛОТ
+// ============================================================
+const PROXY_URL = 'https://snitchshop-proxy.roman-kleinow.workers.dev';
+
+// Карта: ключ товара в корзине -> артикул (SKU) в KeyCRM.
+// Пока отслеживается только один тестовый товар.
+// Остальные вкусы добавим сюда по мере заведения в KeyCRM.
+const SKU_MAP = {
+  'elfd3::Watermelon ice': 'elfd3-watermelon-ice'
+};
+
+// Проверяет остаток и создаёт заказ в KeyCRM для товаров, у которых есть SKU в SKU_MAP.
+// Если в корзине нет отслеживаемых товаров — пропускает проверку (для остальных вкусов пока нет склада).
+async function verifyAndCreateOrder(items, buyer, shipping) {
+  const products = items
+    .filter(i => SKU_MAP[i.key])
+    .map(i => ({
+      name: `${i.modelName} ${i.flavor}`,
+      sku: SKU_MAP[i.key],
+      quantity: i.qty,
+      price: 0
+    }));
+
+  if (products.length === 0) {
+    return { ok: true }; // нет отслеживаемых товаров в заказе — пропускаем
+  }
+
+  try {
+    const res = await fetch(`${PROXY_URL}/order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ buyer, shipping, products })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (data.error === 'insufficient_stock') {
+        return { ok: false, message: `К сожалению, товара "${data.sku}" осталось только ${data.available} шт. Уменьшите количество.` };
+      }
+      return { ok: false, message: 'Не удалось оформить заказ. Попробуйте ещё раз.' };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, message: 'Ошибка соединения с сервером. Проверьте интернет и попробуйте снова.' };
+  }
+}
+
+// Кэш остатков: sku -> количество доступно
+let stockCache = {};
+
+// Загружает актуальные остатки для отслеживаемых вкусов текущей модели
+// и обновляет подпись "осталось N шт" под каждым таким вкусом.
+async function loadStockForModel(model) {
+  const trackedFlavors = model.flavors.filter(flavor => SKU_MAP[`${model.id}::${flavor}`]);
+  if (trackedFlavors.length === 0) return;
+
+  await Promise.all(trackedFlavors.map(async (flavor) => {
+    const key = `${model.id}::${flavor}`;
+    const sku = SKU_MAP[key];
+    try {
+      console.log('Запрашиваю остаток для', sku, 'по адресу', `${PROXY_URL}/stock?sku=${encodeURIComponent(sku)}`);
+      const res = await fetch(`${PROXY_URL}/stock?sku=${encodeURIComponent(sku)}`);
+      const data = await res.json();
+      console.log('Ответ прокси:', data);
+      stockCache[sku] = data.quantity ?? 0;
+    } catch (e) {
+      console.error('Не удалось получить остаток для', sku, e);
+      return; // не удалось получить остаток — пропускаем, ограничение не применится
+    }
+
+    const stockEl = document.getElementById('stock-' + safeId(key));
+    if (stockEl) {
+      stockEl.textContent = stockCache[sku] > 0
+        ? `Осталось: ${stockCache[sku]} шт`
+        : 'Нет в наличии';
+      stockEl.classList.toggle('out-of-stock', stockCache[sku] <= 0);
+    }
+  }));
+}
+
+// ============================================================
 // TRANSLATIONS
 // ============================================================
 let lang = null;
 try { lang = localStorage.getItem('vl_lang') || null; } catch(e) {}
+
 
 const TRANS = {
   ru: {
@@ -1332,6 +1416,7 @@ function renderFlavors() {
     return `
       <div class="flavor-row ${qty > 0 ? 'selected' : ''}" id="row-${safeId(key)}">
         <div class="flavor-name">${flavor}</div>
+        <div class="stock-hint" id="stock-${safeId(key)}"></div>
         <div class="qty-ctrl">
           <button class="qty-btn" onclick="changeQty('${escQ(key)}', -1)">−</button>
           <div class="qty-val" id="qty-${safeId(key)}">${qty}</div>
@@ -1341,6 +1426,7 @@ function renderFlavors() {
   }).join('');
 
   updateFlavorSmartBadge();
+  loadStockForModel(currentModel);
 }
 
 function safeId(key) { return key.replace(/[^a-zA-Z0-9]/g, '_'); }
@@ -1350,6 +1436,18 @@ function changeQty(key, delta) {
   const flavor = key.split('::')[1];
   const current = cart[key]?.qty || 0;
   const newQty = Math.max(0, current + delta);
+
+  // Проверка остатка на складе (только для отслеживаемых товаров)
+  if (delta > 0 && SKU_MAP[key]) {
+    const sku = SKU_MAP[key];
+    const available = stockCache[sku];
+    if (available !== undefined && newQty > available) {
+      showModal(available > 0
+        ? `Доступно только ${available} шт этого вкуса.`
+        : 'Этот вкус временно закончился.');
+      return;
+    }
+  }
 
   // Проверка на максимум 200 единиц в корзине
   if (newQty > current) { // если добавляем
@@ -1789,13 +1887,24 @@ function submitCrypto() {
   goTo('s-success');
 }
 
-function submitCOD() {
+async function submitCOD() {
   const name = (document.getElementById('f-name')?.value || '').trim();
   const phone = (document.getElementById('f-phone')?.value || '').trim();
   const miasto = (document.getElementById('f-miasto')?.value || '').trim();
 
   if (!name || !phone || !miasto) {
     showModal(tr('fill_required'));
+    return;
+  }
+
+  // Проверка склада + резервирование в KeyCRM (пилот — только товары из SKU_MAP)
+  const stockCheck = await verifyAndCreateOrder(
+    Object.values(cart),
+    { full_name: name, phone },
+    { shipping_address_city: miasto }
+  );
+  if (!stockCheck.ok) {
+    showModal(stockCheck.message);
     return;
   }
 
