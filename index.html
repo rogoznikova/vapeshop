@@ -635,10 +635,81 @@ const MANAGER_USERNAME = 'Mangr_pl';
 const PROXY_URL = 'https://snitchshop-proxy.roman-kleinow.workers.dev';
 
 // Карта: ключ товара в корзине -> артикул (SKU) в KeyCRM.
-// Пока отслеживается только один тестовый товар.
-// Остальные вкусы добавим сюда по мере заведения в KeyCRM.
+// Заведены модели: Elf Bar D3 25k, Elf Bar BC 45k, XROS MINI 5, OXVA XLIM GO 2,
+// CARTRIDGE XROS 3 ML, CARTRIDGE OXVA 3 ML.
+// Остальные (Moon 40K, Lush King, Puffy, Vozol, Elf Liq) добавим по мере заведения в KeyCRM.
 const SKU_MAP = {
-  'elfd3::Watermelon ice': 'elfd3-watermelon-ice'
+  // elfd3
+  'elfd3::Alpine mint': 'elfd3-alpine-mint',
+  'elfd3::Apple peach': 'elfd3-apple-peach',
+  'elfd3::Blackberry cranberry': 'elfd3-blackberry-cranberry',
+  'elfd3::Blackberry pomegrn cherry': 'elfd3-blackberry-pomegrn-cherry',
+  'elfd3::Blue razz ice': 'elfd3-blue-razz-ice',
+  'elfd3::Blueberry ice': 'elfd3-blueberry-ice',
+  'elfd3::Blueberry raspberry': 'elfd3-blueberry-raspberry',
+  'elfd3::Double apple': 'elfd3-double-apple',
+  'elfd3::Grape cherry': 'elfd3-grape-cherry',
+  'elfd3::Grape ice': 'elfd3-grape-ice',
+  'elfd3::Grape mint': 'elfd3-grape-mint',
+  'elfd3::Kiwi passion fruit guava': 'elfd3-kiwi-passion-fruit-guava',
+  'elfd3::Kiwi pineapple ice': 'elfd3-kiwi-pineapple-ice',
+  'elfd3::Lemon lime': 'elfd3-lemon-lime',
+  'elfd3::Peach berry': 'elfd3-peach-berry',
+  'elfd3::Peach ice': 'elfd3-peach-ice',
+  'elfd3::Pineapple mango ice': 'elfd3-pineapple-mango-ice',
+  'elfd3::Strawb raspberry cherry': 'elfd3-strawb-raspberry-cherry',
+  'elfd3::Strawberry grape': 'elfd3-strawberry-grape',
+  'elfd3::Strawberry ice': 'elfd3-strawberry-ice',
+  'elfd3::Strawberry watermelon': 'elfd3-strawberry-watermelon',
+  'elfd3::Vmt': 'elfd3-vmt',
+  'elfd3::Watermelon bubblegum': 'elfd3-watermelon-bubblegum',
+  'elfd3::Watermelon ice': 'elfd3-watermelon-ice',
+  'elfd3::Watermelon lemon': 'elfd3-watermelon-lemon',
+  'elfd3::Mango peach watermelon': 'elfd3-mango-peach-watermelon',
+  // elfbc45k
+  'elfbc45k::Blackberry Lemonade': 'elfbc45k-blackberry-lemonade',
+  'elfbc45k::Blackcurrant Grape': 'elfbc45k-blackcurrant-grape',
+  'elfbc45k::Blue Razz Ice': 'elfbc45k-blue-razz-ice',
+  'elfbc45k::Cherry Peach Soda': 'elfbc45k-cherry-peach-soda',
+  'elfbc45k::Double Mint': 'elfbc45k-double-mint',
+  'elfbc45k::Grapefruit Green Tea': 'elfbc45k-grapefruit-green-tea',
+  'elfbc45k::Kiwi Pineapple Peach': 'elfbc45k-kiwi-pineapple-peach',
+  'elfbc45k::Lemon Lime': 'elfbc45k-lemon-lime',
+  'elfbc45k::Pear Soda': 'elfbc45k-pear-soda',
+  'elfbc45k::Pomegranate Burst': 'elfbc45k-pomegranate-burst',
+  'elfbc45k::Pomegranate Raspberry Lime': 'elfbc45k-pomegranate-raspberry-lime',
+  'elfbc45k::Red Raspberry Strawberry': 'elfbc45k-red-raspberry-strawberry',
+  'elfbc45k::Sour Apple Kiwi': 'elfbc45k-sour-apple-kiwi',
+  'elfbc45k::Strawberry Grapefruit': 'elfbc45k-strawberry-grapefruit',
+  'elfbc45k::Watermelon Ice': 'elfbc45k-watermelon-ice',
+  // xrosmini
+  'xrosmini::Pastel Crystal': 'xrosmini-pastel-crystal',
+  'xrosmini::Rose Red': 'xrosmini-rose-red',
+  'xrosmini::Carbon Black': 'xrosmini-carbon-black',
+  'xrosmini::Purple': 'xrosmini-purple',
+  'xrosmini::Titanium silver': 'xrosmini-titanium-silver',
+  'xrosmini::Black': 'xrosmini-black',
+  'xrosmini::Flowing Blue': 'xrosmini-flowing-blue',
+  'xrosmini::Flowing Green': 'xrosmini-flowing-green',
+  'xrosmini::Flowing Pink': 'xrosmini-flowing-pink',
+  'xrosmini::Sky Blue': 'xrosmini-sky-blue',
+  // oxva
+  'oxva::Pink Ripple': 'oxva-pink-ripple',
+  'oxva::Black Carbon': 'oxva-black-carbon',
+  'oxva::Metal Silver': 'oxva-metal-silver',
+  'oxva::Light Brown Shadow': 'oxva-light-brown-shadow',
+  'oxva::Metal Blue': 'oxva-metal-blue',
+  'oxva::Black Shadow': 'oxva-black-shadow',
+  'oxva::Green Ripple': 'oxva-green-ripple',
+  'oxva::Blue Ripple': 'oxva-blue-ripple',
+  // cart-xros
+  'cart-xros::0.4 Ω': 'cart-xros-0-4-ohm',
+  'cart-xros::0.6 Ω': 'cart-xros-0-6-ohm',
+  'cart-xros::0.8 Ω': 'cart-xros-0-8-ohm',
+  // cart-oxva
+  'cart-oxva::0.4 Ω': 'cart-oxva-0-4-ohm',
+  'cart-oxva::0.6 Ω': 'cart-oxva-0-6-ohm',
+  'cart-oxva::0.8 Ω': 'cart-oxva-0-8-ohm',
 };
 
 // Проверяет остаток и создаёт заказ в KeyCRM для товаров, у которых есть SKU в SKU_MAP.
