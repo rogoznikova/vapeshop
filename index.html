@@ -751,33 +751,37 @@ async function verifyAndCreateOrder(items, buyer, shipping) {
 // Кэш остатков: sku -> количество доступно
 let stockCache = {};
 
-// Загружает актуальные остатки для отслеживаемых вкусов текущей модели
+// Загружает актуальные остатки для отслеживаемых вкусов текущей модели ОДНИМ запросом
 // и обновляет подпись "осталось N шт" под каждым таким вкусом.
 async function loadStockForModel(model) {
   const trackedFlavors = model.flavors.filter(flavor => SKU_MAP[`${model.id}::${flavor}`]);
   if (trackedFlavors.length === 0) return;
 
-  await Promise.all(trackedFlavors.map(async (flavor) => {
+  const skus = trackedFlavors.map(flavor => SKU_MAP[`${model.id}::${flavor}`]);
+
+  let results = {};
+  try {
+    const res = await fetch(`${PROXY_URL}/stock-bulk?skus=${encodeURIComponent(skus.join(','))}`);
+    const data = await res.json();
+    results = data.results || {};
+  } catch (e) {
+    console.error('Не удалось получить остатки для модели', model.id, e);
+    return; // не удалось получить остатки — пропускаем, ограничение не применится
+  }
+
+  trackedFlavors.forEach(flavor => {
     const key = `${model.id}::${flavor}`;
     const sku = SKU_MAP[key];
-    try {
-      console.log('Запрашиваю остаток для', sku, 'по адресу', `${PROXY_URL}/stock?sku=${encodeURIComponent(sku)}`);
-      const res = await fetch(`${PROXY_URL}/stock?sku=${encodeURIComponent(sku)}`);
-      const data = await res.json();
-      console.log('Ответ прокси:', data);
-      stockCache[sku] = data.quantity ?? 0;
-    } catch (e) {
-      console.error('Не удалось получить остаток для', sku, e);
-      return; // не удалось получить остаток — пропускаем, ограничение не применится
-    }
+    const qty = results[sku] ?? 0;
+    stockCache[sku] = qty;
 
     const stockEl = document.getElementById('stock-' + safeId(key));
     if (stockEl) {
       // Точное число остатка клиенту не показываем — только факт, что товара нет
-      stockEl.textContent = stockCache[sku] <= 0 ? tr('stock_out') : '';
-      stockEl.classList.toggle('out-of-stock', stockCache[sku] <= 0);
+      stockEl.textContent = qty <= 0 ? tr('stock_out') : '';
+      stockEl.classList.toggle('out-of-stock', qty <= 0);
     }
-  }));
+  });
 }
 
 // ============================================================
