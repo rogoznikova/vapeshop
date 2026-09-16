@@ -1953,7 +1953,19 @@ function buildOrderLines() {
   return lines;
 }
 
-function submitCrypto() {
+async function submitCrypto() {
+  // Проверка склада + резервирование в KeyCRM (те же отслеживаемые товары, что и в SKU_MAP).
+  // Имя/телефон в этом способе оплаты не собираются — менеджер получит их позже в переписке.
+  const stockCheck = await verifyAndCreateOrder(
+    Object.values(cart),
+    { full_name: 'Криптовалюта — ожидает данные от менеджера', phone: '' },
+    {}
+  );
+  if (!stockCheck.ok) {
+    showModal(stockCheck.message);
+    return;
+  }
+
   const total = cartTotal();
   const delivery = getDeliveryCost();
   const count = cartCount();
