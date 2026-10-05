@@ -76,7 +76,7 @@
   .flavor-row.selected { border-color: var(--accent2); }
   .flavor-name { font-size: 14px; flex: 1; }
   .stock-hint { font-size: 11px; color: var(--text2); white-space: nowrap; }
-  .stock-hint.out-of-stock { color: #ff6b6b; }
+  .stock-hint.out-of-stock { color: #c98b8b; }
   .qty-ctrl { display: flex; align-items: center; gap: 0; }
   .qty-btn { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--surface2); color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; flex-shrink: 0; }
   .qty-btn:active { background: var(--accent); }
@@ -465,7 +465,7 @@
           <span data-i18n="footer_returns">Возврат и замена</span>
           <span style="font-size:16px;color:var(--text)">›</span>
         </a>
-        <a href="https://t.me/Mangr_pl" target="_blank" class="footer-link">
+        <a href="https://t.me/Mangr_pl" target="_blank" class="footer-link" onclick="trackEvent('manager_click', { src: 'footer' })">
           <span data-i18n="footer_manager">Контакт с менеджером</span>
           <span style="font-size:16px;color:var(--text)">›</span>
         </a>
@@ -557,7 +557,7 @@
     <div class="success-icon"></div>
     <div class="success-title" data-i18n="order_done">Заказ оформлен!</div>
     <div class="success-sub" id="success-sub">Для подтверждения вашего заказа напишите менеджеру — он всё проверит и отправит посылку.</div>
-    <a class="btn-manager" id="manager-link" href="#" target="_blank">
+    <a class="btn-manager" id="manager-link" href="#" target="_blank" onclick="trackEvent('manager_click', { src: 'order' })">
       <span>💬</span> <span data-i18n="write_manager">Написать менеджеру</span>
     </a>
     <button class="btn-secondary" onclick="newOrder()" data-i18n="new_order">Сделать новый заказ</button>
@@ -712,16 +712,45 @@ const SKU_MAP = {
   'cart-oxva::0.8 Ω': 'cart-oxva-0-8-ohm',
 };
 
+// Считает реальную цену за штуку для одной позиции корзины — та же логика "умных цен",
+// что и в cartTotal(), но для одного товара. Нужна, чтобы передавать в KeyCRM настоящую цену,
+// а не заглушку.
+function computeItemUnitPrice(item, totalQtyForPricing) {
+  let model = null;
+  let catId = null;
+  for (const cat of catalog) {
+    const m = cat.models.find(md => md.id === item.model);
+    if (m) {
+      model = m;
+      catId = cat.id;
+      break;
+    }
+  }
+  if (!model) return 0;
+
+  if (catId === 'pods' || catId === 'cartridges') {
+    return PRICING[catId]?.base || 0;
+  }
+
+  const tiers = model.tiers || PRICING[catId]?.tiers || [];
+  let price = tiers[0]?.[1] || 0;
+  for (const [minQty, unitPrice] of tiers) {
+    if (totalQtyForPricing >= minQty) price = unitPrice;
+  }
+  return price;
+}
+
 // Проверяет остаток и создаёт заказ в KeyCRM для товаров, у которых есть SKU в SKU_MAP.
 // Если в корзине нет отслеживаемых товаров — пропускает проверку (для остальных вкусов пока нет склада).
 async function verifyAndCreateOrder(items, buyer, shipping) {
+  const totalQtyForPricing = getTotalQtyForPricing();
   const products = items
     .filter(i => SKU_MAP[i.key])
     .map(i => ({
       name: `${i.modelName} ${i.flavor}`,
       sku: SKU_MAP[i.key],
       quantity: i.qty,
-      price: 0
+      price: computeItemUnitPrice(i, totalQtyForPricing)
     }));
 
   if (products.length === 0) {
@@ -732,7 +761,7 @@ async function verifyAndCreateOrder(items, buyer, shipping) {
     const res = await fetch(`${PROXY_URL}/order`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ buyer, shipping, products })
+      body: JSON.stringify({ buyer, shipping, products, campaign: getCampaign(), uid: getUid() })
     });
     const data = await res.json();
 
@@ -1360,6 +1389,74 @@ const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); }
 
 // ============================================================
+// ТРЕКИНГ РЕКЛАМНЫХ КАМПАНИЙ
+// Ссылка вида t.me/snitchsh0p_bot/app?startapp=НАЗВАНИЕ_КАМПАНИИ
+// ============================================================
+function readStartParam() {
+  let p = tg?.initDataUnsafe?.start_param || '';
+  if (!p) {
+    try {
+      const m = (location.hash + '&' + location.search).match(/tgWebAppStartParam=([^&]+)/);
+      if (m) p = decodeURIComponent(m[1]);
+    } catch (e) {}
+  }
+  return /^[A-Za-z0-9_-]{1,64}$/.test(p) ? p : '';
+}
+const SESSION_CAMPAIGN = readStartParam();
+const CAMPAIGN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // помним рекламную метку 30 дней
+
+// Если человек пришёл по рекламной ссылке — запоминаем метку, чтобы покупка
+// через несколько дней (открыл по кнопке меню) всё равно записалась на эту рекламу.
+if (SESSION_CAMPAIGN) {
+  try { localStorage.setItem('sh_campaign', SESSION_CAMPAIGN + '|' + Date.now()); } catch (e) {}
+}
+
+function getCampaign() {
+  if (SESSION_CAMPAIGN) return SESSION_CAMPAIGN;
+  try {
+    const raw = localStorage.getItem('sh_campaign') || '';
+    const [c, t] = raw.split('|');
+    if (c && Date.now() - Number(t) < CAMPAIGN_TTL_MS) return c;
+  } catch (e) {}
+  return 'direct';
+}
+
+// Анонимный идентификатор посетителя (случайный, без привязки к Telegram-аккаунту)
+let _memUid = null;
+function getUid() {
+  try {
+    let u = localStorage.getItem('sh_uid');
+    if (!u) {
+      u = 'w' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+      localStorage.setItem('sh_uid', u);
+    }
+    return u;
+  } catch (e) {
+    if (!_memUid) _memUid = 'm' + Math.random().toString(36).slice(2, 10);
+    return _memUid;
+  }
+}
+
+function trackEvent(event, extra, campaignOverride) {
+  try {
+    fetch(`${PROXY_URL}/track`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify({
+        event,
+        campaign: campaignOverride || getCampaign(),
+        uid: getUid(),
+        meta: extra ? JSON.stringify(extra).slice(0, 300) : ''
+      }),
+      keepalive: true
+    }).catch(() => {});
+  } catch (e) {}
+}
+
+// «Перешёл по ссылке» — считаем именно по метке этой сессии (или direct, если метки нет)
+trackEvent('app_open', null, SESSION_CAMPAIGN || 'direct');
+
+// ============================================================
 // NAVIGATION
 // ============================================================
 function goTo(screenId) {
@@ -1546,6 +1643,8 @@ function changeQty(key, delta) {
     }
   }
 
+  if (delta > 0) trackEvent('add_to_cart', { item: key });
+
   if (newQty === 0) {
     delete cart[key];
   } else {
@@ -1608,6 +1707,7 @@ function updateFlavorSmartBadge() {
 function cartCount() { return Object.values(cart).reduce((s, i) => s + i.qty, 0); }
 
 document.getElementById('cart-open-btn').onclick = () => {
+  trackEvent('cart_open');
   previousScreen = document.querySelector('.screen.active')?.id || 's-cats';
   renderCart();
   goTo('s-cart');
@@ -1721,7 +1821,16 @@ function cartChangeQty(key, catId, delta) {
   const d = (delta === undefined) ? -1 : 1;
   if (!cart[key]) return;
   const newQty = Math.max(0, cart[key].qty + d);
-  
+
+  // Проверка остатка на складе (для отслеживаемых товаров)
+  if (d > 0 && SKU_MAP[key]) {
+    const available = stockCache[SKU_MAP[key]];
+    if (available !== undefined && newQty > available) {
+      showModal(available > 0 ? tr('stock_limit_partial') : tr('stock_limit_zero'));
+      return;
+    }
+  }
+
   // Проверка на максимум 200 единиц в корзине
   if (d > 0 && newQty > cart[key].qty) { // если добавляем
     const totalQty = cartCount();
@@ -1743,6 +1852,7 @@ let orderPayment = null; // 'cod' | 'crypto'
 let orderDelivery = null; // 'paczkomat' | 'kurier'
 
 function openOrder() {
+  trackEvent('checkout_start');
   console.log('openOrder called');
   orderPayment = null;
   orderDelivery = null;
@@ -1965,6 +2075,7 @@ async function submitCrypto() {
     showModal(stockCheck.message);
     return;
   }
+  trackEvent('order_submitted', { pay: 'crypto', total: cartTotal() });
 
   const total = cartTotal();
   const delivery = getDeliveryCost();
@@ -2007,6 +2118,7 @@ async function submitCOD() {
     showModal(stockCheck.message);
     return;
   }
+  trackEvent('order_submitted', { pay: 'cod', total: cartTotal() });
 
   const total = cartTotal();
   const delivery = getDeliveryCost();
