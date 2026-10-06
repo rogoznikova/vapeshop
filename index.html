@@ -1119,7 +1119,7 @@ const PRICING = {
   disposable: { tiers: [[1,70],[3,65],[5,60],[10,55],[20,48],[50,45],[100,40]], base: 70 },
   pods:        { tiers: [[1,80]], base: 80 },
   cartridges:  { tiers: [[1,60]], base: 60 },
-  liquids:     { tiers: [[1,50],[3,45],[5,40],[10,35],[20,32],[50,26],[100,24]], base: 50 }
+  liquids:     { tiers: [[1,50],[3,45],[5,40],[10,35],[20,32],[30,30],[40,28],[50,26],[100,24]], base: 50 }
 };
 
 function getSmartPrice(catId, totalQty) {
@@ -1277,25 +1277,32 @@ const catalog = [
         name: 'Elf Bar D3 25k',
         img: 'images/model-d3.webp',
         tiers: [[1,65],[3,60],[5,55],[10,50],[20,43],[50,40],[100,38]],
-        flavors: ['Alpine mint','Apple peach','Blackberry cranberry','Blackberry pomegrn cherry','Blue razz ice','Blueberry ice','Blueberry raspberry','Double apple','Grape cherry','Grape ice','Grape mint','Kiwi passion fruit guava','Kiwi pineapple ice','Lemon lime','Peach berry','Peach ice','Pineapple mango ice','Strawb raspberry cherry','Strawberry grape','Strawberry ice','Strawberry watermelon','Vmt','Watermelon bubblegum','Watermelon ice','Watermelon lemon','Mango peach watermelon']
+        flavors: ['Alpine mint','Apple peach','Blackberry cranberry','Blackberry pomegrn cherry','Blue razz ice','Blueberry ice','Blueberry raspberry','Double apple','Grape cherry','Grape ice','Grape mint','Kiwi passion fruit guava','Kiwi pineapple ice','Lemon lime','Mango peach watermelon','Peach berry','Peach ice','Pineapple mango ice','Strawb raspberry cherry','Strawberry grape','Strawberry ice','Strawberry watermelon','Vmt','Watermelon bubblegum','Watermelon ice','Watermelon lemon']
       },
       {
         id: 'elfmoon',
         name: 'Elf Bar Moon 40K',
         img: 'images/model-moon.webp',
-        flavors: ['Cherry Watermelon','Grape Ice','Grape Raspberry','Kiwi passion fruit guava','Lime Cola','Mango Peach Watermelon','Miami mint','Pomegranate Burst','Watermelon Ice','Blue razz ice','Lemon lime','Peach ice']
+        flavors: ['Blue razz ice','Cherry Watermelon','Grape Ice','Grape Raspberry','Kiwi passion fruit guava','Lemon lime','Lime Cola','Mango Peach Watermelon','Miami mint','Peach ice','Pomegranate Burst','Watermelon Ice']
       },
       {
         id: 'lushking',
         name: 'Lush King 40k',
         img: 'images/model-lush.webp',
-        flavors: ['Black Currant Pineapple','Milky Oolong','Cucumber Lime','Starfruit Grape','Cactus Lime','Cherry Burst','Mountain Mint','Sour Pineapple Ice','Tropical Mango','Sour Strawberry Dragonfruit','Pomegranate Burst','Sour Apple ice','Black Grape Ice','Blue Razz Ice','Watermelon ice']
+        flavors: ['Black Currant Pineapple','Black Grape Ice','Blue Razz Ice','Cactus Lime','Cherry Burst','Cucumber Lime','Milky Oolong','Mountain Mint','Pomegranate Burst','Sour Apple ice','Sour Pineapple Ice','Sour Strawberry Dragonfruit','Starfruit Grape','Tropical Mango','Watermelon ice']
       },
       {
         id: 'elfbc45k',
         name: 'Elf Bar BC 45k',
         img: 'images/model-bc45k.webp',
         flavors: ['Blackberry Lemonade','Blackcurrant Grape','Blue Razz Ice','Cherry Peach Soda','Double Mint','Grapefruit Green Tea','Kiwi Pineapple Peach','Lemon Lime','Pear Soda','Pomegranate Burst','Pomegranate Raspberry Lime','Red Raspberry Strawberry','Sour Apple Kiwi','Strawberry Grapefruit','Watermelon Ice']
+      },
+      {
+        id: 'maskking',
+        name: 'Maskking Extre 100k',
+        img: 'images/model-maskking.webp',
+        tiers: [[1,80],[3,75],[5,70],[10,65],[20,60],[50,50],[100,44]],
+        flavors: ['Alaska Ice','Banana Taffy Freeze','Black Ice Dragonfruit','Blue Razz Ice','Cheesecake','Frozen Pina Colada','Fruity Cool Strawberry','Grape Slush','Juicy Peach Ice','Mexico Mango','Miami Mint','Omg B Burst','Sour Apple Ice','Sour Triple Berry','Strawberry B-Burst','Strawberry Watermelon','Triple Cherry','Watermelon Ice','White Gummy Ice','Wild Cherry Slush','Zesty Grapefruit']
       }
     ]
   },
@@ -1356,19 +1363,19 @@ const catalog = [
         id: 'puffy',
         name: 'PUFFY',
         img: 'images/puffy.png',
-        flavors: ['Banana cherry','Berri kiwi','Black grape mint','Blueberry raspberry','Grape Raspberry Black Plum','Ice mojito mint','Lemon grapefruit','Pineapple coconut','Strawberry watermelon','Watermelon Bubble gum','Cherry Ice','Cranberry Grape','Energy Drink','Grape Melon','Gummy Bear','Raspberry Watermelon','Skittles Candy','Strawberry Lime','Tropical Fruits','Berry Cherry Cocktail']
+        flavors: ['Apple Grape Blueberry','Banana cherry','Berri kiwi','Berry Cherry Cocktail','Berry cherry cranberry','Black grape mint','Blackcurrant slush','Blue razz berry','Blueberry Pomegranate','Blueberry raspberry','Cherry Ice','Cider berries','Cola Orange','Cranberry Grape','Currant cherry','Energy Drink','Fall tea','Grape','Grape Melon','Grape Raspberry Black Plum','Gummy Bear','Ice latte','Ice mojito mint','Juicy nectar','Lemon grapefruit','Lemon Mint','Lemon Peach Passion','Lychee passion','Mixed berries','Peach Blueberry Ice','Pineapple coconut','Raspberry Watermelon','Red lemonade','Rose Milk','Sangria','Skittles Candy','Sour Strawberry','Strawberry dragon fruit','Strawberry Lime','Strawberry watermelon','Sweet Orange Grapefruit','Tropic punch','Tropical Fruits','Turbo Mint','Vitamin','Watermelon Bubble gum','Watermelon raspberry']
       },
       {
         id: 'vozol',
         name: 'VOZOL PRIME',
         img: 'images/vozol.png',
-        flavors: ['Berry','Berry Peach','Blueberry Ice','Blueberry Razz Lemon','Blueberry watermelon','Cherry Cola','Dragon Fruit Banana Cherry','Grape Ice','Kiwi Passion Fruite Guava','LavaFire','Lemon Lime','Love 777','Mint ice','Mixed Berries','Peach Ice','Perfume Lemon','Pineapple Passion Fruit Lime','Pomegranate lemonade','Purple candy','Sour Apple Ice','Strawberry Ice cream','Strawberry Kiwi','Strawberry Watermelon','Watermelon Bubble Gum','Watermelon Ice','Blue raspberry','Peach Mango Watermelon','Strawberry Ice']
+        flavors: ['Berry','Berry Peach','Blue Cotton Candy','Blue raspberry','Blueberry Ice','Blueberry Razz Lemon','Blueberry watermelon','Cherry Cola','Cherry lemon peach','Cherry Vanilla Cream','Cola Gummies','Dragon Fruit Banana Cherry','Frozen Grape Soda','Grape cherry','Grape Ice','Kiwi Passion Fruite Guava','LavaFire','Lemon Grapefruit','Lemon Lime','Love 777','Lychee Mint','Mint ice','Mixed Berries','Peach Ice','Peach Mango Watermelon','Perfume Lemon','Pineapple Passion Fruit Lime','Pomegranate lemonade','Purple candy','Sour Apple Ice','Strawberry Ice','Strawberry Ice cream','Strawberry Kiwi','Strawberry Watermelon','Vanilla cream tobacco','Watermelon Bubble Gum','Watermelon Ice','Watermelon Plum','White Peach Jasmine']
       },
       {
         id: 'elfliq',
         name: 'ELF LIQ',
         img: 'images/elfliq.png',
-        flavors: ['Apple Peach','Apple Pear','Apple Sour','Blackberry Lemon','Blackcurrant Aniseed','Blue Raz Ice','Blue Razz Lemonade','Blueberry','Blueberry Raspberry Pomegranate','Blueberry Rose Mint','Blueberry Sour Raspberry','Cherry','Cherry Cola','Cherry Lemon Peach','Cola','Cool Mint','Double Apple','Elf Jack','Elfbull Ice','Grape','Grape Cherry','Green Grape Rose','Jasmine Raspberry','Kiwi Passion Guava','Lemon Lime','Mango Peach','PB Cloud','Peach Ice','Pina Colada','Pineapple Ice','Pineapple Colada','Pink Grapefruit','Pink Lemonade','Pink Lemonade Soda','Raspberry Lychee','Rhubarb Snow','Sour Watermelon Gummy','Spearmint','Strawberry Banana','Strawberry Kiwi','Strawberry Raspberry Cherry Ice','Strawberry Cherry Lemon','Strawberry Ice','Strawberry Snow','Watermelon','Watermelon Cherry']
+        flavors: ['Apple Peach','Apple pear','Blackberry lemon','Blackcurrant aniseed','Blue raz ice','Blue Razz Cherry','Blue razz lemonade','Blueberry','Blueberry Cherry Cranberry','Bluebery raspberry pomergranate','Bluebery rose mint','Bluebery sour raspberry','cherry','Cherry cola','Cherry lemon peach','Cherry Sour raspberry','Cola','Cool mint','Double apple','Elf jack','Elfbull ice','Fizzy Cherry','Grape','Grape cherry','Green grape rose','Jasmine raspberry','Kiwi passion guava','Lemon lime','Lemon Sherbet','Mango peach','Mr.Blue','Ocean Mint','PB cloud','Peach ice','Pina colada','Pineaple ice','Pineapple colada','Pink grapefruit','Pink lemonade','Pink lemonade soda','Raspberry lychee','Rhubarb snoow','Snoow Tobacco','Sour Apple','Sour watermelon gummy','SpearMint','Str banana','Str kiwi','Str raspberry chery ice','Strawberry chery lemon','Strawberry ice','Strawberry Razz Lemonade','Strawberry snoow','Strawberry Watermelon','Watermelon','Watermelon cherry']
       }
     ]
   }
