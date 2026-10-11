@@ -68,6 +68,9 @@
   .model-info { flex: 1; min-width: 0; }
   .model-name { font-size: 15px; font-weight: 700; }
   .model-count { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .model-price { display: inline-block; font-size: 13px; font-weight: 700; margin-top: 3px; color: #b66dff;
+    background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%); -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; }
   .arrow { color: var(--accent2); font-size: 18px; }
 
   /* FLAVOUR LIST */
@@ -1528,6 +1531,28 @@ function openCategory(catId) {
 // ============================================================
 // RENDER MODELS
 // ============================================================
+// Диапазон цен модели: от самой низкой (большой заказ) до цены за 1 шт.
+function modelTiers(cat, m) {
+  return m.tiers || PRICING[cat.id]?.tiers || [];
+}
+function modelMaxPrice(cat, m) {
+  const t = modelTiers(cat, m);
+  return t.length ? t[0][1] : 0;
+}
+function modelPriceText(cat, m) {
+  const t = modelTiers(cat, m);
+  if (!t.length) return '';
+  const hi = t[0][1], lo = t[t.length - 1][1];
+  return hi === lo ? `${hi} zł` : `${lo}–${hi} ${tr('per_pcs')}`;
+}
+// Модели внутри каждой категории: от самых дорогих к самым дешёвым (при равной цене порядок сохраняется)
+catalog.forEach(cat => {
+  cat.models = cat.models
+    .map((m, i) => ({ m, i }))
+    .sort((a, b) => (modelMaxPrice(cat, b.m) - modelMaxPrice(cat, a.m)) || (a.i - b.i))
+    .map(x => x.m);
+});
+
 function renderModels() {
   const list = document.getElementById('model-list');
   list.innerHTML = currentCat.models.map(m => `
@@ -1538,6 +1563,7 @@ function renderModels() {
       <div class="model-info">
         <div class="model-name">${m.name}</div>
         ${m.desc ? `<div class="model-desc">${lang === 'pl' && m.desc_pl ? m.desc_pl : m.desc}</div>` : ''}
+        <div class="model-price">${modelPriceText(currentCat, m)}</div>
         ${currentCat?.id === 'cartridges' ? '' : `<div class="model-count">${m.flavors.length} ${tr('flavor_label', m.flavors.length)}</div>`}
       </div>
       <div class="arrow">›</div>
@@ -2298,7 +2324,8 @@ function renderAllModels() {
           <div class="model-info">
             <div class="model-name">${m.name}</div>
             ${m.desc ? `<div class="model-desc">${lang === 'pl' && m.desc_pl ? m.desc_pl : m.desc}</div>` : ''}
-            ${currentCat?.id === 'cartridges' ? '' : `<div class="model-count">${m.flavors.length} ${tr('flavor_label', m.flavors.length)}</div>`}
+            <div class="model-price">${modelPriceText(cat, m)}</div>
+            ${cat.id === 'cartridges' ? '' : `<div class="model-count">${m.flavors.length} ${tr('flavor_label', m.flavors.length)}</div>`}
           </div>
           <div class="arrow">›</div>
         </div>`;
