@@ -68,6 +68,8 @@
   .model-info { flex: 1; min-width: 0; }
   .model-name { font-size: 15px; font-weight: 700; }
   .model-count { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .old-price { text-decoration: line-through; opacity: .6; font-weight: 500; -webkit-text-fill-color: currentColor; }
+  .sale-pill { display: inline-block; background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%); color: #fff; -webkit-text-fill-color: #fff; border-radius: 8px; padding: 1px 7px; font-size: 11px; font-weight: 700; letter-spacing: .02em; margin-left: 4px; text-transform: none; }
   .model-price { display: inline-block; font-size: 13px; font-weight: 700; margin-top: 3px; color: #b66dff;
     background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%); -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent; }
@@ -79,7 +81,7 @@
   .flavor-row.selected { border-color: var(--accent2); }
   .flavor-name { font-size: 14px; flex: 1; }
   .stock-hint { font-size: 11px; color: var(--text2); white-space: nowrap; }
-  .stock-hint.out-of-stock { color: #c98b8b; }
+  .stock-hint.out-of-stock { color: #8b8b96; }
   .qty-ctrl { display: flex; align-items: center; gap: 0; }
   .qty-btn { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--surface2); color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; flex-shrink: 0; }
   .qty-btn:active { background: var(--accent); }
@@ -732,10 +734,10 @@ function computeItemUnitPrice(item, totalQtyForPricing) {
   if (!model) return 0;
 
   if (catId === 'pods' || catId === 'cartridges') {
-    return PRICING[catId]?.base || 0;
+    return tiersOf(catId, model)[0]?.[1] || PRICING[catId]?.base || 0;
   }
 
-  const tiers = model.tiers || PRICING[catId]?.tiers || [];
+  const tiers = tiersOf(catId, model);
   let price = tiers[0]?.[1] || 0;
   for (const [minQty, unitPrice] of tiers) {
     if (totalQtyForPricing >= minQty) price = unitPrice;
@@ -868,6 +870,8 @@ const TRANS = {
     price_title: 'Цена',
     per_piece: 'За штуку',
     per_pcs: 'zł/шт.',
+    sale_label: 'Акция',
+    sale_until: d => `до ${d}`,
     fill_required: 'Пожалуйста, заполните все обязательные поля (*)',
     fill_kod: 'Укажите Kod paczkomatu',
     cart_btn: 'Корзина',
@@ -961,6 +965,8 @@ const TRANS = {
     price_title: 'Cena',
     per_piece: 'Za sztukę',
     per_pcs: 'zł/szt.',
+    sale_label: 'Promocja',
+    sale_until: d => `do ${d}`,
     fill_required: 'Proszę wypełnić wszystkie wymagane pola (*)',
     fill_kod: 'Podaj Kod paczkomatu',
     cart_btn: 'Koszyk',
@@ -1120,15 +1126,55 @@ if (lang) {
 // Тиры: [минимальное кол-во, цена за шт. в zł]
 const PRICING = {
   disposable: { tiers: [[1,70],[3,65],[5,60],[10,55],[20,48],[50,45],[100,40]], base: 70 },
-  pods:        { tiers: [[1,80]], base: 80 },
+  pods:        { tiers: [[1,85]], base: 85 },
   cartridges:  { tiers: [[1,60]], base: 60 },
   liquids:     { tiers: [[1,50],[3,45],[5,40],[10,35],[20,32],[30,30],[40,28],[50,26],[100,24]], base: 50 }
 };
 
+// ============================================================
+// АКЦИИ (скидки на модели)
+// ============================================================
+// Формат записи: { model: 'id модели', off: 5, below: 20, until: '2026-10-20' }
+//   off     — скидка в zł с цены за штуку (или percent: 10 — скидка в %)
+//   below   — скидка действует на ступени, начинающиеся ДО этого количества (по умолчанию — на все)
+//   from / until — даты начала и конца включительно (ГГГГ-ММ-ДД), необязательно
+const SALES = [
+  // Пример (убрать // чтобы включить):
+  // { model: 'elfbc45k', off: 5, below: 20, until: '2026-10-20' },
+];
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function activeSale(modelId) {
+  const t = todayStr();
+  return SALES.find(x => x.model === modelId && (!x.from || t >= x.from) && (!x.until || t <= x.until)) || null;
+}
+function baseTiersOf(catId, m) {
+  return m?.tiers || PRICING[catId]?.tiers || [];
+}
+// Ступени цены модели с учётом активной акции
+function tiersOf(catId, m) {
+  const base = baseTiersOf(catId, m);
+  const sale = m ? activeSale(m.id) : null;
+  if (!sale) return base;
+  const below = sale.below || Infinity;
+  return base.map(([q, p]) => {
+    if (q >= below) return [q, p];
+    const np = sale.percent ? Math.round(p * (1 - sale.percent / 100)) : p - (sale.off || 0);
+    return [q, Math.max(0, np)];
+  });
+}
+function saleUntilText(sale) {
+  if (!sale?.until) return '';
+  const [y, mo, d] = sale.until.split('-');
+  return d + '.' + mo;
+}
+
 function getSmartPrice(catId, totalQty) {
   // Check if current model has its own pricing
-  const modelTiers = currentModel?.tiers;
-  const tiers = modelTiers || PRICING[catId]?.tiers;
+  const tiers = currentModel ? tiersOf(catId, currentModel) : PRICING[catId]?.tiers;
   if (!tiers) return 0;
   let price = tiers[0][1];
   for (const [minQty, unitPrice] of tiers) {
@@ -1139,7 +1185,8 @@ function getSmartPrice(catId, totalQty) {
 
 function getBasePrice(catId) {
   // Check if current model has its own pricing
-  if (currentModel?.tiers) return currentModel.tiers[0][1];
+  const bt = baseTiersOf(catId, currentModel);
+  if (bt.length) return bt[0][1];
   return PRICING[catId]?.base || 0;
 }
 
@@ -1201,11 +1248,11 @@ function cartTotal() {
     
     // Для подов и картриджей - фиксированные цены
     if (catId === 'pods' || catId === 'cartridges') {
-      const basePrice = PRICING[catId]?.base || 0;
+      const basePrice = tiersOf(catId, model)[0]?.[1] || PRICING[catId]?.base || 0;
       total += item.qty * basePrice;
     } else {
       // Для одноразок и жидкостей - применяем Smart Cena по общему количеству
-      const tiers = model.tiers || PRICING[catId]?.tiers || [];
+      const tiers = tiersOf(catId, model);
       let price = tiers[0]?.[1] || 0;
       
       // Применяем нужный тир по общему количеству
@@ -1250,8 +1297,8 @@ function cartSavings() {
     }
     
     // Для одноразок и жидкостей считаем скидку
-    const tiers = model.tiers || PRICING[catId]?.tiers || [];
-    const basePrice = tiers[0]?.[1] || 0;
+    const tiers = tiersOf(catId, model);
+    const basePrice = baseTiersOf(catId, model)[0]?.[1] || 0;
     let smartPrice = tiers[0]?.[1] || 0;
     
     // Применяем нужный тир по общему количеству
@@ -1384,7 +1431,7 @@ const catalog = [
         id: 'elfliq',
         name: 'ELF LIQ',
         img: 'images/elfliq.png',
-        flavors: ['Apple Peach','Apple pear','Blackberry lemon','Blackcurrant aniseed','Blackcurrant Menthol','Blue raz ice','Blue Razz Cherry','Blue razz lemonade','Blueberry','Blueberry Cherry Cranberry','Bluebery raspberry pomergranate','Bluebery rose mint','Bluebery sour raspberry','cherry','Cherry cola','Cherry lemon peach','Cherry Sour raspberry','Cola','Cool mint','Double apple','Elf jack','Elfbull ice','Fizzy Cherry','Grape','Grape cherry','Green grape rose','Jasmine raspberry','Kiwi passion guava','Lemon lime','Lemon Sherbet','Mango peach','Mr.Blue','Ocean Mint','PB cloud','Peach ice','Pina colada','Pineaple ice','Pineapple colada','Pink grapefruit','Pink lemonade','Pink lemonade soda','Raspberry lychee','Rhubarb snoow','Snoow Tobacco','Sour Apple','Sour watermelon gummy','SpearMint','Str banana','Str kiwi','Str raspberry chery ice','Strawberry chery lemon','Strawberry ice','Strawberry Razz Lemonade','Strawberry snoow','Strawberry Watermelon','Very Menthol','Watermelon','Watermelon cherry']
+        flavors: ['Apple Peach','Apple pear','Blackberry lemon','Blackcurrant aniseed','Blackcurrant Menthol','Blue raz ice','Blue Razz Cherry','Blue razz lemonade','Blueberry','Blueberry Cherry Cranberry','Bluebery raspberry pomergranate','Bluebery rose mint','Bluebery sour raspberry','cherry','Cherry cola','Cherry lemon peach','Cherry Sour raspberry','Cola','Cool mint','Double apple','Elf jack','Elfbull ice','Fizzy Cherry','Grape','Grape cherry','Green grape rose','Jasmine raspberry','Kiwi passion guava','Lemon lime','Lemon Sherbet','Mango peach','Mr.Blue','Ocean Mint','PB cloud','Peach ice','Pina colada','Pineaple ice','Pineapple colada','Pink grapefruit','Pink lemonade','Pink lemonade soda','Raspberry lychee','Rhubarb snoow','Snoow Tobacco','Sour Apple','Sour watermelon gummy','SpearMint','Strawberry banana','Strawberry chery lemon','Strawberry ice','Strawberry kiwi','Strawberry raspberry chery ice','Strawberry Razz Lemonade','Strawberry snoow','Strawberry Watermelon','Very Menthol','Watermelon','Watermelon cherry']
       }
     ]
   }
@@ -1437,9 +1484,12 @@ function getCampaign() {
   return 'direct';
 }
 
-// Анонимный идентификатор посетителя (случайный, без привязки к Telegram-аккаунту)
+// Идентификатор посетителя: Telegram ID (один и тот же при каждом заходе и на любом устройстве),
+// запасной вариант — случайный номер, сохранённый в localStorage
 let _memUid = null;
 function getUid() {
+  const tgId = tg?.initDataUnsafe?.user?.id;
+  if (tgId) return 't' + tgId;
   try {
     let u = localStorage.getItem('sh_uid');
     if (!u) {
@@ -1532,18 +1582,27 @@ function openCategory(catId) {
 // RENDER MODELS
 // ============================================================
 // Диапазон цен модели: от самой низкой (большой заказ) до цены за 1 шт.
-function modelTiers(cat, m) {
-  return m.tiers || PRICING[cat.id]?.tiers || [];
-}
 function modelMaxPrice(cat, m) {
-  const t = modelTiers(cat, m);
+  // для сортировки берём обычные цены (акции порядок не меняют)
+  const t = baseTiersOf(cat.id, m);
   return t.length ? t[0][1] : 0;
 }
-function modelPriceText(cat, m) {
-  const t = modelTiers(cat, m);
+function priceRangeText(t) {
   if (!t.length) return '';
   const hi = t[0][1], lo = t[t.length - 1][1];
   return hi === lo ? `${hi} zł` : `${lo}–${hi} ${tr('per_pcs')}`;
+}
+function modelPriceText(cat, m) {
+  const t = tiersOf(cat.id, m);
+  const txt = priceRangeText(t);
+  const sale = activeSale(m.id);
+  if (!sale || !txt) return txt;
+  const oldT = baseTiersOf(cat.id, m);
+  const oldHi = oldT[0][1], oldLo = oldT[oldT.length - 1][1];
+  const oldTxt = oldHi === oldLo ? `${oldHi}` : `${oldLo}–${oldHi}`;
+  const newTxt = txt;
+  const changed = oldTxt !== newTxt.replace(/ zł.*$/, '');
+  return (changed ? `<s class="old-price">${oldTxt}</s> ` : '') + newTxt + ` <span class="sale-pill">${tr('sale_label')}</span>`;
 }
 // Модели внутри каждой категории: от самых дорогих к самым дешёвым (при равной цене порядок сохраняется)
 catalog.forEach(cat => {
@@ -1592,7 +1651,9 @@ function openModel(modelId) {
 function renderFlavors() {
   const list = document.getElementById('flavor-list');
   // Use model's tiers if available, otherwise use category tiers
-  const tiers = currentModel?.tiers || PRICING[currentCat.id]?.tiers || [];
+  const tiers = tiersOf(currentCat.id, currentModel);
+  const baseTiers = baseTiersOf(currentCat.id, currentModel);
+  const sale = activeSale(currentModel?.id);
   const hasTiers = tiers.length > 1;
   const qtyInCat = catQty(currentCat.id);
   const curPrice = getSmartPrice(currentCat.id, qtyInCat);
@@ -1605,13 +1666,16 @@ function renderFlavors() {
       const nextMin = tiers[i+1]?.[0];
       const label = nextMin ? `${minQty}–${nextMin-1} ${tr('pcs')}` : `${minQty}+ ${tr('pcs')}`;
       const isActive = qtyInCat >= minQty && (!nextMin || qtyInCat < nextMin);
+      const oldPrice = baseTiers[i]?.[1];
+      const oldHtml = (sale && oldPrice !== price) ? `<s class="old-price">${oldPrice}</s> ` : '';
       return `<div class="smart-tier-row${isActive?' active':''}">
         <span>${label}</span>
-        <span class="tier-price">${price} ${tr('per_pcs')}</span>
+        <span class="tier-price">${oldHtml}${price} ${tr('per_pcs')}</span>
       </div>`;
     }).join('');
+    const saleHead = sale ? ` <span class="sale-pill">${tr('sale_label')}${sale.until ? ' ' + tr('sale_until', saleUntilText(sale)) : ''}</span>` : '';
     tiersHtml = `<div class="smart-tiers">
-      <div class="smart-tiers-title">${tr('smart_cena_title')}</div>
+      <div class="smart-tiers-title">${tr('smart_cena_title')}${saleHead}</div>
       ${rows}
     </div>`;
   } else {
@@ -1630,7 +1694,7 @@ function renderFlavors() {
     
     tiersHtml = `<div class="smart-tiers">
       <div class="smart-tiers-title">${tr('price_title')}</div>
-      <div class="smart-tier-row active"><span>${finalLabel}</span><span class="tier-price">${curPrice} zł</span></div>
+      <div class="smart-tier-row active"><span>${finalLabel}</span><span class="tier-price">${(sale && baseTiers[0] && baseTiers[0][1] !== curPrice) ? `<s class="old-price">${baseTiers[0][1]}</s> ` : ''}${curPrice} zł</span></div>
     </div>`;
   }
 
@@ -1714,7 +1778,7 @@ function updateFlavorSmartBadge() {
 
   const qty = catQty(currentCat.id);
   const price = getSmartPrice(currentCat.id, qty);
-  const tiers = currentModel?.tiers || PRICING[currentCat.id]?.tiers || [];
+  const tiers = tiersOf(currentCat.id, currentModel);
   const hasTiers = tiers.length > 1;
 
   // Upsell in cart bar
@@ -1800,10 +1864,10 @@ function renderCart() {
       let itemPrice = 0;
       if (catId === 'pods' || catId === 'cartridges') {
         // Фиксированные цены для подов и картриджей
-        itemPrice = PRICING[catId]?.base || 0;
+        itemPrice = tiersOf(catId, model)[0]?.[1] || PRICING[catId]?.base || 0;
       } else {
         // Smart Cena для одноразок и жидкостей - применяем по общему количеству
-        const tiers = model?.tiers || PRICING[catId]?.tiers || [];
+        const tiers = tiersOf(catId, model);
         itemPrice = tiers[0]?.[1] || 0;
         
         for (const [minQty, unitPrice] of tiers) {
@@ -1932,10 +1996,10 @@ function renderOrderForm() {
     let unitPrice = 0;
     if (group.catId === 'pods' || group.catId === 'cartridges') {
       // Фиксированные цены для подов и картриджей
-      unitPrice = PRICING[group.catId]?.base || 0;
+      unitPrice = tiersOf(group.catId, model)[0]?.[1] || PRICING[group.catId]?.base || 0;
     } else {
       // Smart Cena для одноразок и жидкостей - применяем по общему количеству
-      const tiers = model?.tiers || PRICING[group.catId]?.tiers || [];
+      const tiers = tiersOf(group.catId, model);
       unitPrice = tiers[0]?.[1] || 0;
       
       for (const [minQty, uPrice] of tiers) {
