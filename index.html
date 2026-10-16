@@ -444,7 +444,7 @@
   <div class="scroll no-cart-pad" id="main-scroll">
     <!-- PROMO BANNER -->
     <div class="banner-item" id="banner-promo" style="margin: 16px 0 20px;">
-      <img src="images/banner.png" alt="Промо" onerror="this.style.display='none'">
+      <img src="images/banner-oferta.png" alt="Промо" onerror="this.style.display='none'">
     </div>
 
     <!-- TABS -->
@@ -1470,12 +1470,14 @@ const CAMPAIGN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // помним рекламн
 
 // Если человек пришёл по рекламной ссылке — запоминаем метку, чтобы покупка
 // через несколько дней (открыл по кнопке меню) всё равно записалась на эту рекламу.
-if (SESSION_CAMPAIGN) {
+// Заходы из рассылки (метка «mailing») в рекламную статистику не попадают вообще
+const FROM_MAILING = SESSION_CAMPAIGN === 'mailing';
+if (SESSION_CAMPAIGN && !FROM_MAILING) {
   try { localStorage.setItem('sh_campaign', SESSION_CAMPAIGN + '|' + Date.now()); } catch (e) {}
 }
 
 function getCampaign() {
-  if (SESSION_CAMPAIGN) return SESSION_CAMPAIGN;
+  if (SESSION_CAMPAIGN && !FROM_MAILING) return SESSION_CAMPAIGN;
   try {
     const raw = localStorage.getItem('sh_campaign') || '';
     const [c, t] = raw.split('|');
@@ -1504,6 +1506,7 @@ function getUid() {
 }
 
 function trackEvent(event, extra, campaignOverride) {
+  if (FROM_MAILING) return;
   try {
     fetch(`${PROXY_URL}/track`, {
       method: 'POST',
@@ -1520,7 +1523,10 @@ function trackEvent(event, extra, campaignOverride) {
 }
 
 // «Перешёл по ссылке» — считаем именно по метке этой сессии (или direct, если метки нет)
-trackEvent('app_open', null, SESSION_CAMPAIGN || 'direct');
+{
+  const u = tg?.initDataUnsafe?.user || {};
+  trackEvent('app_open', (u.username || u.first_name) ? { u: u.username || '', n: (u.first_name || '').slice(0, 40) } : null, SESSION_CAMPAIGN || 'direct');
+}
 
 // ============================================================
 // NAVIGATION
